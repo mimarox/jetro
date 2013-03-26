@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Jetro Core Suite" parallel="methods">
+	<test name="All Tests" >
+		<packages>
+			<package name="net.sf.jetro.visitor.pathaware" />
+		</packages>
+	</test> <!-- All Tests -->
+</suite> <!-- Jetro Core Suite -->
