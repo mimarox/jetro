@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Jetro Stream Suite" parallel="methods">
+	<test name="All Tests" >
+		<packages>
+			<package name="net.sf.jetro.stream.visitor" />
+		</packages>
+	</test> <!-- All Tests -->
+</suite> <!-- Jetro Stream Suite -->
