@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Jetro Path Suite" parallel="methods">
+	<listeners>
+		<listener class-name="net.sf.testng.databinding.TestAnnotationTransformer" />
+	</listeners>
+	
+	<test name="All Tests" >
+		<packages>
+			<package name="net.sf.jetro.path" />
+		</packages>
+	</test> <!-- All Tests -->
+</suite> <!-- Jetro Path Suite -->
