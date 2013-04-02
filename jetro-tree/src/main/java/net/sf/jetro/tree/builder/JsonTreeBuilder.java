@@ -3,10 +3,11 @@ package net.sf.jetro.tree.builder;
 import java.io.Reader;
 import java.io.StringReader;
 
-import net.sf.jeson.stream.JsonReader;
-import net.sf.jeson.tree.JsonElement;
-import net.sf.jeson.tree.VirtualJsonRoot;
-import net.sf.jeson.visitor.io.JsonVisitingReader;
+import net.sf.jetro.stream.JsonReader;
+import net.sf.jetro.stream.visitor.StreamVisitingReader;
+import net.sf.jetro.tree.JsonElement;
+import net.sf.jetro.tree.VirtualJsonRoot;
+import net.sf.jetro.tree.visitor.JsonTreeBuildingVisitor;
 
 public class JsonTreeBuilder {
 	private boolean lenient;
@@ -37,7 +38,7 @@ public class JsonTreeBuilder {
 		JsonReader reader = new JsonReader(in);
 		reader.setLenient(lenient);
 
-		JsonVisitingReader visitingReader = new JsonVisitingReader(reader);
+		StreamVisitingReader visitingReader = new StreamVisitingReader(reader);
 		JsonTreeBuildingVisitor builder = new JsonTreeBuildingVisitor();
 
 		visitingReader.accept(builder);
