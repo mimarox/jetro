@@ -1,0 +1,2 @@
+jsonPath,notChildPath
+$.foo,$[1]

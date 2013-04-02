@@ -5,7 +5,8 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotSame;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
+import net.sf.testng.databinding.DataBinding;
+import net.sf.testng.databinding.TestInput;
 
 import org.testng.annotations.Test;
 
@@ -154,16 +155,24 @@ public class JsonPathTest {
 
 	@Test
 	public void shouldReturnCorrectDepth() {
-		fail("Unimplemented");
+		assertEquals(jsonPath.getDepth(), 4);
+		assertEquals(jsonPath.append(new PropertyNamePathElement("bar")).getDepth(), 5);
+		assertEquals(jsonPath.removeLastElement().getDepth(), 3);
 	}
 
-	@Test
-	public void shouldBeParentPath() {
-		fail("Unimplemented");
+	@Test(dependsOnMethods = "shouldCompile")
+	@DataBinding(propertiesPrefix = "parentPath")
+	public void shouldBeParentPath(@TestInput(name = "parentPath") final String parentPath,
+			@TestInput(name = "childPath") final String childPath) {
+		assertTrue(JsonPath.compile(parentPath).isParentPathOf(JsonPath.compile(childPath)), parentPath
+				+ " should have been parent path of " + childPath);
 	}
 
-	@Test
-	public void shouldNotBeParentPath() {
-		fail("Unimplemented");
+	@Test(dependsOnMethods = "shouldCompile")
+	@DataBinding(propertiesPrefix = "notParentPath")
+	public void shouldNotBeParentPath(@TestInput(name = "jsonPath") final String jsonPath,
+			@TestInput(name = "notChildPath") final String notChildPath) {
+		assertFalse(JsonPath.compile(jsonPath).isParentPathOf(JsonPath.compile(notChildPath)), jsonPath
+				+ " should not have been parent path of " + notChildPath);
 	}
 }

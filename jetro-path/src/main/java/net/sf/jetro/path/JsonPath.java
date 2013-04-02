@@ -96,10 +96,14 @@ public class JsonPath implements Cloneable, Serializable {
 	public boolean isParentPathOf(final JsonPath path) {
 		boolean parentPath = true;
 
-		for (int i = 0; i < size; i++) {
-			if (pathElements[i].equals(path.pathElements[i])) {
-				parentPath = false;
-				break;
+		if (path.size < size) {
+			parentPath = false;
+		} else {
+			for (int i = 0; i < size; i++) {
+				if (!pathElements[i].equals(path.pathElements[i])) {
+					parentPath = false;
+					break;
+				}
 			}
 		}
 

@@ -132,6 +132,7 @@
 						</execution>
 					</executions>
 					<configuration>
+						<aggregate>true</aggregate>
 						<instrumentation>
 							<excludes>
 								<exclude>net/sf/jetro/**/*Test.class</exclude>
