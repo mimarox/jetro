@@ -4,8 +4,9 @@
 	<parent>
 		<artifactId>jetro</artifactId>
 		<groupId>net.sf.jetro</groupId>
-		<version>0.1-SNAPSHOT</version>
+		<version>0.1b</version>
 	</parent>
+	<packaging>bundle</packaging>
 	<artifactId>jetro-tree</artifactId>
 	<name>Jetro Tree</name>
 	<description>JSON Tree Model and API for the Jetro JSON Transformation Engine</description>
@@ -43,6 +44,17 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<configuration>
+					<instructions>
+						<Export-Package>
+							${bundle.namespace}.tree.*;version="${project.version}"
+						</Export-Package>
+					</instructions>
+				</configuration>
 			</plugin>
 		</plugins>
 		<pluginManagement>

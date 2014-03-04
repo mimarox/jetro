@@ -1,8 +1,11 @@
 package net.sf.jetro.tree;
 
-import java.util.Map.Entry;
-
+import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
+import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
+import net.sf.jetro.visitor.JsonVisitor;
+
+import java.util.Map.Entry;
 
 public class JsonProperty implements JsonElement, Entry<String, JsonType> {
 	private static final long serialVersionUID = 1421897236649764494L;
@@ -11,11 +14,16 @@ public class JsonProperty implements JsonElement, Entry<String, JsonType> {
 	private JsonType value;
 
 	public JsonProperty(String key) {
+		this(key, null);
+	}
+
+	public JsonProperty(String key, JsonType value) {
 		if (key == null) {
 			throw new IllegalArgumentException("key must not be null");
 		}
 
 		this.key = key;
+		this.value = value;
 	}
 
 	@Override
@@ -67,12 +75,18 @@ public class JsonProperty implements JsonElement, Entry<String, JsonType> {
 
 	@Override
 	public String toJson() {
-		return new DefaultJsonRenderer().render(this);
+		return new DefaultJsonRenderer(new RenderContext().setLenient(true)).render(this);
 	}
 
 	@Override
-	public String toJson(final JsonRenderer renderer) {
+	public String toJson(JsonRenderer renderer) {
 		return renderer.render(this);
+	}
+
+	@Override
+	public void mergeInto(JsonVisitor<?> visitor) {
+		JsonElementVisitingReader reader = new JsonElementVisitingReader(this);
+		reader.accept(visitor);
 	}
 
 	@Override

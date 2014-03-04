@@ -2,16 +2,15 @@ package net.sf.jetro.visitor.pathaware;
 
 import static org.testng.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
 import net.sf.jetro.visitor.VisitingReader;
-
 import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class PathAwareJsonVisitorTest {
 
@@ -40,7 +39,7 @@ public class PathAwareJsonVisitorTest {
 			}
 
 			@Override
-			protected void afterVisitValue(boolean value) {
+			protected void afterVisitValue(Boolean value) {
 				actuals.add(currentPath());
 			}
 

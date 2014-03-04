@@ -44,7 +44,7 @@ public class JsonTreeBuildingVisitor extends PathAwareJsonVisitor<JsonElement> {
 	}
 
 	@Override
-	protected void afterVisitValue(boolean value) {
+	protected void afterVisitValue(Boolean value) {
 		afterVisitValue(new JsonBoolean(currentPath(), value));
 	}
 

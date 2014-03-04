@@ -1,9 +1,12 @@
 package net.sf.jetro.tree;
 
-import java.util.NoSuchElementException;
-
+import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
+import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
+import net.sf.jetro.visitor.JsonVisitor;
+
+import java.util.NoSuchElementException;
 
 public abstract class JsonPrimitive<T> implements JsonType {
 	private static final long serialVersionUID = -200661848423590056L;
@@ -48,12 +51,18 @@ public abstract class JsonPrimitive<T> implements JsonType {
 
 	@Override
 	public String toJson() {
-		return new DefaultJsonRenderer().render(this);
+		return new DefaultJsonRenderer(new RenderContext().setLenient(true)).render(this);
 	}
 
 	@Override
-	public String toJson(final JsonRenderer renderer) {
+	public String toJson(JsonRenderer renderer) {
 		return renderer.render(this);
+	}
+
+	@Override
+	public void mergeInto(JsonVisitor<?> visitor) {
+		JsonElementVisitingReader reader = new JsonElementVisitingReader(this);
+		reader.accept(visitor);
 	}
 
 	@Override

@@ -9,7 +9,7 @@ public abstract class AbstractJsonWritingObjectVisitor<R> extends AbstractJsonWr
 	@Override
 	public void visitProperty(String name) {
 		try {
-			getWriter().name(name);
+			getGenerator().name(name);
 		} catch (IOException e) {
 			throw new JsonIOException(e);
 		}
@@ -18,7 +18,7 @@ public abstract class AbstractJsonWritingObjectVisitor<R> extends AbstractJsonWr
 	@Override
 	public void visitEnd() {
 		try {
-			getWriter().endObject();
+			getGenerator().endObject();
 		} catch (IOException e) {
 			throw new JsonIOException(e);
 		}

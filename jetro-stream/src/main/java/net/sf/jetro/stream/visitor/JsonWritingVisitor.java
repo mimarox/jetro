@@ -17,7 +17,7 @@ public final class JsonWritingVisitor extends AbstractJsonWritingVisitor<Void> {
 		}
 
 		@Override
-		protected JsonWriter getWriter() {
+		protected JsonWriter getGenerator() {
 			return writer;
 		}
 
@@ -39,7 +39,7 @@ public final class JsonWritingVisitor extends AbstractJsonWritingVisitor<Void> {
 		}
 
 		@Override
-		protected JsonWriter getWriter() {
+		protected JsonWriter getGenerator() {
 			return writer;
 		}
 
@@ -72,7 +72,7 @@ public final class JsonWritingVisitor extends AbstractJsonWritingVisitor<Void> {
 	}
 
 	@Override
-	protected JsonWriter getWriter() {
+	protected JsonWriter getGenerator() {
 		return writer;
 	}
 

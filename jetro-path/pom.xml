@@ -4,9 +4,10 @@
 	<parent>
 		<artifactId>jetro</artifactId>
 		<groupId>net.sf.jetro</groupId>
-		<version>0.1-SNAPSHOT</version>
+		<version>0.1b</version>
 		<relativePath>..</relativePath>
 	</parent>
+	<packaging>bundle</packaging>
 	<artifactId>jetro-path</artifactId>
 	<name>Jetro JsonPath</name>
 	<description>The JsonPath module for the Jetro JSON transformation engine</description>
@@ -32,6 +33,17 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<configuration>
+					<instructions>
+						<Export-Package>
+							${bundle.namespace}.path.*;version="${project.version}"
+						</Export-Package>
+					</instructions>
+				</configuration>
 			</plugin>
 		</plugins>
 		<pluginManagement>

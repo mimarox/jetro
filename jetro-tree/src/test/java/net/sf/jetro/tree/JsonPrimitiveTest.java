@@ -41,21 +41,14 @@ public class JsonPrimitiveTest {
 
 	@Test
 	public void shouldGetChildElement() {
-		// Setup JSON tree representing {"foo":"happy-happy-joy-joy"}
-		JsonObject root = new JsonObject();
-		JsonProperty foo = new JsonProperty("foo");
-
-		JsonPrimitive<String> jsonPrimitive = new JsonString();
-		jsonPrimitive.setValue("happy-happy-joy-joy");
-		foo.setValue(jsonPrimitive);
-		root.add(foo);
-
 		// define path for third element
 		JsonPath jsonPath = JsonPath.compile("$.foo[2]");
 
-		// call getElementAt on JsonPrimitive
-		String actual = jsonPrimitive.getElementAt(jsonPath).toString();
-		String expected = "{\"foo\":\"happy-happy-joy-joy\"}";
+		JsonPrimitive<String> jsonString = new JsonPrimitive<String>(jsonPath, "happy") {};
+
+		// call getElementAt on JSON primitive
+		String actual = ((JsonPrimitive<String>) jsonString.getElementAt(JsonPath.compile("$.foo[2]"))).getValue();
+		String expected = "happy";
 
 		// Assert
 		assertEquals(actual, expected);

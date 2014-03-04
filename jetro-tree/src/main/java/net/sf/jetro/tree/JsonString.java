@@ -1,6 +1,7 @@
 package net.sf.jetro.tree;
 
 import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.visitor.JsonVisitor;
 
 public class JsonString extends JsonPrimitive<String> {
 	private static final long serialVersionUID = 39487332732636472L;

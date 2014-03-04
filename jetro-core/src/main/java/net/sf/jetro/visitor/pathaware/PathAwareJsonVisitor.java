@@ -82,7 +82,7 @@ public abstract class PathAwareJsonVisitor<R> extends UniformChainedJsonVisitor<
 	}
 
 	@Override
-	protected final boolean beforeVisitValue(final boolean value) {
+	protected final Boolean beforeVisitValue(final boolean value) {
 		handleVisitValue();
 		return doBeforeVisitValue(value);
 	}
@@ -112,12 +112,13 @@ public abstract class PathAwareJsonVisitor<R> extends UniformChainedJsonVisitor<
 	}
 
 	@Override
-	protected final void beforeVisitNullValue() {
+	protected final boolean beforeVisitNullValue() {
 		handleVisitValue();
-		doBeforeVisitNullValue();
+		return doBeforeVisitNullValue();
 	}
 
-	protected void doBeforeVisitNullValue() {
+	protected boolean doBeforeVisitNullValue() {
+		return true;
 	}
 
 	private void handleVisitValue() {

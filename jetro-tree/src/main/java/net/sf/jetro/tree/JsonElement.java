@@ -1,10 +1,15 @@
 package net.sf.jetro.tree;
 
+import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
+import net.sf.jetro.visitor.JsonVisitor;
+
 import java.io.Serializable;
 
 public interface JsonElement extends Serializable {
 
-	public String toJson();
+	String toJson();
 
-	public String toJson(JsonRenderer renderer);
+	String toJson(JsonRenderer renderer);
+
+	void mergeInto(JsonVisitor<?> visitor);
 }

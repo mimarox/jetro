@@ -3,6 +3,8 @@ package net.sf.jetro.tree;
 import java.util.ArrayList;
 
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
+import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
+import net.sf.jetro.visitor.JsonVisitor;
 
 public class VirtualJsonRoot extends ArrayList<JsonElement> implements JsonElement {
 	private static final long serialVersionUID = 463431682418006955L;
@@ -15,6 +17,12 @@ public class VirtualJsonRoot extends ArrayList<JsonElement> implements JsonEleme
 	@Override
 	public String toJson(final JsonRenderer renderer) {
 		return renderer.render(this);
+	}
+
+	@Override
+	public void mergeInto(JsonVisitor<?> visitor) {
+		JsonElementVisitingReader reader = new JsonElementVisitingReader(this);
+		reader.accept(visitor);
 	}
 
 	@Override

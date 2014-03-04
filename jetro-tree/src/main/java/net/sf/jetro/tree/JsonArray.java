@@ -1,11 +1,13 @@
 package net.sf.jetro.tree;
 
+import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
+import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
+import net.sf.jetro.visitor.JsonVisitor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import net.sf.jetro.path.JsonPath;
-import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
 
 public class JsonArray extends ArrayList<JsonType> implements JsonType {
 	private static final long serialVersionUID = -853759861392315220L;
@@ -49,6 +51,12 @@ public class JsonArray extends ArrayList<JsonType> implements JsonType {
 	}
 
 	@Override
+	public void mergeInto(JsonVisitor<?> visitor) {
+		JsonElementVisitingReader reader = new JsonElementVisitingReader(this);
+		reader.accept(visitor);
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("JsonArray [values=").append(super.toString()).append(", path=").append(path).append("]");
@@ -59,7 +67,7 @@ public class JsonArray extends ArrayList<JsonType> implements JsonType {
 	public JsonElement getElementAt(JsonPath path) {
 		if (this.path == path || (this.path != null && this.path.equals(path))) {
 			return this;
-		} else if (pathDepth < path.getDepth() && this.path.isParentPathOf(path) && path.hasArrayIndexAt(pathDepth + 1)) {
+		} else if (pathDepth < path.getDepth() && path.isChildPathOf(this.path) && path.hasArrayIndexAt(pathDepth)) {
 			int expectedIndex = path.getArrayIndexAt(pathDepth);
 
 			if (expectedIndex < size()) {

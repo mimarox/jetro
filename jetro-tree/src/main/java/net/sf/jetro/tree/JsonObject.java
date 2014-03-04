@@ -1,5 +1,10 @@
 package net.sf.jetro.tree;
 
+import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
+import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
+import net.sf.jetro.visitor.JsonVisitor;
+
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -7,9 +12,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
-import net.sf.jetro.path.JsonPath;
-import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
 
 public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 	private static final long serialVersionUID = -2961271887393587301L;
@@ -83,7 +85,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 				entrySet = new JsonPropertiesSet();
 			}
 
-			return entrySet();
+			return entrySet;
 		}
 	}
 
@@ -145,8 +147,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 	public JsonElement getElementAt(final JsonPath path) {
 		if (this.path == path || (this.path != null && this.path.equals(path))) {
 			return this;
-		} else if (pathDepth < path.getDepth() && this.path.isParentPathOf(path)
-				&& path.hasPropertyNameAt(pathDepth + 1)) {
+		} else if (pathDepth < path.getDepth() && path.isChildPathOf(this.path) && path.hasPropertyNameAt(pathDepth)) {
 			String expectedName = path.getPropertyNameAt(pathDepth);
 			return findElement(expectedName, path);
 		} else {
@@ -178,6 +179,12 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 	@Override
 	public String toJson(final JsonRenderer renderer) {
 		return renderer.render(this);
+	}
+
+	@Override
+	public void mergeInto(JsonVisitor<?> visitor) {
+		JsonElementVisitingReader reader = new JsonElementVisitingReader(this);
+		reader.accept(visitor);
 	}
 
 	@Override

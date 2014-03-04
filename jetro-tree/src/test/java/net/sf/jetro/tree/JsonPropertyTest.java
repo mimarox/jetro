@@ -15,9 +15,9 @@ public class JsonPropertyTest {
 		JsonProperty jsonProperty = new JsonProperty("alpha");
 		jsonProperty.setValue(new JsonString("apple"));
 
-		// call toJson on JsonArray
+		// call toJson on JsonProperty
 		String actual = jsonProperty.toJson();
-		String expected = "[\"apple\",\"alpha\"]";
+		String expected = "\"alpha\":\"apple\"";
 
 		// Assert
 		assertEquals(actual, expected);
