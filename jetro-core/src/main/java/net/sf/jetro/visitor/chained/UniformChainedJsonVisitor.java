@@ -10,74 +10,92 @@ public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R>
 			super(nextVisitor);
 		}
 
+		@Override
 		protected void beforeVisitObject() {
 			UniformChainedJsonVisitor.this.beforeVisitObject();
 		}
 
+		@Override
 		protected JsonObjectVisitor<R> afterVisitObject(JsonObjectVisitor<R> jsonObjectVisitor) {
 			return UniformChainedJsonVisitor.this.afterVisitObject(jsonObjectVisitor);
 		}
 
+		@Override
 		protected void beforeVisitArray() {
 			UniformChainedJsonVisitor.this.beforeVisitArray();
 		}
 
+		@Override
 		protected JsonArrayVisitor<R> afterVisitArray(JsonArrayVisitor<R> jsonArrayVisitor) {
 			return UniformChainedJsonVisitor.this.afterVisitArray(jsonArrayVisitor);
 		}
 
+		@Override
 		protected String beforeVisitProperty(String name) {
 			return UniformChainedJsonVisitor.this.beforeVisitProperty(name);
 		}
 
+		@Override
 		protected void afterVisitProperty(String name) {
 			UniformChainedJsonVisitor.this.afterVisitProperty(name);
 		}
 
-		protected boolean beforeVisitValue(boolean value) {
+		@Override
+		protected Boolean beforeVisitValue(boolean value) {
 			return UniformChainedJsonVisitor.this.beforeVisitValue(value);
 		}
 
-		protected void afterVisitValue(boolean value) {
+		@Override
+		protected void afterVisitValue(Boolean value) {
 			UniformChainedJsonVisitor.this.afterVisitValue(value);
 		}
 
+		@Override
 		protected Number beforeVisitValue(Number value) {
 			return UniformChainedJsonVisitor.this.beforeVisitValue(value);
 		}
 
+		@Override
 		protected void afterVisitValue(Number value) {
 			UniformChainedJsonVisitor.this.afterVisitValue(value);
 		}
 
+		@Override
 		protected String beforeVisitValue(String value) {
 			return UniformChainedJsonVisitor.this.beforeVisitValue(value);
 		}
 
+		@Override
 		protected void afterVisitValue(String value) {
 			UniformChainedJsonVisitor.this.afterVisitValue(value);
 		}
 
-		protected void beforeVisitNullValue() {
-			UniformChainedJsonVisitor.this.beforeVisitNullValue();
+		@Override
+		protected boolean beforeVisitNullValue() {
+			return UniformChainedJsonVisitor.this.beforeVisitNullValue();
 		}
 
+		@Override
 		protected void afterVisitNullValue() {
 			UniformChainedJsonVisitor.this.afterVisitNullValue();
 		}
 
-		protected void beforeVisitEnd() {
-			UniformChainedJsonVisitor.this.beforeVisitObjectEnd();
+		@Override
+		protected boolean beforeVisitEnd() {
+			return UniformChainedJsonVisitor.this.beforeVisitObjectEnd();
 		}
 
+		@Override
 		protected void afterVisitEnd() {
 			UniformChainedJsonVisitor.this.afterVisitObjectEnd();
 		}
 
+		@Override
 		protected void beforeGetVisitingResult() {
 			UniformChainedJsonVisitor.this.beforeGetVisitingResult();
 		}
 
+		@Override
 		protected R afterGetVisitingResult(R visitingResult) {
 			return UniformChainedJsonVisitor.this.afterGetVisitingResult(visitingResult);
 		}
@@ -88,74 +106,92 @@ public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R>
 			super(nextVisitor);
 		}
 
+		@Override
 		protected void beforeVisitObject() {
 			UniformChainedJsonVisitor.this.beforeVisitObject();
 		}
 
+		@Override
 		protected JsonObjectVisitor<R> afterVisitObject(JsonObjectVisitor<R> jsonObjectVisitor) {
 			return UniformChainedJsonVisitor.this.afterVisitObject(jsonObjectVisitor);
 		}
 
+		@Override
 		protected void beforeVisitArray() {
 			UniformChainedJsonVisitor.this.beforeVisitArray();
 		}
 
+		@Override
 		protected JsonArrayVisitor<R> afterVisitArray(JsonArrayVisitor<R> jsonArrayVisitor) {
 			return UniformChainedJsonVisitor.this.afterVisitArray(jsonArrayVisitor);
 		}
 
+		@Override
 		protected String beforeVisitProperty(String name) {
 			return UniformChainedJsonVisitor.this.beforeVisitProperty(name);
 		}
 
+		@Override
 		protected void afterVisitProperty(String name) {
 			UniformChainedJsonVisitor.this.afterVisitProperty(name);
 		}
 
-		protected boolean beforeVisitValue(boolean value) {
+		@Override
+		protected Boolean beforeVisitValue(boolean value) {
 			return UniformChainedJsonVisitor.this.beforeVisitValue(value);
 		}
 
-		protected void afterVisitValue(boolean value) {
+		@Override
+		protected void afterVisitValue(Boolean value) {
 			UniformChainedJsonVisitor.this.afterVisitValue(value);
 		}
 
+		@Override
 		protected Number beforeVisitValue(Number value) {
 			return UniformChainedJsonVisitor.this.beforeVisitValue(value);
 		}
 
+		@Override
 		protected void afterVisitValue(Number value) {
 			UniformChainedJsonVisitor.this.afterVisitValue(value);
 		}
 
+		@Override
 		protected String beforeVisitValue(String value) {
 			return UniformChainedJsonVisitor.this.beforeVisitValue(value);
 		}
 
+		@Override
 		protected void afterVisitValue(String value) {
 			UniformChainedJsonVisitor.this.afterVisitValue(value);
 		}
 
-		protected void beforeVisitNullValue() {
-			UniformChainedJsonVisitor.this.beforeVisitNullValue();
+		@Override
+		protected boolean beforeVisitNullValue() {
+			return UniformChainedJsonVisitor.this.beforeVisitNullValue();
 		}
 
+		@Override
 		protected void afterVisitNullValue() {
 			UniformChainedJsonVisitor.this.afterVisitNullValue();
 		}
 
-		protected void beforeVisitEnd() {
-			UniformChainedJsonVisitor.this.beforeVisitArrayEnd();
+		@Override
+		protected boolean beforeVisitEnd() {
+			return UniformChainedJsonVisitor.this.beforeVisitArrayEnd();
 		}
 
+		@Override
 		protected void afterVisitEnd() {
 			UniformChainedJsonVisitor.this.afterVisitArrayEnd();
 		}
 
+		@Override
 		protected void beforeGetVisitingResult() {
 			UniformChainedJsonVisitor.this.beforeGetVisitingResult();
 		}
 
+		@Override
 		protected R afterGetVisitingResult(R visitingResult) {
 			return UniformChainedJsonVisitor.this.afterGetVisitingResult(visitingResult);
 		}
@@ -178,13 +214,15 @@ public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R>
 		return new UniformChainedJsonArrayVisitor(visitor);
 	}
 
-	protected void beforeVisitObjectEnd() {
+	protected boolean beforeVisitObjectEnd() {
+		return true;
 	}
 
 	protected void afterVisitObjectEnd() {
 	}
 
-	protected void beforeVisitArrayEnd() {
+	protected boolean beforeVisitArrayEnd() {
+		return true;
 	}
 
 	protected void afterVisitArrayEnd() {

@@ -14,7 +14,7 @@ public abstract class AbstractJsonWritingArrayVisitor<R> extends AbstractJsonWri
 	@Override
 	public void visitEnd() {
 		try {
-			getWriter().endArray();
+			getGenerator().endArray();
 		} catch (IOException e) {
 			throw new JsonIOException(e);
 		}

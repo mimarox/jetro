@@ -34,7 +34,7 @@ public class DefaultJsonRenderer implements JsonRenderer {
 				renderingResult.append(renderInternal(childElement)).append(separator);
 			}
 
-			return renderingResult.toString();
+			return renderingResult.substring(0, renderingResult.length() - 1);
 		} else {
 			return renderInternal(element);
 		}

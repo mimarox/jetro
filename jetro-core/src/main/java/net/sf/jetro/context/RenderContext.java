@@ -10,31 +10,35 @@ public class RenderContext {
 		return indent;
 	}
 
-	public void setIndent(String indent) {
+	public RenderContext setIndent(String indent) {
 		this.indent = indent;
+		return this;
 	}
 
 	public boolean isLenient() {
 		return lenient;
 	}
 
-	public void setLenient(boolean lenient) {
+	public RenderContext setLenient(boolean lenient) {
 		this.lenient = lenient;
+		return this;
 	}
 
 	public boolean isHtmlSafe() {
 		return htmlSafe;
 	}
 
-	public void setHtmlSafe(boolean htmlSafe) {
+	public RenderContext setHtmlSafe(boolean htmlSafe) {
 		this.htmlSafe = htmlSafe;
+		return this;
 	}
 
 	public boolean isSerializeNulls() {
 		return serializeNulls;
 	}
 
-	public void setSerializeNulls(boolean serializeNulls) {
+	public RenderContext setSerializeNulls(boolean serializeNulls) {
 		this.serializeNulls = serializeNulls;
+		return this;
 	}
 }

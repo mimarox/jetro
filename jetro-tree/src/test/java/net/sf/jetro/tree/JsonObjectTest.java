@@ -6,11 +6,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 
-import java.util.NoSuchElementException;
-
 import net.sf.jetro.path.JsonPath;
-
 import org.testng.annotations.Test;
+
+import java.util.NoSuchElementException;
 
 public class JsonObjectTest {
 
@@ -60,7 +59,7 @@ public class JsonObjectTest {
 	 */
 	// TODO when internal path setting is implemented remove the expectedExceptions directive
 	@Test(expectedExceptions = NoSuchElementException.class)
-	public void shouldGetChildElement() {
+	public void shouldGetChildElementAt() {
 		// Setup JSON tree representing {"foo":[1,"two",{"bar":true}]}
 		JsonObject jsonObject = new JsonObject();
 		JsonProperty foo = new JsonProperty("foo");

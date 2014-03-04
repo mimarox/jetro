@@ -5,7 +5,7 @@ import net.sf.jetro.visitor.JsonObjectVisitor;
 import net.sf.jetro.visitor.JsonVisitor;
 
 public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
-	private JsonVisitor<R> nextVisitor;
+	protected JsonVisitor<R> nextVisitor;
 
 	/**
 	 * This constructor is used if the resulting object is supposed to be the end point of a
@@ -48,7 +48,7 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 	public final void visitProperty(String name) {
 		name = beforeVisitProperty(name);
 
-		if (nextVisitor != null) {
+		if (nextVisitor != null && name != null) {
 			nextVisitor.visitProperty(name);
 		}
 
@@ -64,27 +64,27 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 
 	@Override
 	public final void visitValue(boolean value) {
-		value = beforeVisitValue(value);
+		Boolean processedValue = beforeVisitValue(value);
 
-		if (nextVisitor != null) {
-			nextVisitor.visitValue(value);
+		if (nextVisitor != null && processedValue != null) {
+			nextVisitor.visitValue(processedValue);
 		}
 
-		afterVisitValue(value);
+		afterVisitValue(processedValue);
 	}
 
-	protected boolean beforeVisitValue(boolean value) {
+	protected Boolean beforeVisitValue(boolean value) {
 		return value;
 	}
 
-	protected void afterVisitValue(boolean value) {
+	protected void afterVisitValue(Boolean value) {
 	}
 
 	@Override
 	public final void visitValue(Number value) {
 		value = beforeVisitValue(value);
 
-		if (nextVisitor != null) {
+		if (nextVisitor != null && value != null) {
 			nextVisitor.visitValue(value);
 		}
 
@@ -102,7 +102,7 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 	public final void visitValue(String value) {
 		value = beforeVisitValue(value);
 
-		if (nextVisitor != null) {
+		if (nextVisitor != null && value != null) {
 			nextVisitor.visitValue(value);
 		}
 
@@ -118,16 +118,17 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 
 	@Override
 	public final void visitNullValue() {
-		beforeVisitNullValue();
+		boolean passOn = beforeVisitNullValue();
 
-		if (nextVisitor != null) {
+		if (nextVisitor != null && passOn) {
 			nextVisitor.visitNullValue();
 		}
 
 		afterVisitNullValue();
 	}
 
-	protected void beforeVisitNullValue() {
+	protected boolean beforeVisitNullValue() {
+		return true;
 	}
 
 	protected void afterVisitNullValue() {
@@ -135,16 +136,17 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 
 	@Override
 	public final void visitEnd() {
-		beforeVisitEnd();
+		boolean passOn = beforeVisitEnd();
 
-		if (nextVisitor != null) {
+		if (nextVisitor != null && passOn) {
 			nextVisitor.visitEnd();
 		}
 
 		afterVisitEnd();
 	}
 
-	protected void beforeVisitEnd() {
+	protected boolean beforeVisitEnd() {
+		return true;
 	}
 
 	protected void afterVisitEnd() {
