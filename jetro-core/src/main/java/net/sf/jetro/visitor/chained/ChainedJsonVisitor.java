@@ -164,4 +164,30 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 	protected R afterGetVisitingResult(R visitingResult) {
 		return visitingResult;
 	}
+
+	public void attachVisitor(JsonVisitor<R> visitor) {
+		attachVisitor(visitor, false);
+	}
+
+	public void attachVisitor(JsonVisitor<R> visitor, boolean replace) {
+		if (nextVisitor == null) {
+			nextVisitor = visitor;
+		} else if (nextVisitor instanceof ChainedJsonVisitor) {
+			((ChainedJsonVisitor) nextVisitor).attachVisitor(visitor, replace);
+		} else if (replace) {
+			nextVisitor = visitor;
+		} else {
+			throw new IllegalStateException("Cannot attach visitor as a visitor is already attached and replacement was not requested");
+		}
+	}
+
+	public void detachVisitor(JsonVisitor<R> visitor) {
+		if (nextVisitor == null) {
+			// do nothing
+		} else if (nextVisitor.equals(visitor)) {
+			nextVisitor = null;
+		} else if (nextVisitor instanceof ChainedJsonVisitor) {
+			((ChainedJsonVisitor) nextVisitor).detachVisitor(visitor);
+		}
+	}
 }

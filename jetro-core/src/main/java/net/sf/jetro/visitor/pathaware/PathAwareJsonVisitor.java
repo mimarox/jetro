@@ -168,8 +168,11 @@ public abstract class PathAwareJsonVisitor<R> extends UniformChainedJsonVisitor<
 
 	private void handleVisitEnd() {
 		if (!stateStack.isEmpty()) {
-			currentPath = currentPath.removeLastElement();
-			stateStack.pop();
+			ParseState state = stateStack.pop();
+
+			if (!state.justEntered) {
+				currentPath = currentPath.removeLastElement();
+			}
 		}
 	}
 }

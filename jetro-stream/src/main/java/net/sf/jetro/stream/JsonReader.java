@@ -1294,11 +1294,11 @@ public class JsonReader implements Closeable {
 		return false;
 	}
 
-	private int getLineNumber() {
+	public int getLineNumber() {
 		return lineNumber + 1;
 	}
 
-	private int getColumnNumber() {
+	public int getColumnNumber() {
 		return pos - lineStart + 1;
 	}
 

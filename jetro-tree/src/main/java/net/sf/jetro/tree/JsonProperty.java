@@ -2,6 +2,7 @@ package net.sf.jetro.tree;
 
 import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
+import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
@@ -14,7 +15,7 @@ public class JsonProperty implements JsonElement, Entry<String, JsonType> {
 	private JsonType value;
 
 	public JsonProperty(String key) {
-		this(key, null);
+		this(key, (JsonType) null);
 	}
 
 	public JsonProperty(String key, JsonType value) {
@@ -24,6 +25,18 @@ public class JsonProperty implements JsonElement, Entry<String, JsonType> {
 
 		this.key = key;
 		this.value = value;
+	}
+
+	public JsonProperty(String key, String value) {
+		this(key, new JsonString(value));
+	}
+
+	public JsonProperty(String key, boolean value) {
+		this(key, new JsonBoolean(value));
+	}
+
+	public JsonProperty(String key, Number value) {
+		this(key, new JsonNumber(value));
 	}
 
 	@Override

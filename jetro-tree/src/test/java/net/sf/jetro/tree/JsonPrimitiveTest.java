@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import net.sf.jetro.path.JsonPath;
 
+import net.sf.jetro.tree.renderer.JsonRenderer;
 import org.testng.annotations.Test;
 
 public class JsonPrimitiveTest {

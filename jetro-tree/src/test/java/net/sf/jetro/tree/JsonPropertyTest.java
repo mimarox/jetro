@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 
+import net.sf.jetro.tree.renderer.JsonRenderer;
 import org.testng.annotations.Test;
 
 public class JsonPropertyTest {
