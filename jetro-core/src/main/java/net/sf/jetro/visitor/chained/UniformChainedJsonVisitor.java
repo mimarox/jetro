@@ -11,8 +11,13 @@ public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R>
 		}
 
 		@Override
-		protected void beforeVisitObject() {
-			UniformChainedJsonVisitor.this.beforeVisitObject();
+		protected JsonVisitor<R> getNextVisitor() {
+			return UniformChainedJsonVisitor.this.getNextVisitor(super.getNextVisitor());
+		}
+
+		@Override
+		protected boolean beforeVisitObject() {
+			return UniformChainedJsonVisitor.this.beforeVisitObject();
 		}
 
 		@Override
@@ -21,8 +26,8 @@ public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R>
 		}
 
 		@Override
-		protected void beforeVisitArray() {
-			UniformChainedJsonVisitor.this.beforeVisitArray();
+		protected boolean beforeVisitArray() {
+			return UniformChainedJsonVisitor.this.beforeVisitArray();
 		}
 
 		@Override
@@ -101,14 +106,21 @@ public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R>
 		}
 	}
 
+
+
 	private class UniformChainedJsonArrayVisitor extends ChainedJsonArrayVisitor<R> {
 		public UniformChainedJsonArrayVisitor(JsonVisitor<R> nextVisitor) {
 			super(nextVisitor);
 		}
 
 		@Override
-		protected void beforeVisitObject() {
-			UniformChainedJsonVisitor.this.beforeVisitObject();
+		protected JsonVisitor<R> getNextVisitor() {
+			return UniformChainedJsonVisitor.this.getNextVisitor(super.getNextVisitor());
+		}
+
+		@Override
+		protected boolean beforeVisitObject() {
+			return UniformChainedJsonVisitor.this.beforeVisitObject();
 		}
 
 		@Override
@@ -117,8 +129,8 @@ public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R>
 		}
 
 		@Override
-		protected void beforeVisitArray() {
-			UniformChainedJsonVisitor.this.beforeVisitArray();
+		protected boolean beforeVisitArray() {
+			return UniformChainedJsonVisitor.this.beforeVisitArray();
 		}
 
 		@Override
@@ -226,5 +238,9 @@ public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R>
 	}
 
 	protected void afterVisitArrayEnd() {
+	}
+
+	protected JsonVisitor<R> getNextVisitor(JsonVisitor<R> nextVisitor) {
+		return nextVisitor;
 	}
 }

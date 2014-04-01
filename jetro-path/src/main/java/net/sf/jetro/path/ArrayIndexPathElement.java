@@ -4,8 +4,12 @@ public class ArrayIndexPathElement extends JsonPathElement {
 	private static final long serialVersionUID = -4814966817683544359L;
 	private int index;
 
-	public ArrayIndexPathElement(int index) {
-		super(false);
+	public ArrayIndexPathElement(final int index) {
+		this(index, false);
+	}
+
+	ArrayIndexPathElement(final int index, final boolean optional) {
+		super(false, optional);
 
 		if (index < 0) {
 			throw new ArrayIndexOutOfBoundsException(index);
@@ -14,8 +18,8 @@ public class ArrayIndexPathElement extends JsonPathElement {
 		this.index = index;
 	}
 
-	ArrayIndexPathElement(boolean wildcard) {
-		super(wildcard);
+	ArrayIndexPathElement(final boolean wildcard, final boolean optional) {
+		super(wildcard, optional);
 	}
 
 	public int getIndex() {
@@ -32,7 +36,13 @@ public class ArrayIndexPathElement extends JsonPathElement {
 			builder.append(index);
 		}
 
-		return builder.append("]").toString();
+		builder.append("]");
+
+		if (isOptional()) {
+			builder.append(JsonPath.OPTIONAL);
+		}
+
+		return builder.toString();
 	}
 
 	@Override
@@ -45,15 +55,20 @@ public class ArrayIndexPathElement extends JsonPathElement {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
 		if (!super.equals(obj))
 			return false;
-		if (getClass() != obj.getClass())
+		return equalsIgnoreOptional((JsonPathElement) obj);
+	}
+
+	@Override
+	public boolean equalsIgnoreOptional(JsonPathElement other) {
+		if (this == other)
+			return true;
+		if (getClass() != other.getClass())
 			return false;
-		ArrayIndexPathElement other = (ArrayIndexPathElement) obj;
-		if (index != other.index)
+		ArrayIndexPathElement that = (ArrayIndexPathElement) other;
+		if (index != that.index)
 			return false;
-		return true;
+		return super.equalsIgnoreOptional(other);
 	}
 }

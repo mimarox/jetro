@@ -1,28 +1,33 @@
 package net.sf.jetro.path;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class JsonPath implements Cloneable, Serializable {
 	private static final long serialVersionUID = -7011229423184378717L;
 
 	static final String WILDCARD = "*";
+	static final String OPTIONAL = "?";
 
 	private static JsonPathCompiler compiler;
 
 	private JsonPathElement[] pathElements;
+	private boolean containsOptionals;
 	private int size;
 
 	public JsonPath() {
-		this(new JsonPathElement[] {});
+		this(new JsonPathElement[] {}, false);
 	}
 
-	JsonPath(final JsonPathElement[] pathElements) {
+	JsonPath(final JsonPathElement[] pathElements, final boolean containsOptionals) {
 		if (pathElements == null) {
 			throw new IllegalArgumentException("pathElements must not be null");
 		}
 
 		this.pathElements = pathElements;
+		this.containsOptionals = containsOptionals;
 		this.size = pathElements.length;
 	}
 
@@ -66,27 +71,63 @@ public class JsonPath implements Cloneable, Serializable {
 	}
 
 	public boolean matches(final JsonPath jsonPathPattern) {
-		if (jsonPathPattern.pathElements[jsonPathPattern.size - 1] instanceof MatchesAllFurtherPathElement) {
-			if (size < jsonPathPattern.size - 1) {
-				return false;
-			}
-		} else if (size != jsonPathPattern.size) {
+		if (size == 0 && jsonPathPattern.size == 0) {
+			return true;
+		} else if (size > 0 && jsonPathPattern.size == 0) {
 			return false;
 		}
 
-		for (int i = 0; i < jsonPathPattern.size; i++) {
-			if (jsonPathPattern.pathElements[i] instanceof MatchesAllFurtherPathElement) {
-				return true;
-			} else if (pathElements[i].getClass() != jsonPathPattern.pathElements[i].getClass()) {
+		JsonPath applicablePattern = jsonPathPattern.removeSkippableOptionals(this);
+
+		if (applicablePattern.pathElements[applicablePattern.size - 1] instanceof MatchesAllFurtherPathElement) {
+			if (size < applicablePattern.size - 1) {
 				return false;
-			} else if (jsonPathPattern.pathElements[i].isWildcard()) {
+			}
+		} else if (size != applicablePattern.size) {
+			return false;
+		}
+
+		for (int i = 0; i < applicablePattern.size; i++) {
+			if (applicablePattern.pathElements[i] instanceof MatchesAllFurtherPathElement) {
+				return true;
+			} else if (pathElements[i].getClass() != applicablePattern.pathElements[i].getClass()) {
+				return false;
+			} else if (applicablePattern.pathElements[i].isWildcard()) {
 				continue;
-			} else if (!pathElements[i].equals(jsonPathPattern.pathElements[i])) {
+			} else if (!pathElements[i].equalsIgnoreOptional(applicablePattern.pathElements[i])) {
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	private JsonPath removeSkippableOptionals(JsonPath jsonPath) {
+		if (containsOptionals) {
+			List<JsonPathElement> elements = new ArrayList<JsonPathElement>();
+
+			for (int i = 0; i < size; i++) {
+				if (!isSkippableOptional(pathElements[i], (i < jsonPath.size ? jsonPath.pathElements[i] : null))) {
+					elements.add(pathElements[i]);
+				}
+			}
+
+			return new JsonPath(elements.toArray(new JsonPathElement[elements.size()]), false);
+		} else {
+			return this;
+		}
+	}
+
+	private boolean isSkippableOptional(JsonPathElement candidate, JsonPathElement comparative) {
+		if (candidate.isOptional()) {
+			if (comparative == null) {
+				return true;
+			} else {
+				return candidate.getClass() != comparative.getClass();
+			}
+		} else {
+			return false;
+		}
 	}
 
 	public int getDepth() {
@@ -96,14 +137,11 @@ public class JsonPath implements Cloneable, Serializable {
 	public boolean isParentPathOf(final JsonPath path) {
 		boolean parentPath = true;
 
-		if (path.size < size) {
-			parentPath = false;
-		} else {
-			for (int i = 0; i < size; i++) {
-				if (!pathElements[i].equals(path.pathElements[i])) {
-					parentPath = false;
-					break;
-				}
+		for (int i = 0; i < size; i++) {
+			if (!(pathElements[i].isOptional() || path.pathElements[i].isOptional() ||
+					pathElements[i].equals(path.pathElements[i]))) {
+				parentPath = false;
+				break;
 			}
 		}
 

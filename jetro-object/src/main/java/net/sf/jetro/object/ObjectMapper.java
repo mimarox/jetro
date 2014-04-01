@@ -1,5 +1,6 @@
 package net.sf.jetro.object;
 
+import net.sf.jetro.object.reflect.TypeToken;
 import net.sf.jetro.object.visitor.ObjectBuildingVisitor;
 import net.sf.jetro.stream.JsonReader;
 import net.sf.jetro.stream.visitor.JsonReturningVisitor;
@@ -25,7 +26,7 @@ public class ObjectMapper {
 
 	public <T> T fromJson(String json, Class<T> targetClass) {
 		StreamVisitingReader reader = new StreamVisitingReader(new JsonReader(new StringReader(json)));
-		ObjectBuildingVisitor visitor = new ObjectBuildingVisitor(targetClass);
+		ObjectBuildingVisitor visitor = new ObjectBuildingVisitor(null, TypeToken.of(targetClass));
 		reader.accept(visitor);
 		return targetClass.cast(visitor.getVisitingResult());
 	}

@@ -4,7 +4,7 @@ class MatchesAllFurtherPathElement extends JsonPathElement {
 	private static final long serialVersionUID = 3355362025443127736L;
 
 	MatchesAllFurtherPathElement() {
-		super(false);
+		super(false, false);
 	}
 
 	@Override

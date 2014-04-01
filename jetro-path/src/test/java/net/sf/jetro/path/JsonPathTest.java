@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 
 public class JsonPathTest {
 	private JsonPath jsonPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
-			new ArrayIndexPathElement(true), new PropertyNamePathElement(true), new ArrayIndexPathElement(1) });
+			new ArrayIndexPathElement(true, false), new PropertyNamePathElement(true, false), new ArrayIndexPathElement(1) }, false);
 
 	@Test
 	public void shouldOutputPathAsString() {
@@ -80,69 +80,123 @@ public class JsonPathTest {
 		assertNotEquals(actual, jsonPath.toString());
 	}
 
-	@Test
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
 	public void shouldMatch() {
 		assertTrue(jsonPath.matches(jsonPath), "JsonPath should match itself, but doesn't");
 
 		JsonPath matchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
-				new ArrayIndexPathElement(2), new PropertyNamePathElement("bar"), new ArrayIndexPathElement(1) });
+				new ArrayIndexPathElement(2), new PropertyNamePathElement("bar"), new ArrayIndexPathElement(1) }, false);
 		assertTrue(matchingPath.matches(jsonPath), matchingPath + " doesn't match " + jsonPath);
 	}
 
-	@Test
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
 	public void shouldMatchWithMatchesAllFurther() {
 		JsonPath pathPattern = jsonPath.append(new MatchesAllFurtherPathElement());
 
 		JsonPath matchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
-				new ArrayIndexPathElement(2), new PropertyNamePathElement("bar"), new ArrayIndexPathElement(1) });
+				new ArrayIndexPathElement(2), new PropertyNamePathElement("bar"), new ArrayIndexPathElement(1) }, false);
 		assertTrue(matchingPath.matches(pathPattern), matchingPath + " doesn't match " + pathPattern);
 
-		matchingPath = matchingPath.append(new PropertyNamePathElement(true)).append(new ArrayIndexPathElement(2));
+		matchingPath = matchingPath.append(new PropertyNamePathElement(true, false)).append(new ArrayIndexPathElement(2));
 		assertTrue(matchingPath.matches(pathPattern), matchingPath + " doesn't match " + pathPattern);
 	}
 
-	@Test
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
 	public void shouldNotMatchTooShort() {
-		assertFalse(new JsonPath(new JsonPathElement[] {}).matches(jsonPath), "empty path matches " + jsonPath);
+		assertFalse(new JsonPath(new JsonPathElement[] {}, false).matches(jsonPath), "empty path matches " + jsonPath);
 	}
 
-	@Test
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
 	public void shouldNotMatchTooShortWithMatchesAllFurther() {
 		JsonPath pathPattern = jsonPath.append(new MatchesAllFurtherPathElement());
-		assertFalse(new JsonPath(new JsonPathElement[] {}).matches(pathPattern), "empty path matches " + pathPattern);
+		assertFalse(new JsonPath(new JsonPathElement[] {}, false).matches(pathPattern), "empty path matches " + pathPattern);
 	}
 
-	@Test
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
 	public void shouldNotMatchTooLong() {
 		JsonPath nonMatchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
 				new ArrayIndexPathElement(2), new PropertyNamePathElement("bar"), new ArrayIndexPathElement(1),
-				new PropertyNamePathElement("zoom") });
+				new PropertyNamePathElement("zoom") }, false);
 
 		assertFalse(nonMatchingPath.matches(jsonPath), nonMatchingPath + " matches " + jsonPath);
 	}
 
-	@Test
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
 	public void shouldNotMatchWrongType() {
 		JsonPath nonMatchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
-				new ArrayIndexPathElement(1), new PropertyNamePathElement("bar"), new PropertyNamePathElement("zoom") });
+				new ArrayIndexPathElement(1), new PropertyNamePathElement("bar"), new PropertyNamePathElement("zoom") }, false);
 
 		assertFalse(nonMatchingPath.matches(jsonPath), nonMatchingPath + " matches " + jsonPath);
 	}
 
-	@Test
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
 	public void shouldNotMatchWrongPropertyName() {
 		JsonPath nonMatchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("baz"),
-				new ArrayIndexPathElement(1), new PropertyNamePathElement("bar"), new ArrayIndexPathElement(1) });
+				new ArrayIndexPathElement(1), new PropertyNamePathElement("bar"), new ArrayIndexPathElement(1) }, false);
 
 		assertFalse(nonMatchingPath.matches(jsonPath), nonMatchingPath + " matches " + jsonPath);
 	}
 
-	@Test
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
 	public void shouldNotMatchWrongArrayIndex() {
 		JsonPath nonMatchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
-				new ArrayIndexPathElement(1), new PropertyNamePathElement("bar"), new ArrayIndexPathElement(2) });
+				new ArrayIndexPathElement(1), new PropertyNamePathElement("bar"), new ArrayIndexPathElement(2) }, false);
 
 		assertFalse(nonMatchingPath.matches(jsonPath), nonMatchingPath + " matches " + jsonPath);
+	}
+
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
+	public void shouldMatchOptionalSkipped() {
+		JsonPath pattern = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
+				new ArrayIndexPathElement(true, true), new PropertyNamePathElement("bar") }, true);
+
+		JsonPath matchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
+				new PropertyNamePathElement("bar") }, false);
+
+		assertTrue(matchingPath.matches(pattern), matchingPath + " doesn't match " + pattern);
+	}
+
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
+	public void shouldMatchOptionalValueApplied() {
+		JsonPath pattern = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
+				new ArrayIndexPathElement(1, true), new PropertyNamePathElement("bar") }, true);
+
+		JsonPath matchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
+				new ArrayIndexPathElement(1, false), new PropertyNamePathElement("bar") }, false);
+
+		assertTrue(matchingPath.matches(pattern), matchingPath + " doesn't match " + pattern);
+	}
+
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
+	public void shouldNotMatchOptionalValueApplied() {
+		JsonPath pattern = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
+				new ArrayIndexPathElement(1, true), new PropertyNamePathElement("bar") }, true);
+
+		JsonPath matchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
+				new ArrayIndexPathElement(2, false), new PropertyNamePathElement("bar") }, false);
+
+		assertFalse(matchingPath.matches(pattern), matchingPath + " matches " + pattern);
+	}
+
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
+	public void shouldMatchOptionalWildcardApplied() {
+		JsonPath pattern = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
+				new ArrayIndexPathElement(true, true), new PropertyNamePathElement("bar") }, true);
+
+		JsonPath matchingPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
+				new ArrayIndexPathElement(1, false), new PropertyNamePathElement("bar") }, false);
+
+		assertTrue(matchingPath.matches(pattern), matchingPath + " doesn't match " + pattern);
+	}
+
+	@Test(dependsOnMethods = "shouldOutputPathAsString")
+	public void shouldNotRootPathMatch() {
+		JsonPath pattern = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
+				new ArrayIndexPathElement(1, true), new PropertyNamePathElement("bar") }, true);
+
+		JsonPath matchingPath = new JsonPath();
+
+		assertFalse(matchingPath.matches(pattern), matchingPath + " matches " + pattern);
 	}
 
 	@Test(dependsOnMethods = "shouldOutputPathAsString")
