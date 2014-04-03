@@ -21,7 +21,7 @@ public class ReplacingTransformationsOnStreamTest {
 //				JsonPath currentPath = currentPath();
 
 //				if (currentPath.matches(JsonPath.compile("$.favorites[*]"))) {
-			JsonObjectVisitor objectVisitor = nextVisitor.visitObject();
+			JsonObjectVisitor objectVisitor = getNextVisitor().visitObject();
 			objectVisitor.visitProperty("path");
 			objectVisitor.visitValue(value);
 			objectVisitor.visitProperty("title");

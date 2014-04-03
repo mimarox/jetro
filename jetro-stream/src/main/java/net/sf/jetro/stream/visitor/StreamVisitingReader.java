@@ -1,14 +1,15 @@
 package net.sf.jetro.stream.visitor;
 
-import java.io.IOException;
-
 import net.sf.jetro.stream.JsonReader;
 import net.sf.jetro.stream.JsonToken;
 import net.sf.jetro.util.Stack;
 import net.sf.jetro.visitor.JsonVisitor;
 import net.sf.jetro.visitor.VisitingReader;
 
-public class StreamVisitingReader implements VisitingReader {
+import java.io.Closeable;
+import java.io.IOException;
+
+public class StreamVisitingReader implements VisitingReader, Closeable {
 	private JsonReader reader;
 
 	public StreamVisitingReader(final JsonReader reader) {
@@ -25,10 +26,16 @@ public class StreamVisitingReader implements VisitingReader {
 			throw new IllegalArgumentException("visitor must not be null");
 		}
 
+		if (reader == null) {
+			throw new IllegalStateException("reader is already closed");
+		}
+
 		try {
 			acceptInternal(visitor);
-		} catch (IOException e) {
-			throw new JsonIOException(e);
+		} catch (Exception e) {
+			String message = "An exception occurred while processing a JSON stream on line " + reader.getLineNumber()
+					+ ", column " + reader.getColumnNumber();
+			throw new JsonIOException(message, e);
 		}
 	}
 
@@ -78,5 +85,18 @@ public class StreamVisitingReader implements VisitingReader {
 		}
 
 		stack.pop().visitEnd();
+	}
+
+	/**
+	 * Closes this stream and releases any system resources associated
+	 * with it. If the stream is already closed then invoking this
+	 * method has no effect.
+	 *
+	 * @throws IOException if an I/O error occurs
+	 */
+	@Override
+	public void close() throws IOException {
+		reader.close();
+		reader = null;
 	}
 }

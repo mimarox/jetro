@@ -15,10 +15,31 @@ class JsonPathBuilder {
 	}
 
 	JsonPath build() {
-		return new JsonPath(pathElements.toArray(new JsonPathElement[pathElements.size()]));
+		boolean notOnlyOptional = false;
+		boolean containsOptionals = false;
+
+		for (JsonPathElement element : pathElements) {
+			if (element.isOptional()) {
+				containsOptionals = true;
+			} else {
+				notOnlyOptional = true;
+			}
+		}
+
+		JsonPath path = new JsonPath(pathElements.toArray(new JsonPathElement[pathElements.size()]), containsOptionals);
+
+		if (notOnlyOptional) {
+			return path;
+		} else {
+			throw new JsonPathCompilerException("A JsonPath cannot only contain optional path elements, but [" + path + "] does.");
+		}
 	}
 
 	void reset() {
 		pathElements.clear();
+	}
+
+	int getDepth() {
+		return pathElements.size();
 	}
 }

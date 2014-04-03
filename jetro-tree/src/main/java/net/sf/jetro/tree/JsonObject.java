@@ -2,6 +2,7 @@ package net.sf.jetro.tree;
 
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
+import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
@@ -54,6 +55,22 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 	public class JsonProperties extends AbstractMap<String, JsonType> {
 		private JsonPropertiesSet entrySet;
 
+		public JsonType put(String key, String value) {
+			return put(key, new JsonString(value));
+		}
+
+		public JsonType put(String key, Number value) {
+			return put(key, new JsonNumber(value));
+		}
+
+		public JsonType put(String key, Boolean value) {
+			return put(key, new JsonBoolean(value));
+		}
+
+		public JsonType putNullValue(String key) {
+			return put(key, new JsonNull());
+		}
+
 		@Override
 		public JsonType put(String key, JsonType value) {
 			if (key == null) {
@@ -86,6 +103,10 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 			}
 
 			return entrySet;
+		}
+
+		public JsonObject asJsonObject() {
+			return JsonObject.this;
 		}
 	}
 

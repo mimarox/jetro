@@ -77,7 +77,7 @@ public class ReplacingTransformationsOnMixedTest {
 					favorite.add(new JsonProperty("page", new JsonString(value)));
 					favorite.add(new JsonProperty("title", new JsonString("Title for: " + value)));
 
-					favorite.mergeInto(nextVisitor);
+					favorite.mergeInto(getNextVisitor());
 
 					return null;
 				}

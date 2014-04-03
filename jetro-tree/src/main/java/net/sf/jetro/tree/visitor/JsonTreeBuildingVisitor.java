@@ -29,13 +29,15 @@ public class JsonTreeBuildingVisitor extends PathAwareJsonVisitor<JsonElement> {
 	}
 
 	@Override
-	protected void doBeforeVisitObject() {
+	protected boolean doBeforeVisitObject() {
 		elements.push(new JsonObject(currentPath()));
+		return true;
 	}
 
 	@Override
-	protected void doBeforeVisitArray() {
+	protected boolean doBeforeVisitArray() {
 		elements.push(new JsonArray(currentPath()));
+		return true;
 	}
 
 	@Override
@@ -64,7 +66,7 @@ public class JsonTreeBuildingVisitor extends PathAwareJsonVisitor<JsonElement> {
 	}
 
 	@Override
-	protected void doAfterVisitObjectEnd() {
+	protected void afterVisitObjectEnd() {
 		JsonElement top = elements.pop();
 
 		if (!(top instanceof JsonObject)) {
@@ -77,7 +79,7 @@ public class JsonTreeBuildingVisitor extends PathAwareJsonVisitor<JsonElement> {
 	}
 
 	@Override
-	protected void doAfterVisitArrayEnd() {
+	protected void afterVisitArrayEnd() {
 		JsonElement top = elements.pop();
 
 		if (!(top instanceof JsonArray)) {
@@ -119,7 +121,7 @@ public class JsonTreeBuildingVisitor extends PathAwareJsonVisitor<JsonElement> {
 	}
 
 	@Override
-	protected void doAfterVisitEnd() {
+	protected void afterVisitEnd() {
 		JsonElement top = elements.peek();
 
 		if (!(top instanceof VirtualJsonRoot)) {

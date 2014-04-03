@@ -34,27 +34,29 @@ public abstract class PathAwareJsonVisitor<R> extends UniformChainedJsonVisitor<
 	}
 
 	@Override
-	protected final void beforeVisitObject() {
+	protected final boolean beforeVisitObject() {
 		handleVisitValue();
 		ObjectState state = new ObjectState();
 		state.justEntered = true;
 		stateStack.push(state);
-		doBeforeVisitObject();
+		return doBeforeVisitObject();
 	}
 
-	protected void doBeforeVisitObject() {
+	protected boolean doBeforeVisitObject() {
+		return true;
 	}
 
 	@Override
-	protected final void beforeVisitArray() {
+	protected final boolean beforeVisitArray() {
 		handleVisitValue();
 		ArrayState state = new ArrayState();
 		state.justEntered = true;
 		stateStack.push(state);
-		doBeforeVisitArray();
+		return doBeforeVisitArray();
 	}
 
-	protected void doBeforeVisitArray() {
+	protected boolean doBeforeVisitArray() {
+		return true;
 	}
 
 	@Override
@@ -140,36 +142,42 @@ public abstract class PathAwareJsonVisitor<R> extends UniformChainedJsonVisitor<
 	}
 
 	@Override
-	protected final void afterVisitObjectEnd() {
-		doAfterVisitObjectEnd();
+	protected final boolean beforeVisitObjectEnd() {
 		handleVisitEnd();
+		return doBeforeVisitObjectEnd();
 	}
 
-	protected void doAfterVisitObjectEnd() {
+	protected boolean doBeforeVisitObjectEnd() {
+		return true;
 	}
 
 	@Override
-	protected final void afterVisitArrayEnd() {
-		doAfterVisitArrayEnd();
+	protected final boolean beforeVisitArrayEnd() {
 		handleVisitEnd();
+		return doBeforeVisitArrayEnd();
 	}
 
-	protected void doAfterVisitArrayEnd() {
+	protected boolean doBeforeVisitArrayEnd() {
+		return true;
 	}
 
 	@Override
-	protected final void afterVisitEnd() {
-		doAfterVisitEnd();
+	protected final boolean beforeVisitEnd() {
 		handleVisitEnd();
+		return doBeforeVisitEnd();
 	}
 
-	protected void doAfterVisitEnd() {
+	protected boolean doBeforeVisitEnd() {
+		return true;
 	}
 
 	private void handleVisitEnd() {
 		if (!stateStack.isEmpty()) {
-			currentPath = currentPath.removeLastElement();
-			stateStack.pop();
+			ParseState state = stateStack.pop();
+
+			if (!state.justEntered) {
+				currentPath = currentPath.removeLastElement();
+			}
 		}
 	}
 }

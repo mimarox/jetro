@@ -71,7 +71,7 @@ public class ReplacingTransformationsOnMixedObjectTest {
 				favorite.setPage(value);
 				favorite.setTitle("Title for: " + value);
 
-				mapper.merge(favorite).into(nextVisitor);
+				mapper.merge(favorite).into(getNextVisitor());
 
 				return null;
 			}

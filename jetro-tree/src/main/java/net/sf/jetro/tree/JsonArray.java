@@ -2,6 +2,7 @@ package net.sf.jetro.tree;
 
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
+import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 

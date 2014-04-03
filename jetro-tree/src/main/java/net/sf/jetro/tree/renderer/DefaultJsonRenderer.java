@@ -3,7 +3,6 @@ package net.sf.jetro.tree.renderer;
 import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.stream.visitor.JsonReturningVisitor;
 import net.sf.jetro.tree.JsonElement;
-import net.sf.jetro.tree.JsonRenderer;
 import net.sf.jetro.tree.VirtualJsonRoot;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 

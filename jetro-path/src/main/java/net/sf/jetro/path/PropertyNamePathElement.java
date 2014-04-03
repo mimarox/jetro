@@ -2,10 +2,14 @@ package net.sf.jetro.path;
 
 public class PropertyNamePathElement extends JsonPathElement {
 	private static final long serialVersionUID = 588262327967230142L;
-	private String name;
+	private final String name;
 
 	public PropertyNamePathElement(final String name) {
-		super(false);
+		this(name, false);
+	}
+
+	PropertyNamePathElement(final String name, final boolean optional) {
+		super(false, optional);
 
 		if (name == null || "".equals(name)) {
 			throw new IllegalArgumentException("name must not be null or empty");
@@ -14,8 +18,9 @@ public class PropertyNamePathElement extends JsonPathElement {
 		this.name = name;
 	}
 
-	PropertyNamePathElement(final boolean wildcard) {
-		super(wildcard);
+	PropertyNamePathElement(final boolean wildcard, final boolean optional) {
+		super(wildcard, optional);
+		this.name = null;
 	}
 
 	public String getName() {
@@ -32,6 +37,10 @@ public class PropertyNamePathElement extends JsonPathElement {
 			builder.append(name);
 		}
 
+		if (isOptional()) {
+			builder.append(JsonPath.OPTIONAL);
+		}
+
 		return builder.toString();
 	}
 
@@ -45,18 +54,23 @@ public class PropertyNamePathElement extends JsonPathElement {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
 		if (!super.equals(obj))
 			return false;
-		if (getClass() != obj.getClass())
+		return equalsIgnoreOptional((JsonPathElement) obj);
+	}
+
+	@Override
+	public boolean equalsIgnoreOptional(JsonPathElement other) {
+		if (this == other)
+			return true;
+		if (getClass() != other.getClass())
 			return false;
-		PropertyNamePathElement other = (PropertyNamePathElement) obj;
+		PropertyNamePathElement that = (PropertyNamePathElement) other;
 		if (name == null) {
-			if (other.name != null)
+			if (that.name != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!name.equals(that.name))
 			return false;
-		return true;
+		return super.equalsIgnoreOptional(other);
 	}
 }
