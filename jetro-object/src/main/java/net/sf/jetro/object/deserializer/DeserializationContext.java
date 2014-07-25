@@ -4,6 +4,8 @@ import net.sf.jetro.object.reflect.TypeToken;
 import net.sf.jetro.visitor.JsonVisitor;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author matthias.rothe
@@ -11,6 +13,12 @@ import java.lang.reflect.Type;
  */
 public class DeserializationContext {
 	private ObjectConstructor objectConstructor = new ObjectConstructor();
+	private List<TypeDeserializer<?>> arrayDeserializers = new ArrayList<TypeDeserializer<?>>();
+	private List<TypeDeserializer<?>> objectDeserializers = new ArrayList<TypeDeserializer<?>>();
+
+	public DeserializationContext() {
+		objectDeserializers.add(new BeanDeserializer(this));
+	}
 
 	public <T> void addInstanceCreator(TypeToken<T> typeToken, InstanceCreator<T> instanceCreator) {
 		objectConstructor.addInstanceCreator(typeToken, instanceCreator);
@@ -25,6 +33,12 @@ public class DeserializationContext {
 	}
 
 	public <R> JsonVisitor<R> getObjectVisitorFor(TypeToken<R> typeToken) {
+		for (TypeDeserializer<?> candidate : objectDeserializers) {
+			if (candidate.canDeserialize((TypeToken) typeToken)) {
+				return (JsonVisitor<R>) candidate.getVisitorFor((TypeToken) typeToken);
+			}
+		}
+
 		return null;
 	}
 }
