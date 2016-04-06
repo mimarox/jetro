@@ -12,7 +12,7 @@
 	<packaging>pom</packaging>
 	<name>Jetro Parent POM</name>
 	<description>Parent POM for the Jetro JSON transformation engine</description>
-	<url>http://sf.net/projects/jetro</url>
+	<url>https://github.com/unic/jetro.git</url>
 	<modules>
 		<module>jetro-util</module>
 		<module>jetro-path</module>
@@ -31,9 +31,9 @@
 	</licenses>
 	<inceptionYear>2013</inceptionYear>
 	<scm>
-		<connection>scm:git:git://github.com/mimarox/jetro.git</connection>
-		<developerConnection>scm:git:https://github.com/mimarox/jetro.git</developerConnection>
-		<url>https://github.com/mimarox/jetro</url>
+		<connection>scm:git:https://github.com/unic/jetro.git</connection>
+		<developerConnection>scm:git:https://github.com/unic/jetro.git</developerConnection>
+		<url>https://github.com/unic/jetro</url>
 	</scm>
 	<developers>
 		<developer>
