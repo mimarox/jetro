@@ -550,13 +550,13 @@ public class JsonGenerator implements Closeable, Flushable {
 				continue;
 			}
 			if (last < i) {
-				out.append(value, last, i - last);
+				out.append(value, last, i);
 			}
 			out.append(replacement);
 			last = i + 1;
 		}
 		if (last < length) {
-			out.append(value, last, length - last);
+			out.append(value, last, length);
 		}
 		out.append("\"");
 	}
