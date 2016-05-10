@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>jetro</artifactId>
 		<groupId>net.sf.jetro</groupId>
-		<version>0.2-b2-SNAPSHOT</version>
+		<version>0.2-b2</version>
 	</parent>
 	<packaging>bundle</packaging>
 	<artifactId>jetro-stream</artifactId>
