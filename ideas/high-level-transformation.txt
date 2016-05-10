@@ -1,0 +1,40 @@
+protected void defineTransformations() {
+    transformationGroup("Remove and Rename", {it -> {
+        remove("$.*[*]?.privileges[*].operations");
+        renameProperty("exterior_image_small_url").to("vehicle_image_url");
+    }});
+
+    transformationGroup("Transform Users", { it -> {
+        capture("$.primary_user").as("primary_user").andRemove();
+        capture("$.secondary_users[*]").into("secondary_users").andRemove("$.secondary_users");
+
+        edit("primary_user", { primary_user ->
+        {
+            primary_user.add(new JsonProperty("role", "primary"));
+            primary_user.add(new JsonProperty("user_label", getPrimaryUserLabel()));
+        }
+        });
+
+        editEach("secondary_users", { secondary_user ->
+        {
+            secondary_user.add(new JsonProperty("role", "primary"));
+            secondary_user.add(new JsonProperty("user_label", getSecondaryUserLabel()));
+        }
+        });
+
+        at("$").using("primary_user", "secondary_users").add({ primary_user, secondary_users ->
+                newProperty("users", newArray().add(primary_user).addAll(secondary_users))
+        });
+    }});
+
+    transformationGroup("Enrich Service Data", { it -> {
+        capture("$.*[*]?.privileges[*].service_id").as("service_id");
+        at("$.*[*]?.privileges[*]").using("service_id").add({ service_id ->
+        {
+            newProperty("service_icon", getIconById(service_id));
+            newProperty("service_title", getTitleById(service_id));
+            newProperty("service_url", getUrlById(service_id));
+        }
+        });
+    }});
+}
