@@ -35,3 +35,18 @@ Command:
 ```
 mvn install
 ```
+
+## Release process
+
+The Release process is currently not yet automated via a CI system and are not published in the Maven Central repository. 
+
+The release is done manually and locally.
+
+### Release steps
+
+- Execute on develop branch: `mvn jgitflow:release-start -DreleaseVersion=NEW_VERSION -DdevelopmentVersion=X.Y.Z-SNAPSHOT`
+- Finalize with: `mvn jgitflow:release-finish -DnoDeploy=true`
+- Upload manually to your Artifact repository, for example with:
+  - First checkout a proper released tag
+  - Then execute: `mvn deploy -DaltDeploymentRepository=MY_SERVER_ID::default::https://mynexus.com/repo/foo`
+- Finally create a Github release page and attach the jar binaries
