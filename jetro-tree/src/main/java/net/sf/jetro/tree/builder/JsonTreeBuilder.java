@@ -19,6 +19,7 @@
  */
 package net.sf.jetro.tree.builder;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
@@ -27,6 +28,8 @@ import net.sf.jetro.stream.visitor.StreamVisitingReader;
 import net.sf.jetro.tree.JsonElement;
 import net.sf.jetro.tree.VirtualJsonRoot;
 import net.sf.jetro.tree.visitor.JsonTreeBuildingVisitor;
+import net.sf.jetro.visitor.JsonVisitor;
+import net.sf.jetro.visitor.chained.ChainedJsonVisitor;
 
 public class JsonTreeBuilder {
 	private boolean lenient;
@@ -40,6 +43,10 @@ public class JsonTreeBuilder {
 	}
 
 	public JsonElement build(final String json) {
+		return build(json, (ChainedJsonVisitor<?>[]) null);
+	}
+
+	public JsonElement build(final String json, ChainedJsonVisitor<?>... transformers) {
 		JsonElement root;
 
 		if (json == null) {
@@ -47,20 +54,51 @@ public class JsonTreeBuilder {
 		} else if (json.equals("")) {
 			root = new VirtualJsonRoot();
 		} else {
-			root = build(new StringReader(json));
+			root = build(new StringReader(json), transformers);
 		}
 
 		return root;
 	}
-
+	
 	public JsonElement build(final Reader in) {
+		return build(in, (ChainedJsonVisitor<?>[]) null);
+	}
+	
+	public JsonElement build(final Reader in, ChainedJsonVisitor<?>... transformers) {
 		JsonReader reader = new JsonReader(in);
 		reader.setLenient(lenient);
 
 		StreamVisitingReader visitingReader = new StreamVisitingReader(reader);
-		JsonTreeBuildingVisitor builder = new JsonTreeBuildingVisitor();
+		JsonTreeBuildingVisitor treeBuildingVisitor = new JsonTreeBuildingVisitor();
+		JsonVisitor<?> visitor = buildTransformerChain(transformers, treeBuildingVisitor);
 
-		visitingReader.accept(builder);
-		return builder.getVisitingResult();
+		visitingReader.accept(visitor);
+		try {
+			visitingReader.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+		return treeBuildingVisitor.getVisitingResult();
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private JsonVisitor<?> buildTransformerChain(final ChainedJsonVisitor<?>[] transformers,
+			final JsonTreeBuildingVisitor jsonTreeBuildingVisitor) {
+		if (transformers == null) {
+			return jsonTreeBuildingVisitor;
+		}
+		
+		ChainedJsonVisitor first = transformers[0];
+		
+		int i = 1;
+		while (i < transformers.length) {
+			first.attachVisitor(transformers[i++]);
+		}
+		
+		first.attachVisitor(jsonTreeBuildingVisitor);
+		
+		return first;
+		
 	}
 }
