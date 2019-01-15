@@ -183,6 +183,10 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 		return properties.add(e);
 	}
 
+	public JsonType get(Object key) {
+		return asMap().get(key);
+	}
+	
 	@Override
 	public JsonElement getElementAt(final JsonPath path) {
 		if (this.path == path || (this.path != null && this.path.equals(path))) {
