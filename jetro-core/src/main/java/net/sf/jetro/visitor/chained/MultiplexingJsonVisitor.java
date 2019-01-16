@@ -19,7 +19,6 @@
  */
 package net.sf.jetro.visitor.chained;
 
-import com.sun.org.apache.regexp.internal.RE;
 import net.sf.jetro.util.Stack;
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
