@@ -60,6 +60,11 @@ public class JsonArray extends ArrayList<JsonType> implements JsonType {
 		}
 	}
 
+	public void setPath(final JsonPath path) {
+		this.path = path;
+		// recalculate the paths of any children
+	}
+
 	@Override
 	public String toJson() {
 		return new DefaultJsonRenderer().render(this);

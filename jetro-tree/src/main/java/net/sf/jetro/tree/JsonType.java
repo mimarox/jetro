@@ -24,4 +24,5 @@ import net.sf.jetro.visitor.JsonVisitor;
 
 public interface JsonType extends JsonElement {
 	JsonElement getElementAt(JsonPath path);
+	void setPath(JsonPath path);
 }

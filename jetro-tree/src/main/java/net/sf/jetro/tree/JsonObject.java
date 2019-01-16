@@ -173,6 +173,12 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 	}
 
 	@Override
+	public void setPath(final JsonPath path) {
+		this.path = path;
+		// recalculate the paths of any children
+	}
+
+	@Override
 	public int size() {
 		return properties.size();
 	}

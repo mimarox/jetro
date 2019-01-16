@@ -61,6 +61,11 @@ public abstract class JsonPrimitive<T> implements JsonType {
 	}
 
 	@Override
+	public void setPath(final JsonPath path) {
+		this.path = path;
+	}
+
+	@Override
 	public JsonElement getElementAt(JsonPath path) {
 		if (this.path == path || (this.path != null && this.path.equals(path))) {
 			return this;
