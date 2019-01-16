@@ -168,6 +168,10 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 		return mapView;
 	}
 
+	public JsonType get(final String key) {
+		return asMap().get(key);
+	}
+
 	@Override
 	public int size() {
 		return properties.size();
