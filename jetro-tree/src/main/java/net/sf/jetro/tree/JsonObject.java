@@ -20,6 +20,7 @@
 package net.sf.jetro.tree;
 
 import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.path.PropertyNamePathElement;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
 import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
@@ -27,7 +28,8 @@ import net.sf.jetro.visitor.JsonVisitor;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -129,7 +131,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 		}
 	}
 
-	private ArrayList<JsonProperty> properties = new ArrayList<JsonProperty>();
+	private Set<JsonProperty> properties = new LinkedHashSet<JsonProperty>();
 	private JsonProperties mapView;
 
 	// JSON path relative to the root element of the JSON tree this element belongs to
@@ -175,7 +177,12 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 	@Override
 	public void setPath(final JsonPath path) {
 		this.path = path;
+
 		// recalculate the paths of any children
+		for (JsonProperty property : properties) {
+			property.getValue().setPath(path.append(
+				new PropertyNamePathElement(property.getKey())));
+		};
 	}
 
 	@Override
