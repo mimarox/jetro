@@ -19,21 +19,22 @@
  */
 package net.sf.jetro.tree;
 
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
 import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.path.PropertyNamePathElement;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
 import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
-public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
+public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollection {
 	private static final long serialVersionUID = -2961271887393587301L;
 
 	private class JsonPropertiesIterator implements Iterator<Entry<String, JsonType>> {
@@ -111,7 +112,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 			}
 
 			JsonType oldValue = property.getValue();
-			property.setValue(value);
+			property.setValue(value.deepCopy());
 			return oldValue;
 		}
 
@@ -129,7 +130,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 		}
 	}
 
-	private ArrayList<JsonProperty> properties = new ArrayList<JsonProperty>();
+	private Set<JsonProperty> properties = new LinkedHashSet<>();
 	private JsonProperties mapView;
 
 	// JSON path relative to the root element of the JSON tree this element belongs to
@@ -149,6 +150,10 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 	}
 
 	public JsonObject(final JsonPath path, final Set<JsonProperty> properties) {
+		this(path, properties, false);
+	}
+	
+	private JsonObject(final JsonPath path, final Set<JsonProperty> properties, boolean deepCopy) {
 		this.path = path;
 
 		if (path != null) {
@@ -156,16 +161,48 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 		}
 
 		if (properties != null) {
-			this.properties.addAll(properties);
+			if (deepCopy) {
+				properties.forEach(property -> this.properties.add(property.deepCopy()));
+				
+			} else {
+				this.properties.addAll(properties);
+			}
 		}
 	}
 
+	@Override
+	public JsonType deepCopy() {
+		return new JsonObject(path, this, true);
+	}
+	
 	public JsonProperties asMap() {
 		if (mapView == null) {
 			mapView = new JsonProperties();
 		}
 
 		return mapView;
+	}
+
+	@Override
+	public void setPath(final JsonPath path) {
+		this.path = path;
+		this.pathDepth = path.getDepth(); 
+	}
+	
+	@Override
+	public void recalculateTreePaths(boolean treeRoot) {
+		if (treeRoot) {
+			setPath(new JsonPath());
+		}
+		
+		for (JsonProperty property : properties) {
+			JsonType element = property.getValue();
+			element.setPath(path.append(new PropertyNamePathElement(property.getKey())));
+			
+			if (element instanceof JsonCollection) {
+				((JsonCollection) element).recalculateTreePaths(false);
+			}
+		}
 	}
 
 	@Override
@@ -180,11 +217,11 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 
 	@Override
 	public boolean add(final JsonProperty e) {
-		return properties.add(e);
+		return properties.add(e.deepCopy());
 	}
 
 	public JsonType get(Object key) {
-		return asMap().get(key);
+		return asMap().get(key).deepCopy();
 	}
 	
 	@Override

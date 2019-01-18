@@ -30,6 +30,17 @@ public class VirtualJsonRoot extends ArrayList<JsonElement> implements JsonEleme
 	private static final long serialVersionUID = 463431682418006955L;
 
 	@Override
+	public VirtualJsonRoot deepCopy() {
+		VirtualJsonRoot copy = new VirtualJsonRoot();
+		
+		for (JsonElement element : this) {
+			copy.add(element.deepCopy());
+		}
+		
+		return copy;
+	}
+	
+	@Override
 	public String toJson() {
 		return new DefaultJsonRenderer().render(this);
 	}

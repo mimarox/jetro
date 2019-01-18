@@ -19,13 +19,15 @@
  */
 package net.sf.jetro.tree;
 
+import java.io.Serializable;
+
 import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.visitor.JsonVisitor;
 
-import java.io.Serializable;
-
 public interface JsonElement extends Serializable {
-
+	
+	JsonElement deepCopy();
+	
 	String toJson();
 
 	String toJson(JsonRenderer renderer);
