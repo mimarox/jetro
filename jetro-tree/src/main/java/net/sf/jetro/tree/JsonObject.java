@@ -205,6 +205,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonType {
 		for (JsonProperty property : properties) {
 			if (property.getKey().equals(expectedName)) {
 				element = ((JsonType) property.getValue()).getElementAt(path);
+				break;
 			}
 		}
 
