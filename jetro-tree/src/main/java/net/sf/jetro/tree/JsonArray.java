@@ -19,16 +19,16 @@
  */
 package net.sf.jetro.tree;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import net.sf.jetro.path.ArrayIndexPathElement;
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
 import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 public class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	private static final long serialVersionUID = -853759861392315220L;
@@ -132,19 +132,17 @@ public class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	}
 
 	@Override
-	public JsonElement getElementAt(JsonPath path) {
+	public Optional<JsonType> getElementAt(JsonPath path) {
 		if (this.path == path || (this.path != null && this.path.equals(path))) {
-			return this;
+			return Optional.of(this.deepCopy());
 		} else if (pathDepth < path.getDepth() && path.isChildPathOf(this.path) && path.hasArrayIndexAt(pathDepth)) {
 			int expectedIndex = path.getArrayIndexAt(pathDepth);
 
 			if (expectedIndex < size()) {
-				return get(expectedIndex).getElementAt(path);
-			} else {
-				throw new NoSuchElementException("No JSON Element could be found at path [" + path + "]");
+				return super.get(expectedIndex).getElementAt(path);
 			}
-		} else {
-			throw new NoSuchElementException("No JSON Element could be found at path [" + path + "]");
 		}
+		
+		return Optional.empty();
 	}
 }

@@ -19,6 +19,8 @@
  */
 package net.sf.jetro.tree;
 
+import java.util.Optional;
+
 import net.sf.jetro.path.JsonPath;
 
 public interface JsonType extends JsonElement {
@@ -26,7 +28,7 @@ public interface JsonType extends JsonElement {
 	@Override
 	JsonType deepCopy();
 
-	JsonElement getElementAt(JsonPath path);
+	Optional<JsonType> getElementAt(JsonPath path);
 	
 	void setPath(JsonPath path);
 }

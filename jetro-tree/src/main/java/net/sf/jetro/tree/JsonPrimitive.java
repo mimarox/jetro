@@ -19,7 +19,7 @@
  */
 package net.sf.jetro.tree;
 
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.path.JsonPath;
@@ -66,11 +66,11 @@ public abstract class JsonPrimitive<T> implements JsonType {
 	}
 	
 	@Override
-	public JsonElement getElementAt(JsonPath path) {
+	public Optional<JsonType> getElementAt(JsonPath path) {
 		if (this.path == path || (this.path != null && this.path.equals(path))) {
-			return this;
+			return Optional.of(this.deepCopy());
 		} else {
-			throw new NoSuchElementException("No JSON Element could be found at path [" + path + "]");
+			return Optional.empty();
 		}
 	}
 

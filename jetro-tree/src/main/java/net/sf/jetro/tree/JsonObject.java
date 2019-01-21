@@ -24,7 +24,7 @@ import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 import net.sf.jetro.path.JsonPath;
@@ -163,7 +163,6 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 		if (properties != null) {
 			if (deepCopy) {
 				properties.forEach(property -> this.properties.add(property.deepCopy()));
-				
 			} else {
 				this.properties.addAll(properties);
 			}
@@ -225,23 +224,23 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 	}
 	
 	@Override
-	public JsonElement getElementAt(final JsonPath path) {
+	public Optional<JsonType> getElementAt(final JsonPath path) {
 		if (this.path == path || (this.path != null && this.path.equals(path))) {
-			return this;
+			return Optional.of(this.deepCopy());
 		} else if (pathDepth < path.getDepth() && path.isChildPathOf(this.path) && path.hasPropertyNameAt(pathDepth)) {
 			String expectedName = path.getPropertyNameAt(pathDepth);
 			return findElement(expectedName, path);
 		} else {
-			throw new NoSuchElementException("No JSON Element could be found at path [" + path + "]");
+			return Optional.empty();
 		}
 	}
 
-	private JsonElement findElement(String expectedName, JsonPath path) {
-		JsonElement element = null;
+	private Optional<JsonType> findElement(String expectedName, JsonPath path) {
+		Optional<JsonType> element = null;
 
 		for (JsonProperty property : properties) {
 			if (property.getKey().equals(expectedName)) {
-				element = ((JsonType) property.getValue()).getElementAt(path);
+				element = property.getValue().getElementAt(path);
 				break;
 			}
 		}
@@ -249,7 +248,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 		if (element != null) {
 			return element;
 		} else {
-			throw new NoSuchElementException("No JSON Element could be found at path [" + path + "]");
+			return Optional.empty();
 		}
 	}
 

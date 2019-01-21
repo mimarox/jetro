@@ -100,7 +100,7 @@ public class JsonObjectTest {
 		JsonPath jsonPath1 = JsonPath.compile("$.foo[2]");
 
 		// Call getElementAt on JsonArray
-		String actual1 = jsonObject.getElementAt(jsonPath1).toJson();
+		String actual1 = jsonObject.getElementAt(jsonPath1).get().toJson();
 		String expected = "{\"bar\":true}";
 
 		// Assert
@@ -110,7 +110,7 @@ public class JsonObjectTest {
 		JsonPath jsonPath2 = JsonPath.compile("$[2]");
 
 		// Call getElementAt on JsonArray
-		String actual2 = fooArray.getElementAt(jsonPath2).toJson();
+		String actual2 = fooArray.getElementAt(jsonPath2).get().toJson();
 
 		// Assert
 		assertEquals(actual2, expected);
