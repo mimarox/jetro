@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 
 import java.util.Arrays;
 
@@ -133,5 +134,10 @@ public class JsonObjectTest {
 		expected.add(new JsonProperty("b", 2));
 		
 		assertEquals(jsonObject, expected);
+	}
+	
+	@Test
+	public void shouldNotThrowNPEWhenGettingNonExistingValue() {
+		assertNull(new JsonObject().get("key"));
 	}
 }

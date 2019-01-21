@@ -51,7 +51,13 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 
 		@Override
 		public Entry<String, JsonType> next() {
-			return backingIterator.next();
+			JsonProperty property = backingIterator.next();
+			
+			if (property != null) {
+				property = property.deepCopy();
+			}
+			
+			return property;
 		}
 
 		@Override
@@ -74,6 +80,17 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 
 	public class JsonProperties extends AbstractMap<String, JsonType> {
 		private JsonPropertiesSet entrySet;
+
+		@Override
+		public JsonType get(Object key) {
+			JsonType value = super.get(key);
+			
+			if (value != null) {
+				value = value.deepCopy();
+			}
+			
+			return value;
+		}
 
 		public JsonType put(String key, String value) {
 			return put(key, new JsonString(value));
@@ -112,7 +129,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 			}
 
 			JsonType oldValue = property.getValue();
-			property.setValue(value.deepCopy());
+			property.setValue(value != null ? value.deepCopy() : value);
 			return oldValue;
 		}
 
@@ -220,7 +237,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 	}
 
 	public JsonType get(Object key) {
-		return asMap().get(key).deepCopy();
+		return asMap().get(key);
 	}
 	
 	@Override
