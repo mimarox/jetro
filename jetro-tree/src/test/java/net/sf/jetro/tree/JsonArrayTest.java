@@ -25,11 +25,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 
-import net.sf.jetro.path.JsonPath;
-import net.sf.jetro.tree.renderer.JsonRenderer;
 import org.testng.annotations.Test;
 
-import java.util.NoSuchElementException;
+import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.tree.renderer.JsonRenderer;
 
 public class JsonArrayTest {
 
@@ -75,8 +74,7 @@ public class JsonArrayTest {
 	/**
 	 * Test that getChildElementAt returns String representing the correct element.
 	 */
-	// TODO when internal path setting is implemented remove the expectedExceptions directive
-	@Test(expectedExceptions = NoSuchElementException.class)
+	@Test
 	public void shouldGetChildElementAt() {
 		// Setup JSON tree representing [1,"two",{"bar":true}]
 		JsonArray jsonArray = new JsonArray();
@@ -88,11 +86,14 @@ public class JsonArrayTest {
 		barObject.add(bar);
 		jsonArray.add(barObject);
 
+		//Recalculate Tree Paths
+		jsonArray.recalculateTreePaths();
+		
 		// define path for third element
 		JsonPath jsonPath = JsonPath.compile("$[2]");
 
 		// call getElementAt on JsonArray
-		String actual = jsonArray.getElementAt(jsonPath).toString();
+		String actual = jsonArray.getElementAt(jsonPath).get().toJson();
 		String expected = "{\"bar\":true}";
 
 		// Assert
