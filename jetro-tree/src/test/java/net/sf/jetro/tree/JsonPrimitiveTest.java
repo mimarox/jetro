@@ -64,10 +64,17 @@ public class JsonPrimitiveTest {
 		// define path for third element
 		JsonPath jsonPath = JsonPath.compile("$.foo[2]");
 
-		JsonPrimitive<String> jsonString = new JsonPrimitive<String>(jsonPath, "happy") {};
+		@SuppressWarnings("serial")
+		JsonPrimitive<String> jsonString = new JsonPrimitive<String>(jsonPath, "happy") {
+
+			@Override
+			public JsonType deepCopy() {
+				return this;
+			}};
 
 		// call getElementAt on JSON primitive
-		String actual = ((JsonPrimitive<String>) jsonString.getElementAt(JsonPath.compile("$.foo[2]"))).getValue();
+			@SuppressWarnings("unchecked")
+		String actual = ((JsonPrimitive<String>) jsonString.getElementAt(jsonPath).get()).getValue();
 		String expected = "happy";
 
 		// Assert

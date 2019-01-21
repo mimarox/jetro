@@ -39,4 +39,9 @@ public class JsonBoolean extends JsonPrimitive<Boolean> {
 	public JsonBoolean(JsonPath path) {
 		super(path);
 	}
+	
+	@Override
+	public JsonBoolean deepCopy() {
+		return new JsonBoolean(path, getValue());
+	}
 }

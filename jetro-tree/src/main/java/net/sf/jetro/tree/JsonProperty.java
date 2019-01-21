@@ -59,6 +59,11 @@ public class JsonProperty implements JsonElement, Entry<String, JsonType> {
 	}
 
 	@Override
+	public JsonProperty deepCopy() {
+		return new JsonProperty(key, value.deepCopy());
+	}
+
+	@Override
 	public String getKey() {
 		return key;
 	}

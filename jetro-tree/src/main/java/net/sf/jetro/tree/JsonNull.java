@@ -31,4 +31,9 @@ public class JsonNull extends JsonPrimitive<Null> {
 	public JsonNull(JsonPath path) {
 		super(path, Null.instance);
 	}
+	
+	@Override
+	public JsonNull deepCopy() {
+		return new JsonNull(path);
+	}
 }

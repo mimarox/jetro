@@ -19,6 +19,8 @@
  */
 package net.sf.jetro.tree;
 
+import java.util.Optional;
+
 import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
@@ -26,14 +28,12 @@ import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
-import java.util.NoSuchElementException;
-
 public abstract class JsonPrimitive<T> implements JsonType {
 	private static final long serialVersionUID = -200661848423590056L;
 
 	// JSON path relative to the root element of the JSON tree this element belongs to
 	// if null this element is the root element
-	private JsonPath path;
+	protected JsonPath path;
 	private T value;
 
 	public JsonPrimitive() {
@@ -59,18 +59,18 @@ public abstract class JsonPrimitive<T> implements JsonType {
 	public void setValue(final T value) {
 		this.value = value;
 	}
-
+	
 	@Override
-	public void setPath(final JsonPath path) {
+	public void setPath(JsonPath path) {
 		this.path = path;
 	}
-
+	
 	@Override
-	public JsonElement getElementAt(JsonPath path) {
+	public Optional<JsonType> getElementAt(JsonPath path) {
 		if (this.path == path || (this.path != null && this.path.equals(path))) {
-			return this;
+			return Optional.of(this.deepCopy());
 		} else {
-			throw new NoSuchElementException("No JSON Element could be found at path [" + path + "]");
+			return Optional.empty();
 		}
 	}
 
@@ -96,5 +96,31 @@ public abstract class JsonPrimitive<T> implements JsonType {
 		builder.append(getClass().getSimpleName() + " [value=").append(value).append(", path=").append(path)
 			.append("]");
 		return builder.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		@SuppressWarnings("rawtypes")
+		JsonPrimitive other = (JsonPrimitive) obj;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
 	}
 }

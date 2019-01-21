@@ -19,10 +19,16 @@
  */
 package net.sf.jetro.tree;
 
+import java.util.Optional;
+
 import net.sf.jetro.path.JsonPath;
-import net.sf.jetro.visitor.JsonVisitor;
 
 public interface JsonType extends JsonElement {
-	JsonElement getElementAt(JsonPath path);
+	
+	@Override
+	JsonType deepCopy();
+
+	Optional<JsonType> getElementAt(JsonPath path);
+	
 	void setPath(JsonPath path);
 }

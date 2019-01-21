@@ -39,4 +39,9 @@ public class JsonNumber extends JsonPrimitive<Number> {
 	public JsonNumber(Number value) {
 		super(value);
 	}
+
+	@Override
+	public JsonNumber deepCopy() {
+		return new JsonNumber(path, getValue());
+	}
 }

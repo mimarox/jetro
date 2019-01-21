@@ -25,11 +25,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 
-import net.sf.jetro.path.JsonPath;
-import net.sf.jetro.tree.renderer.JsonRenderer;
+import java.util.Arrays;
+
 import org.testng.annotations.Test;
 
-import java.util.NoSuchElementException;
+import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.tree.renderer.JsonRenderer;
 
 public class JsonObjectTest {
 
@@ -74,34 +75,63 @@ public class JsonObjectTest {
 	}
 
 	/**
-	 * Test that getChildElementAt returns String representing the correct element.
+	 * Test that getElementAt returns String representing the correct element.
 	 *
 	 */
-	// TODO when internal path setting is implemented remove the expectedExceptions directive
-	@Test(expectedExceptions = NoSuchElementException.class)
-	public void shouldGetChildElementAt() {
+	@Test
+	public void shouldGetElementAt() {
 		// Setup JSON tree representing {"foo":[1,"two",{"bar":true}]}
-		JsonObject jsonObject = new JsonObject();
-		JsonProperty foo = new JsonProperty("foo");
-		JsonArray jsonArray = new JsonArray();
-		jsonArray.add(new JsonNumber(1));
-		jsonArray.add(new JsonString("two"));
 		JsonObject barObject = new JsonObject();
-		JsonProperty bar = new JsonProperty("bar");
-		bar.setValue(new JsonBoolean(true));
-		barObject.add(bar);
-		jsonArray.add(barObject);
-		foo.setValue(jsonArray);
-		jsonObject.add(foo);
+		barObject.add(new JsonProperty("bar", true));
+		
+		JsonArray fooArray = new JsonArray();
+		fooArray.add(new JsonNumber(1));
+		fooArray.add(new JsonString("two"));
+		fooArray.add(barObject);
 
-		// define path for third element
-		JsonPath jsonPath = JsonPath.compile("$.foo[2]");
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("foo", fooArray));
+		
+		// Recalculate Json Tree Paths
+		fooArray.recalculateTreePaths();
+		jsonObject.recalculateTreePaths();
+		
+		// Define path for third element
+		JsonPath jsonPath1 = JsonPath.compile("$.foo[2]");
 
-		// call getElementAt on JsonArray
-		String actual = jsonObject.getElementAt(jsonPath).toString();
+		// Call getElementAt on JsonArray
+		String actual1 = jsonObject.getElementAt(jsonPath1).get().toJson();
 		String expected = "{\"bar\":true}";
 
 		// Assert
-		assertEquals(actual, expected);
+		assertEquals(actual1, expected);
+
+		// Define path for third element
+		JsonPath jsonPath2 = JsonPath.compile("$[2]");
+
+		// Call getElementAt on JsonArray
+		String actual2 = fooArray.getElementAt(jsonPath2).get().toJson();
+
+		// Assert
+		assertEquals(actual2, expected);
+	}
+	
+	@Test
+	public void shouldRetainAll() {
+		//prepare JsonObject
+		JsonObject jsonObject = new JsonObject();
+		
+		jsonObject.add(new JsonProperty("a", 1));
+		jsonObject.add(new JsonProperty("b", 2));
+		jsonObject.add(new JsonProperty("c", 3));
+		jsonObject.add(new JsonProperty("d", 4));
+		
+		jsonObject.retainAll(Arrays.asList(new JsonProperty("a"), new JsonProperty("b")));
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("a", 1));
+		expected.add(new JsonProperty("b", 2));
+		
+		assertEquals(jsonObject, expected);
 	}
 }

@@ -19,17 +19,18 @@
  */
 package net.sf.jetro.tree;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import net.sf.jetro.path.ArrayIndexPathElement;
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
 import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-
-public class JsonArray extends ArrayList<JsonType> implements JsonType {
+public class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	private static final long serialVersionUID = -853759861392315220L;
 
 	// JSON path relative to the root element of the JSON tree this element belongs to
@@ -49,6 +50,10 @@ public class JsonArray extends ArrayList<JsonType> implements JsonType {
 	}
 
 	public JsonArray(final JsonPath path, final List<? extends JsonType> values) {
+		this(path, values, false);
+	}
+	
+	private JsonArray(final JsonPath path, final List<? extends JsonType> values, boolean deepCopy) {
 		this.path = path;
 
 		if (path != null) {
@@ -56,15 +61,53 @@ public class JsonArray extends ArrayList<JsonType> implements JsonType {
 		}
 
 		if (values != null) {
-			this.addAll(values);
+			if (deepCopy) {
+				for (JsonType value : values) {
+					this.add(value.deepCopy());
+				}
+			} else {
+				this.addAll(values);
+			}
 		}
 	}
 
-	public void setPath(final JsonPath path) {
-		this.path = path;
-		// recalculate the paths of any children
+	@Override
+	public boolean add(JsonType element) {
+		return super.add(element.deepCopy());
+	}
+	
+	@Override
+	public JsonType get(int index) {
+		return super.get(index).deepCopy();
+	}
+	
+	@Override
+	public JsonArray deepCopy() {
+		return new JsonArray(path, this, true);
 	}
 
+	@Override
+	public void setPath(final JsonPath path) {
+		this.path = path;
+		this.pathDepth = path.getDepth(); 
+	}
+	
+	@Override
+	public void recalculateTreePaths(boolean treeRoot) {
+		if (treeRoot) {
+			setPath(new JsonPath());
+		}
+		
+		for (int i = 0; i < size(); i++) {
+			JsonType element = super.get(i);
+			element.setPath(path.append(new ArrayIndexPathElement(i)));
+			
+			if (element instanceof JsonCollection) {
+				((JsonCollection) element).recalculateTreePaths(false);
+			}
+		}
+	}
+	
 	@Override
 	public String toJson() {
 		return new DefaultJsonRenderer().render(this);
@@ -89,19 +132,17 @@ public class JsonArray extends ArrayList<JsonType> implements JsonType {
 	}
 
 	@Override
-	public JsonElement getElementAt(JsonPath path) {
+	public Optional<JsonType> getElementAt(JsonPath path) {
 		if (this.path == path || (this.path != null && this.path.equals(path))) {
-			return this;
+			return Optional.of(this.deepCopy());
 		} else if (pathDepth < path.getDepth() && path.isChildPathOf(this.path) && path.hasArrayIndexAt(pathDepth)) {
 			int expectedIndex = path.getArrayIndexAt(pathDepth);
 
 			if (expectedIndex < size()) {
-				return get(expectedIndex).getElementAt(path);
-			} else {
-				throw new NoSuchElementException("No JSON Element could be found at path [" + path + "]");
+				return super.get(expectedIndex).getElementAt(path);
 			}
-		} else {
-			throw new NoSuchElementException("No JSON Element could be found at path [" + path + "]");
 		}
+		
+		return Optional.empty();
 	}
 }
