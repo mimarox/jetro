@@ -21,11 +21,14 @@ package net.sf.jetro.tree;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.path.PropertyNamePathElement;
@@ -290,5 +293,54 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 		StringBuilder builder = new StringBuilder();
 		builder.append("JsonObject [properties=").append(properties).append(", path=").append(path).append("]");
 		return builder.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + Objects.hash(properties);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!super.equals(obj)) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		JsonObject other = (JsonObject) obj;
+		return Objects.equals(properties, other.properties);
+	}
+	
+	public boolean retainAllByKey(Collection<String> keys) {
+		return retainOrRemoveAllByKey(keys, shouldBeRemoved -> !shouldBeRemoved);
+	}
+	
+	public boolean removeAllByKey(Collection<String> keys) {
+		return retainOrRemoveAllByKey(keys, shouldBeRemoved -> shouldBeRemoved);
+		
+	}
+	
+	private boolean retainOrRemoveAllByKey(Collection<String> keys, Predicate<Boolean> p) {
+        Objects.requireNonNull(keys);
+        boolean modified = false;
+        
+        Iterator<JsonProperty> it = iterator();
+        while (it.hasNext()) {
+        	String key = it.next().getKey();
+
+        	if (p.test(keys.contains(key))) {
+                it.remove();
+                modified = true;
+			}
+        }
+        
+		return modified;
 	}
 }

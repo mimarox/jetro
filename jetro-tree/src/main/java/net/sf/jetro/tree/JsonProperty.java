@@ -26,6 +26,7 @@ import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
 import java.util.Map.Entry;
+import java.util.Objects;
 
 public class JsonProperty implements JsonElement, Entry<String, JsonType> {
 	private static final long serialVersionUID = 1421897236649764494L;
@@ -81,36 +82,6 @@ public class JsonProperty implements JsonElement, Entry<String, JsonType> {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((key == null) ? 0 : key.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		JsonProperty other = (JsonProperty) obj;
-		if (key == null) {
-			if (other.key != null) {
-				return false;
-			}
-		} else if (!key.equals(other.key)) {
-			return false;
-		}
-		return true;
-	}
-
-	@Override
 	public String toJson() {
 		return new DefaultJsonRenderer(new RenderContext().setLenient(true)).render(this);
 	}
@@ -131,5 +102,35 @@ public class JsonProperty implements JsonElement, Entry<String, JsonType> {
 		StringBuilder builder = new StringBuilder();
 		builder.append("JsonProperty [key=").append(key).append(", value=").append(value).append("]");
 		return builder.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(key, value);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		JsonProperty other = (JsonProperty) obj;
+		return Objects.equals(key, other.key) && Objects.equals(value, other.value);
+	}
+
+	public boolean keyEquals(JsonProperty other) {
+		if (this == other) {
+			return true;
+		}
+		if (other == null) {
+			return false;
+		}
+		return Objects.equals(key, other.key);
 	}
 }
