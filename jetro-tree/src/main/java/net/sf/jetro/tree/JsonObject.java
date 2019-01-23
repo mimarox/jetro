@@ -343,4 +343,8 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
         
 		return modified;
 	}
+	
+	public boolean containsAllKeys(Collection<String> keys) {
+		return asMap().keySet().containsAll(keys);
+	}
 }

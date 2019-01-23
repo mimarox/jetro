@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
 
@@ -153,6 +154,16 @@ public class JsonObjectTest {
 		expected.add(new JsonProperty("d", 4));
 		
 		assertEquals(jsonObject, expected);
+	}
+	
+	@Test
+	public void shouldContainAllKeys() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("a", 1));
+		jsonObject.add(new JsonProperty("b", 2));
+		jsonObject.add(new JsonProperty("c", 3));
+		
+		assertTrue(jsonObject.containsAllKeys(Arrays.asList("a", "b")));
 	}
 	
 	@Test
