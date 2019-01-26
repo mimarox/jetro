@@ -26,6 +26,7 @@ import net.sf.jetro.stream.JsonReader;
 import net.sf.jetro.stream.visitor.JsonReturningVisitor;
 import net.sf.jetro.stream.visitor.StreamVisitingReader;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 
@@ -45,10 +46,14 @@ public class ObjectMapper {
 	}
 
 	public <T> T fromJson(String json, Class<T> targetClass) {
-		StreamVisitingReader reader = new StreamVisitingReader(new JsonReader(new StringReader(json)));
-		ObjectBuildingVisitor visitor = new ObjectBuildingVisitor(new DeserializationContext(), TypeToken.of(targetClass));
-		reader.accept(visitor);
-		return targetClass.cast(visitor.getVisitingResult());
+		try (StreamVisitingReader reader = new StreamVisitingReader(new JsonReader(new StringReader(json)))) {
+			@SuppressWarnings({ "rawtypes", "unchecked" })
+			ObjectBuildingVisitor visitor = new ObjectBuildingVisitor(new DeserializationContext(), TypeToken.of(targetClass));
+			reader.accept(visitor);
+			return targetClass.cast(visitor.getVisitingResult());
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	public <T> T fromJson(InputStream in, Class<T> clazz) {

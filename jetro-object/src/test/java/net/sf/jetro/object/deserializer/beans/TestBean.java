@@ -19,6 +19,8 @@
  */
 package net.sf.jetro.object.deserializer.beans;
 
+import java.util.Objects;
+
 /**
  * Created by matthias.rothe on 07.07.14.
  */
@@ -49,5 +51,34 @@ public class TestBean {
 
 	public void setCause(String cause) {
 		this.cause = cause;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(cause, name, trigger);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		TestBean other = (TestBean) obj;
+		return Objects.equals(cause, other.cause) && Objects.equals(name, other.name)
+				&& Objects.equals(trigger, other.trigger);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("TestBean [name=").append(name).append(", trigger=").append(trigger).append(", cause=")
+				.append(cause).append("]");
+		return builder.toString();
 	}
 }
