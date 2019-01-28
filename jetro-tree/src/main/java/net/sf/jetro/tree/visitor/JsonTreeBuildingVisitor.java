@@ -165,9 +165,7 @@ public class JsonTreeBuildingVisitor extends PathAwareJsonVisitor<JsonElement> {
 
 		if (element != null) {
 			if (result instanceof VirtualJsonRoot && element instanceof VirtualJsonRoot) {
-				for (JsonElement childElement : (VirtualJsonRoot) result) {
-					((VirtualJsonRoot) element).add(childElement);
-				}
+				((VirtualJsonRoot) result).addAll(0, (VirtualJsonRoot) element);
 			} else if (result instanceof VirtualJsonRoot) {
 				((VirtualJsonRoot) result).add(0, element);
 			} else if (element instanceof VirtualJsonRoot) {
