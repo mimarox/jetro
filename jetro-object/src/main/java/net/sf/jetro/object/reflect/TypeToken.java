@@ -25,6 +25,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.util.Objects;
 
 /**
  * @author matthias.rothe
@@ -33,7 +34,6 @@ import java.lang.reflect.WildcardType;
 public class TypeToken<T> {
 	private final Class<T> rawType;
 	private final Type type;
-	private final int hashCode;
 
 	/**
 	 * Constructs a new type literal. Derives represented class from type
@@ -46,14 +46,13 @@ public class TypeToken<T> {
 	@SuppressWarnings("unchecked")
 	protected TypeToken() {
 		this.type = getSuperclassTypeParameter(getClass());
-		this.rawType = (Class<T>) getRawType(type);
-		this.hashCode = type.hashCode();
+		this.rawType = (Class<T>) getRawType(this.type);
 	}
 
+	@SuppressWarnings("unchecked")
 	private TypeToken(Type type) {
 		this.type = type;
 		this.rawType = (Class<T>) getRawType(type);
-		this.hashCode = type.hashCode();
 	}
 
 	/**
@@ -103,6 +102,7 @@ public class TypeToken<T> {
 		return rawType;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public boolean isAssignableFrom(Class<?> clazz) {
 		boolean assignable = false;
 
@@ -117,12 +117,39 @@ public class TypeToken<T> {
 		return assignable;
 	}
 
-	@Override
-	public int hashCode() {
-		return hashCode;
-	}
-
 	public static TypeToken<?> of(Type type) {
 		return new TypeToken<Object>(type);
+	}
+
+	public static <T> TypeToken<T> of(Class<T> clazz) {
+		return new TypeToken<T>(clazz);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("TypeToken [type=").append(type).append("]");
+		return builder.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(type);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		@SuppressWarnings("rawtypes")
+		TypeToken other = (TypeToken) obj;
+		return Objects.equals(type, other.type);
 	}
 }

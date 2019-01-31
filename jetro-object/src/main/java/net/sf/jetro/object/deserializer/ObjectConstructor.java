@@ -30,7 +30,7 @@ import java.util.Map;
  * @since 26.03.14.
  */
 public class ObjectConstructor {
-	private Map<TypeToken<?>, InstanceCreator<?>> instanceCreatorMap = new HashMap<TypeToken<?>, InstanceCreator<?>>();
+	private Map<Class<?>, InstanceCreator<?>> instanceCreatorMap = new HashMap<>();
 
 	public <T> T constructFrom(Class<T> clazz) {
 		return (T) constructFrom(TypeToken.of(clazz));
@@ -44,7 +44,7 @@ public class ObjectConstructor {
 		InstanceCreator<T> instanceCreator = getInstanceCreator(typeToken);
 
 		if (instanceCreator != null) {
-			return instanceCreator.createInstance(typeToken);
+			return instanceCreator.createInstance(typeToken.getRawType());
 		} else {
 			try {
 				return typeToken.getRawType().newInstance();
@@ -54,15 +54,16 @@ public class ObjectConstructor {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private <T> InstanceCreator<T> getInstanceCreator(TypeToken<T> typeToken) {
-		if (instanceCreatorMap.containsKey(typeToken)) {
-			return (InstanceCreator<T>) instanceCreatorMap.get(typeToken);
+		if (instanceCreatorMap.containsKey(typeToken.getRawType())) {
+			return (InstanceCreator<T>) instanceCreatorMap.get(typeToken.getRawType());
 		} else {
 			return null;
 		}
 	}
 
-	public <T> void addInstanceCreator(TypeToken<T> typeToken, InstanceCreator<T> instanceCreator) {
-		instanceCreatorMap.put(typeToken, instanceCreator);
+	public <T> void addInstanceCreator(Class<T> clazz, InstanceCreator<T> instanceCreator) {
+		instanceCreatorMap.put(clazz, instanceCreator);
 	}
 }

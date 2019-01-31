@@ -32,6 +32,11 @@ public class LazilyParsedNumber extends Number {
 	}
 
 	@Override
+	public byte byteValue() {
+		return Byte.parseByte(numericValue);
+	}
+	
+	@Override
 	public double doubleValue() {
 		return Double.parseDouble(numericValue);
 	}
@@ -51,6 +56,11 @@ public class LazilyParsedNumber extends Number {
 		return Long.parseLong(numericValue);
 	}
 
+	@Override
+	public short shortValue() {
+		return Short.parseShort(numericValue);
+	}
+	
 	@Override
 	public String toString() {
 		return numericValue;
