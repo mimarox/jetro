@@ -53,41 +53,6 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 
 	@Override
 	protected boolean doBeforeVisitObject() {
-		/*
-		 * Prerequisite: A property has been visited and the *property name stored*
-		 * 
-		 * 1. Get the type of the field for the current property if present on the
-		 * *result object* 2. Get the *JsonVisitor* for that type from the
-		 * deserialization registry 3. Store this JsonVisitor 4. Forward all calls until
-		 * visitObjectEnd to JsonVisitor 5. In visitObjectEnd a. call visitObjectEnd of
-		 * JsonVisitor b. call getVisitingResult of JsonVisitor c. drop JsonVisitor d.
-		 * set field identified by current property of result object to visiting result
-		 * e. drop the current property
-		 * 
-		 * We don't need a stack, but have a potentially very long call chain
-		 * 
-		 * What about arrays?
-		 * 
-		 * 
-		 * What about primitives? - if the result object is of primitive type (separate
-		 * JsonVisitor implementation handling primitives) - visitObject, visitArray and
-		 * visitProperty each throw an exception - visitValue throws an exception if
-		 * called more then once - the value is stored as the result object
-		 * 
-		 * - if the result object is of generic bean type - the value is set on the
-		 * field identified by the current property if applicable - the current property
-		 * is dropped
-		 * 
-		 * - if the result object is of a specialized bean type - a separate JsonVisitor
-		 * implementation decides how to handle the value
-		 * 
-		 * - if the result object is of an array type - the value is added to the array
-		 * 
-		 * - if the result object is of a map type - the value is put to the map with
-		 * the current property if the type of the value fits the expected type - the
-		 * current property is dropped
-		 */
-
 		DeserializationElement top = elements.peek();
 
 		if (top.isProcessedProperty()) {
