@@ -108,7 +108,7 @@ public abstract class PathAwareJsonVisitor<R> extends UniformChainedJsonVisitor<
 		return doBeforeVisitValue(value);
 	}
 
-	protected boolean doBeforeVisitValue(final boolean value) {
+	protected Boolean doBeforeVisitValue(final boolean value) {
 		return value;
 	}
 
