@@ -19,11 +19,13 @@
  */
 package net.sf.jetro.object.deserializer;
 
+import net.sf.jetro.object.reflect.TypeToken;
+
 /**
  * @author matthias.rothe
  * @since 26.03.14.
  */
 @FunctionalInterface
 public interface InstanceCreator<T> {
-	T createInstance(Class<T> clazz);
+	T createInstance(TypeToken<T> typeToken);
 }

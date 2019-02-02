@@ -25,12 +25,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.testng.annotations.Test;
 
 import net.sf.jetro.object.ObjectMapper;
 import net.sf.jetro.object.deserializer.DeserializationElement.ElementType;
+import net.sf.jetro.object.deserializer.beans.BaseBean;
 import net.sf.jetro.object.deserializer.beans.BeanWithEnums;
 import net.sf.jetro.object.deserializer.beans.BeanWithLists;
 import net.sf.jetro.object.deserializer.beans.BeforeAndAfter;
@@ -39,6 +43,7 @@ import net.sf.jetro.object.deserializer.beans.DateBean;
 import net.sf.jetro.object.deserializer.beans.LeafBean;
 import net.sf.jetro.object.deserializer.beans.RootBean;
 import net.sf.jetro.object.deserializer.beans.SimpleBean;
+import net.sf.jetro.object.deserializer.beans.SubSubBean;
 import net.sf.jetro.object.reflect.TypeToken;
 import net.sf.testng.databinding.DataBinding;
 import net.sf.testng.databinding.TestInput;
@@ -207,6 +212,65 @@ public class ObjectMapperTest {
 		DateBean expected = new DateBean();
 		expected.setDateTime(LocalDateTime.parse("2019-01-31T20:12:30"));
 		expected.setDate(new Date(123456789L));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "inheritedProperties")
+	public void testInheritedPropertiesDeserialization(@TestInput(name = "json") String json) {
+		ObjectMapper mapper = new ObjectMapper();
+		SubSubBean actual = mapper.fromJson(json, SubSubBean.class);
+		
+		SubSubBean expected = new SubSubBean();
+		expected.setBaseString("baseString");
+		expected.setSubString("subString");
+		expected.setSubSubString("subSubString");
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "mapStringToBean")
+	public void testMapStringToBeanDeserialization(@TestInput(name = "json") String json) {
+		ObjectMapper mapper = new ObjectMapper();
+		Map<String, BaseBean> actual = mapper.fromJson(json,
+				new TypeToken<Map<String, BaseBean>>() {});
+		
+		Map<String, BaseBean> expected = new HashMap<>();
+		expected.put("first",  new BaseBean("first"));
+		expected.put("second", new BaseBean("second"));
+		expected.put("third",  new BaseBean("third"));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "mapEnumToMapDateToBean")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void testMapEnumToMapDateToBeanDeserialization(@TestInput(name = "json") String json) {
+		DeserializationContext context = DeserializationContext.getDefault();
+		context.addInstanceCreator(TypeToken.of(EnumMap.class), typeToken -> {
+			return new EnumMap(typeToken.getTypeParameterTypeToken(0).getRawType());
+		});
+		context.addStringDeserializer(TypeToken.of(LocalDateTime.class),
+				value -> LocalDateTime.parse(value));
+		
+		ObjectMapper mapper = new ObjectMapper();
+		EnumMap<ElementType, Map<LocalDateTime, BaseBean>> actual =
+				mapper.fromJson(json,
+						new TypeToken<EnumMap<ElementType, Map<LocalDateTime, BaseBean>>>() {},
+						context);
+				
+		Map<LocalDateTime, BaseBean> first = new HashMap<>();
+		first.put(LocalDateTime.parse("2019-02-02T00:49:30"), new BaseBean("array"));
+		
+		Map<LocalDateTime, BaseBean> second = new HashMap<>();
+		second.put(LocalDateTime.parse("2019-02-02T00:50:59"), new BaseBean("object"));
+		
+		EnumMap<ElementType, Map<LocalDateTime, BaseBean>> expected = new EnumMap<>(ElementType.class);
+		expected.put(ElementType.ARRAY, first);
+		expected.put(ElementType.OBJECT, second);
 		
 		assertEquals(actual, expected);
 	}

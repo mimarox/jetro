@@ -116,7 +116,11 @@ public class TypeToken<T> {
 
 		return assignable;
 	}
-
+	
+	public TypeToken<?> getTypeParameterTypeToken(int index) {
+		return TypeToken.of(((ParameterizedType) type).getActualTypeArguments()[index]);
+	}
+	
 	public static TypeToken<?> of(Type type) {
 		return new TypeToken<Object>(type);
 	}

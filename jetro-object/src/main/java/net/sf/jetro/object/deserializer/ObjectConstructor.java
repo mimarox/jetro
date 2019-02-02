@@ -19,18 +19,19 @@
  */
 package net.sf.jetro.object.deserializer;
 
-import net.sf.jetro.object.reflect.TypeToken;
-
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
+import net.sf.jetro.object.reflect.TypeToken;
 
 /**
  * @author matthias.rothe
  * @since 26.03.14.
  */
 public class ObjectConstructor {
-	private Map<Class<?>, InstanceCreator<?>> instanceCreatorMap = new HashMap<>();
+	private Map<TypeToken<Object>, InstanceCreator<Object>> instanceCreatorMap = new HashMap<>();
 
 	public <T> T constructFrom(Class<T> clazz) {
 		return (T) constructFrom(TypeToken.of(clazz));
@@ -44,7 +45,7 @@ public class ObjectConstructor {
 		InstanceCreator<T> instanceCreator = getInstanceCreator(typeToken);
 
 		if (instanceCreator != null) {
-			return instanceCreator.createInstance(typeToken.getRawType());
+			return instanceCreator.createInstance(typeToken);
 		} else {
 			try {
 				return typeToken.getRawType().newInstance();
@@ -56,14 +57,24 @@ public class ObjectConstructor {
 
 	@SuppressWarnings("unchecked")
 	private <T> InstanceCreator<T> getInstanceCreator(TypeToken<T> typeToken) {
-		if (instanceCreatorMap.containsKey(typeToken.getRawType())) {
-			return (InstanceCreator<T>) instanceCreatorMap.get(typeToken.getRawType());
+		if (instanceCreatorMap.containsKey(typeToken)) {
+			return (InstanceCreator<T>) instanceCreatorMap.get(typeToken);
 		} else {
-			return null;
+			Optional<InstanceCreator<Object>> optional = instanceCreatorMap.entrySet()
+					.parallelStream().filter(entry -> entry.getKey().getRawType()
+							.equals(typeToken.getRawType()))
+					.map(entry -> entry.getValue()).findFirst();
+			
+			if (optional.isPresent()) {
+				return (InstanceCreator<T>) optional.get();
+			} else {
+				return null;
+			}
 		}
 	}
 
-	public <T> void addInstanceCreator(Class<T> clazz, InstanceCreator<T> instanceCreator) {
-		instanceCreatorMap.put(clazz, instanceCreator);
+	@SuppressWarnings("unchecked")
+	public <T> void addInstanceCreator(TypeToken<T> clazz, InstanceCreator<T> instanceCreator) {
+		instanceCreatorMap.put((TypeToken<Object>) clazz, (InstanceCreator<Object>) instanceCreator);
 	}
 }

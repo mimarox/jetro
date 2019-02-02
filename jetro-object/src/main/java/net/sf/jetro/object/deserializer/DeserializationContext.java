@@ -39,7 +39,7 @@ public class DeserializationContext {
 	private final Map<TypeToken<?>, Function<Number, ?>> numberDeserializers = new HashMap<>();
 	private boolean throwOnMissingDeserializer = true;
 	
-	public <T> void addInstanceCreator(Class<T> typeToken, InstanceCreator<T> instanceCreator) {
+	public <T> void addInstanceCreator(TypeToken<T> typeToken, InstanceCreator<T> instanceCreator) {
 		objectConstructor.addInstanceCreator(typeToken, instanceCreator);
 	}
 
@@ -87,11 +87,11 @@ public class DeserializationContext {
 		this.throwOnMissingDeserializer = throwOnMissingDeserializer;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	public static DeserializationContext getDefault() {
 		DeserializationContext context = new DeserializationContext();
 		
-		context.addInstanceCreator(List.class, clazz -> new ArrayList());
+		context.addInstanceCreator(TypeToken.of(List.class), typeToken -> new ArrayList<>());
+		context.addInstanceCreator(TypeToken.of(Map.class), typeToken -> new HashMap<>());
 		
 		context.addNumberDeserializer(TypeToken.of(Date.class), value -> new Date(value.longValue()));
 		context.addNumberDeserializer(TypeToken.of(Number.class), value -> value);
