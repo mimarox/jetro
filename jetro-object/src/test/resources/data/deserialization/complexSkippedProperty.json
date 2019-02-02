@@ -1,0 +1,12 @@
+{
+	"before": "before",
+	"skippedArray": [
+		"property",
+		[{
+			"foo": 1,
+			"bar": [null]
+		}]
+	],
+	"after": "after",
+	"skippedObject": { "foo": "bar" }
+}

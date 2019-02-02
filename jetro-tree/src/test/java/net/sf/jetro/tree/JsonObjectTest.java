@@ -24,6 +24,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
 
@@ -117,7 +119,7 @@ public class JsonObjectTest {
 	}
 	
 	@Test
-	public void shouldRetainAll() {
+	public void shouldRetainAllByKey() {
 		//prepare JsonObject
 		JsonObject jsonObject = new JsonObject();
 		
@@ -126,12 +128,46 @@ public class JsonObjectTest {
 		jsonObject.add(new JsonProperty("c", 3));
 		jsonObject.add(new JsonProperty("d", 4));
 		
-		jsonObject.retainAll(Arrays.asList(new JsonProperty("a"), new JsonProperty("b")));
+		jsonObject.retainAllByKey(Arrays.asList("a", "b"));
 		
 		JsonObject expected = new JsonObject();
 		expected.add(new JsonProperty("a", 1));
 		expected.add(new JsonProperty("b", 2));
 		
 		assertEquals(jsonObject, expected);
+	}
+	
+	@Test
+	public void shouldRemoveAllByKey() {
+		//prepare JsonObject
+		JsonObject jsonObject = new JsonObject();
+		
+		jsonObject.add(new JsonProperty("a", 1));
+		jsonObject.add(new JsonProperty("b", 2));
+		jsonObject.add(new JsonProperty("c", 3));
+		jsonObject.add(new JsonProperty("d", 4));
+		
+		jsonObject.removeAllByKey(Arrays.asList("a", "b"));
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("c", 3));
+		expected.add(new JsonProperty("d", 4));
+		
+		assertEquals(jsonObject, expected);
+	}
+	
+	@Test
+	public void shouldContainAllKeys() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("a", 1));
+		jsonObject.add(new JsonProperty("b", 2));
+		jsonObject.add(new JsonProperty("c", 3));
+		
+		assertTrue(jsonObject.containsAllKeys(Arrays.asList("a", "b")));
+	}
+	
+	@Test
+	public void shouldNotThrowNPEWhenGettingNonExistingValue() {
+		assertNull(new JsonObject().get("key"));
 	}
 }

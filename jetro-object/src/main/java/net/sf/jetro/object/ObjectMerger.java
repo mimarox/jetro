@@ -26,22 +26,41 @@ import net.sf.jetro.visitor.JsonVisitor;
 /**
  * @author matthias.rothe
  * @since 26.02.14.
+ * @deprecated Use {@link ObjectMapper#toJson(Object)} and
+ * {@link ObjectMapper#toJson(Object, SerializationContext)} directly.
  */
+@Deprecated
 public class ObjectMerger {
 	private SerializationContext context;
 	private Object toMerge;
 
 	public ObjectMerger(Object toMerge) {
-		this(new SerializationContext(), toMerge);
+		this(toMerge, new SerializationContext());
 	}
 
+	/**
+	 * @deprecated Use {@link #ObjectMerger(Object,SerializationContext)} instead
+	 */
+	@Deprecated
 	public ObjectMerger(SerializationContext context, Object toMerge) {
+		this(toMerge, context);
+	}
+
+	public ObjectMerger(Object toMerge, SerializationContext context) {
 		this.context = context;
 		this.toMerge = toMerge;
 	}
 
+	/**
+	 * @deprecated Use {@link #mergeInto(JsonVisitor<?>)} instead
+	 */
+	@Deprecated
 	public void into(JsonVisitor<?> visitor) {
-		ObjectVisitingReader reader = new ObjectVisitingReader(context, toMerge);
+		mergeInto(visitor);
+	}
+
+	public void mergeInto(JsonVisitor<?> visitor) {
+		ObjectVisitingReader reader = new ObjectVisitingReader(toMerge, context);
 		reader.accept(visitor);
 	}
 }

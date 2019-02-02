@@ -9,5 +9,5 @@
 		<packages>
 			<package name="net.sf.jetro.path" />
 		</packages>
-	</test> <!-- All Tests -->
-</suite> <!-- Jetro Path Suite -->
+	</test>
+</suite>

@@ -20,6 +20,7 @@
 package net.sf.jetro.tree;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,6 +75,31 @@ public class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	@Override
 	public boolean add(JsonType element) {
 		return super.add(element.deepCopy());
+	}
+	
+	@Override
+	public void add(int index, JsonType element) {
+		super.add(index, element.deepCopy());
+	}
+	
+	@Override
+	public boolean addAll(Collection<? extends JsonType> elements) {
+		for (JsonType element : elements) {
+			add(element);
+		}
+		
+		return elements.size() != 0;
+	}
+	
+	@Override
+	public boolean addAll(int index, Collection<? extends JsonType> elements) {
+		JsonType[] array = elements.toArray(new JsonType[] {});
+		
+		for (int i = 0; i < elements.size(); i++, index++) {
+			add(index, array[i]);
+		}
+		
+		return elements.size() != 0;
 	}
 	
 	@Override

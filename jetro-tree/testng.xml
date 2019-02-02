@@ -7,5 +7,5 @@
 			<package name="net.sf.jetro.tree.builder" />
 			<package name="net.sf.jetro.tree.visitor" />
 		</packages>
-	</test> <!-- All Tests -->
-</suite> <!-- Jetro Stream Suite -->
+	</test>
+</suite>
