@@ -45,6 +45,11 @@ import net.sf.jetro.object.deserializer.beans.RootBean;
 import net.sf.jetro.object.deserializer.beans.SimpleBean;
 import net.sf.jetro.object.deserializer.beans.SubSubBean;
 import net.sf.jetro.object.reflect.TypeToken;
+import net.sf.jetro.object.serializer.SerializationContext;
+import net.sf.jetro.object.serializer.addons.DateSerializer;
+import net.sf.jetro.object.serializer.addons.ToStringSerializer;
+import net.sf.jetro.object.visitor.ObjectBuildingVisitor;
+import net.sf.jetro.object.visitor.ObjectVisitingReader;
 import net.sf.testng.databinding.DataBinding;
 import net.sf.testng.databinding.TestInput;
 
@@ -52,11 +57,11 @@ import net.sf.testng.databinding.TestInput;
  * Created by matthias.rothe on 07.07.14.
  */
 public class ObjectMapperTest {
-
+	private ObjectMapper mapper = new ObjectMapper();
+	
 	@Test
 	@DataBinding(propertiesPrefix = "simpleBean")
 	public void testSimpleBeanDeserialization(@TestInput(name = "json") String json) {
-		ObjectMapper mapper = new ObjectMapper();
 		SimpleBean actual = mapper.fromJson(json, SimpleBean.class);
 		
 		SimpleBean expected = new SimpleBean();
@@ -78,12 +83,14 @@ public class ObjectMapperTest {
 		expected.setNullValue(null);
 		
 		assertEquals(actual, expected);
+		
+		SimpleBean actual2 = roundTrip(actual, SimpleBean.class);
+		assertEquals(actual2, expected);
 	}
-	
+
 	@Test
 	@DataBinding(propertiesPrefix = "nestedBeans")
 	public void testNestedBeansDeserialization(@TestInput(name = "json") String json) {
-		ObjectMapper mapper = new ObjectMapper();
 		RootBean actual = mapper.fromJson(json, RootBean.class);
 		
 		LeafBean innerLeafBean = new LeafBean();
@@ -102,13 +109,16 @@ public class ObjectMapperTest {
 		expected.setLeaf(outerLeafBean);
 		
 		assertEquals(actual, expected);
+		
+		RootBean actual2 = roundTrip(actual, RootBean.class);
+		assertEquals(actual2, expected);
 	}
 	
 	@Test
 	@DataBinding(propertiesPrefix = "listOfBeans")
 	public void testListOfBeansDeserialization(@TestInput(name = "json") String json) {
-		ObjectMapper mapper = new ObjectMapper();
-		List<LeafBean> actual = mapper.fromJson(json, new TypeToken<List<LeafBean>>() {});
+		TypeToken<List<LeafBean>> typeToken = new TypeToken<List<LeafBean>>() {};
+		List<LeafBean> actual = mapper.fromJson(json, typeToken);
 		
 		List<LeafBean> expected = new ArrayList<>();
 		expected.add(new LeafBean(1));
@@ -116,13 +126,16 @@ public class ObjectMapperTest {
 		expected.add(new LeafBean(3));
 		
 		assertEquals(actual, expected);
+		
+		List<LeafBean> actual2 = roundTrip(actual, typeToken);
+		assertEquals(actual2, expected);
 	}
 	
 	@Test
 	@DataBinding(propertiesPrefix = "listOfLists")
 	public void testListOfListsDeserialization(@TestInput(name = "json") String json) {
-		ObjectMapper mapper = new ObjectMapper();
-		List<List<String>> actual = mapper.fromJson(json, new TypeToken<List<List<String>>>() {});
+		TypeToken<List<List<String>>> typeToken = new TypeToken<List<List<String>>>() {};
+		List<List<String>> actual = mapper.fromJson(json, typeToken);
 		
 		List<String> first = new ArrayList<>();
 		first.add("1");
@@ -139,12 +152,14 @@ public class ObjectMapperTest {
 		expected.add(second);
 		
 		assertEquals(actual, expected);
+		
+		List<List<String>> actual2 = roundTrip(actual, typeToken);
+		assertEquals(actual2, expected);
 	}
 	
 	@Test
 	@DataBinding(propertiesPrefix = "beanWithLists")
 	public void testBeanWithListsDeserialization(@TestInput(name = "json") String json) {
-		ObjectMapper mapper = new ObjectMapper();
 		BeanWithLists actual = mapper.fromJson(json, BeanWithLists.class);
 		
 		List<Double> doubles = new ArrayList<>();
@@ -171,12 +186,14 @@ public class ObjectMapperTest {
 		expected.setLeafs(leafs);
 		
 		assertEquals(actual, expected);
+		
+		BeanWithLists actual2 = roundTrip(actual, BeanWithLists.class);
+		assertEquals(actual2, expected);
 	}
 
 	@Test
 	@DataBinding(propertiesPrefix = "complexSkip")
 	public void testComplexSkipDeserialization(@TestInput(name = "json") String json) {
-		ObjectMapper mapper = new ObjectMapper();
 		BeforeAndAfter actual = mapper.fromJson(json, BeforeAndAfter.class);
 		
 		BeforeAndAfter expected = new BeforeAndAfter();
@@ -184,12 +201,13 @@ public class ObjectMapperTest {
 		expected.setAfter("after");
 		
 		assertEquals(actual, expected);
+		
+		//no round trip since that wouldn't cause skipping
 	}
 	
 	@Test
 	@DataBinding(propertiesPrefix = "beanWithEnums")
 	public void testBeanWithEnumsDeserialization(@TestInput(name = "json") String json) {
-		ObjectMapper mapper = new ObjectMapper();
 		BeanWithEnums actual = mapper.fromJson(json, BeanWithEnums.class);
 		
 		BeanWithEnums expected = new BeanWithEnums();
@@ -197,29 +215,38 @@ public class ObjectMapperTest {
 		expected.setElementTypes(Arrays.asList(ElementType.ARRAY, ElementType.OBJECT));
 		
 		assertEquals(actual, expected);
+		
+		BeanWithEnums actual2 = roundTrip(actual, BeanWithEnums.class);
+		assertEquals(actual2, expected);
 	}
 	
 	@Test
 	@DataBinding(propertiesPrefix = "dateBean")
 	public void testDateBeanDeserialization(@TestInput(name = "json") String json) {
-		DeserializationContext context = DeserializationContext.getDefault();
-		context.addStringDeserializer(TypeToken.of(LocalDateTime.class),
+		DeserializationContext deserializationContext = DeserializationContext.getDefault();
+		deserializationContext.addStringDeserializer(TypeToken.of(LocalDateTime.class),
 				value -> LocalDateTime.parse(value));
 		
-		ObjectMapper mapper = new ObjectMapper();
-		DateBean actual = mapper.fromJson(json, DateBean.class, context);
+		DateBean actual = mapper.fromJson(json, DateBean.class, deserializationContext);
 		
 		DateBean expected = new DateBean();
 		expected.setDateTime(LocalDateTime.parse("2019-01-31T20:12:30"));
 		expected.setDate(new Date(123456789L));
 		
 		assertEquals(actual, expected);
+		
+		SerializationContext serializationContext = new SerializationContext();
+		serializationContext.addTypeSerializer(new DateSerializer())
+				.addTypeSerializer(new ToStringSerializer(LocalDateTime.class));
+		
+		DateBean actual2 = roundTrip(actual, DateBean.class, serializationContext,
+				deserializationContext);
+		assertEquals(actual2, expected);
 	}
-	
+
 	@Test
 	@DataBinding(propertiesPrefix = "inheritedProperties")
 	public void testInheritedPropertiesDeserialization(@TestInput(name = "json") String json) {
-		ObjectMapper mapper = new ObjectMapper();
 		SubSubBean actual = mapper.fromJson(json, SubSubBean.class);
 		
 		SubSubBean expected = new SubSubBean();
@@ -228,14 +255,17 @@ public class ObjectMapperTest {
 		expected.setSubSubString("subSubString");
 		
 		assertEquals(actual, expected);
+		
+		SubSubBean actual2 = roundTrip(actual, SubSubBean.class);
+		assertEquals(actual2, expected);
 	}
 	
 	@Test
 	@DataBinding(propertiesPrefix = "mapStringToBean")
 	public void testMapStringToBeanDeserialization(@TestInput(name = "json") String json) {
-		ObjectMapper mapper = new ObjectMapper();
-		Map<String, BaseBean> actual = mapper.fromJson(json,
-				new TypeToken<Map<String, BaseBean>>() {});
+		TypeToken<Map<String, BaseBean>> typeToken = new TypeToken<Map<String, BaseBean>>() {};
+		
+		Map<String, BaseBean> actual = mapper.fromJson(json, typeToken);
 		
 		Map<String, BaseBean> expected = new HashMap<>();
 		expected.put("first",  new BaseBean("first"));
@@ -243,6 +273,9 @@ public class ObjectMapperTest {
 		expected.put("third",  new BaseBean("third"));
 		
 		assertEquals(actual, expected);
+		
+		Map<String, BaseBean> actual2 = roundTrip(actual, typeToken);
+		assertEquals(actual2, expected);
 	}
 	
 	@Test
@@ -255,12 +288,12 @@ public class ObjectMapperTest {
 		});
 		context.addStringDeserializer(TypeToken.of(LocalDateTime.class),
 				value -> LocalDateTime.parse(value));
+
+		TypeToken<EnumMap<ElementType, Map<LocalDateTime, BaseBean>>> typeToken =
+				new TypeToken<EnumMap<ElementType, Map<LocalDateTime, BaseBean>>>() {};
 		
-		ObjectMapper mapper = new ObjectMapper();
 		EnumMap<ElementType, Map<LocalDateTime, BaseBean>> actual =
-				mapper.fromJson(json,
-						new TypeToken<EnumMap<ElementType, Map<LocalDateTime, BaseBean>>>() {},
-						context);
+				mapper.fromJson(json, typeToken, context);
 				
 		Map<LocalDateTime, BaseBean> first = new HashMap<>();
 		first.put(LocalDateTime.parse("2019-02-02T00:49:30"), new BaseBean("array"));
@@ -273,5 +306,92 @@ public class ObjectMapperTest {
 		expected.put(ElementType.OBJECT, second);
 		
 		assertEquals(actual, expected);
+		
+		EnumMap<ElementType, Map<LocalDateTime, BaseBean>> actual2 = roundTrip(actual,
+				typeToken, context);
+		assertEquals(actual2, expected);
+	}
+
+	@Test
+	@DataBinding(propertiesPrefix = "listOfMapsStringToBean")
+	public void testListOfMapsStringToBeanDeserialization(@TestInput(name = "json") String json) {
+		TypeToken<List<Map<String, BaseBean>>> typeToken =
+				new TypeToken<List<Map<String, BaseBean>>>() {};
+		
+		List<Map<String, BaseBean>> actual = mapper.fromJson(json, typeToken);
+		
+		Map<String, BaseBean> first = new HashMap<>();
+		first.put("first",  new BaseBean("first"));
+		first.put("second", new BaseBean("second"));
+		first.put("third",  new BaseBean("third"));
+		
+		Map<String, BaseBean> second = new HashMap<>();
+		second.put("fourth", new BaseBean("fourth"));
+		second.put("fifth",  new BaseBean("fifth"));
+		second.put("sixth",  new BaseBean("sixth"));
+		
+		List<Map<String, BaseBean>> expected = new ArrayList<>();
+		expected.add(first);
+		expected.add(second);
+		
+		assertEquals(actual, expected);
+		
+		List<Map<String, BaseBean>> actual2 = roundTrip(actual, typeToken);
+		assertEquals(actual2, expected);
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "mapStringToListOfEnum")
+	public void testMapStringToListOfEnumDeserialization(@TestInput(name = "json") String json) {
+		TypeToken<Map<String, List<ElementType>>> typeToken =
+				new TypeToken<Map<String, List<ElementType>>>() {};
+		
+		Map<String, List<ElementType>> actual = mapper.fromJson(json, typeToken);
+		
+		List<ElementType> first = new ArrayList<>();
+		first.add(ElementType.ARRAY);
+		first.add(ElementType.OBJECT);
+		first.add(ElementType.PRIMITIVE);
+		
+		List<ElementType> second = new ArrayList<>();
+		second.add(ElementType.PRIMITIVE);
+		second.add(ElementType.ARRAY);
+		second.add(ElementType.OBJECT);
+		
+		Map<String, List<ElementType>> expected = new HashMap<>();
+		expected.put("first", first);
+		expected.put("second", second);
+		
+		assertEquals(actual, expected);
+		
+		Map<String, List<ElementType>> actual2 = roundTrip(actual, typeToken);
+		assertEquals(actual2, expected);
+	}	
+	
+	private <T> T roundTrip(T from, Class<T> clazz) {
+		return roundTrip(from, TypeToken.of(clazz));
+	}
+	
+	private <T> T roundTrip(T from, Class<T> clazz, SerializationContext serializationContext,
+			DeserializationContext deserializationContext) {
+		TypeToken<T> typeToken = TypeToken.of(clazz); 
+		
+		ObjectVisitingReader reader = new ObjectVisitingReader(from, serializationContext);
+		ObjectBuildingVisitor<T> visitor =
+				new ObjectBuildingVisitor<>(typeToken, deserializationContext);
+		reader.accept(visitor);
+		
+		return visitor.getVisitingResult();
+	}
+	
+	private <T> T roundTrip(T from, TypeToken<T> typeToken) {
+		return roundTrip(from, typeToken, DeserializationContext.getDefault());
+	}
+	
+	private <T> T roundTrip(T from, TypeToken<T> typeToken, DeserializationContext context) {
+		ObjectVisitingReader reader = new ObjectVisitingReader(from, new SerializationContext());
+		ObjectBuildingVisitor<T> visitor = new ObjectBuildingVisitor<>(typeToken, context);
+		reader.accept(visitor);
+		return visitor.getVisitingResult();
 	}
 }

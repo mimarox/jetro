@@ -19,45 +19,69 @@
  */
 package net.sf.jetro.object.serializer;
 
-import net.sf.jetro.context.RenderContext;
-import net.sf.jetro.visitor.JsonVisitor;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+
+import net.sf.jetro.context.RenderContext;
+import net.sf.jetro.object.reflect.TypeToken;
 
 /**
  * @author matthias.rothe
  * @since 26.02.14.
  */
 public class SerializationContext extends RenderContext {
-	private static final int NON_PRIMITIVE_OFFSET = 4;
+	private static final int NON_PRIMITIVE_OFFSET = 5;
 	private static final NullSerializer NULL_SERIALIZER = new NullSerializer();
 	private static final NopSerializer NOP_SERIALIZER = new NopSerializer();
 
-	private List<TypeSerializer<?>> serializers = new ArrayList<TypeSerializer<?>>();
+	private List<TypeSerializer<?>> typeSerializers = new ArrayList<>();
+	private Map<TypeToken<?>, Function<Object, String>> stringSerializers = new HashMap<>(); 
 
 	private boolean throwNoSerializerException;
 
 	public SerializationContext() {
 		// Add primitive serializers
-		serializers.add(new CharSequenceSerializer());
-		serializers.add(new NumberSerializer());
-		serializers.add(new BooleanSerializer());
-		serializers.add(new CharacterSerializer());
+		typeSerializers.add(new CharSequenceSerializer());
+		typeSerializers.add(new NumberSerializer());
+		typeSerializers.add(new BooleanSerializer());
+		typeSerializers.add(new CharacterSerializer());
+		typeSerializers.add(new EnumSerializer<>());
 
 		// Add complex serializers
-		serializers.add(new ArraySerializer(this));
-		serializers.add(new IterableSerializer(this));
-		serializers.add(new MapSerializer(this));
-		serializers.add(new BeanSerializer(this));
+		typeSerializers.add(new ArraySerializer(this));
+		typeSerializers.add(new IterableSerializer(this));
+		typeSerializers.add(new MapSerializer(this));
+		typeSerializers.add(new BeanSerializer(this));
+		
+		stringSerializers.put(TypeToken.of(String.class), object -> object.toString());
 	}
 
+	/**
+	 * @deprecated Use {@link #addTypeSerializer(TypeSerializer<?>)} instead
+	 */
 	public SerializationContext addSerializer(TypeSerializer<?> serializer) {
+		return addTypeSerializer(serializer);
+	}
+
+	public SerializationContext addTypeSerializer(TypeSerializer<?> serializer) {
 		if (serializer != null) {
 			// Add after primitive but before generic complex serializers
-			serializers.add(NON_PRIMITIVE_OFFSET, serializer);
+			typeSerializers.add(NON_PRIMITIVE_OFFSET, serializer);
 		}
 
+		return this;
+	}
+	
+	public SerializationContext addStringSerializer(TypeToken<?> typeToken,
+			Function<Object, String> serializer) {
+		if (typeToken != null && serializer != null) {
+			stringSerializers.put(typeToken, serializer);
+		}
+		
 		return this;
 	}
 
@@ -66,7 +90,16 @@ public class SerializationContext extends RenderContext {
 		return this;
 	}
 
+	/**
+	 * @deprecated Use {@link #getTypeSerializer(Object)} instead
+	 */
+	@Deprecated
 	public TypeSerializer<Object> getSerializer(Object toSerialize) {
+		return getTypeSerializer(toSerialize);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public TypeSerializer<Object> getTypeSerializer(Object toSerialize) {
 		if (toSerialize == null) {
 			if (isSerializeNulls()) {
 				return NULL_SERIALIZER;
@@ -77,7 +110,7 @@ public class SerializationContext extends RenderContext {
 
 		TypeSerializer<Object> serializer = null;
 
-		for (TypeSerializer<?> candidate : serializers) {
+		for (TypeSerializer<?> candidate : typeSerializers) {
 			if (candidate.canSerialize(toSerialize)) {
 				serializer = (TypeSerializer) candidate;
 				break;
@@ -86,10 +119,30 @@ public class SerializationContext extends RenderContext {
 
 		if (serializer != null) {
 			return serializer;
-		} else if (serializer == null && throwNoSerializerException) {
+		} else if (throwNoSerializerException) {
 			throw new IllegalStateException("No serializer found for object [" + toSerialize + "]");
 		} else {
 			return NOP_SERIALIZER;
+		}
+	}
+	
+	public Function<Object, String> getStringSerializer(TypeToken<?> typeToken) {
+		if (stringSerializers.containsKey(typeToken)) {
+			return stringSerializers.get(typeToken);
+		} else {
+			Optional<Function<Object, String>> optional = stringSerializers.entrySet()
+					.parallelStream().filter(entry -> entry.getKey().getRawType()
+							.equals(typeToken.getRawType()))
+					.map(entry -> entry.getValue()).findFirst();
+			
+			if (optional.isPresent()) {
+				return optional.get();
+			} else if (throwNoSerializerException) {
+				throw new IllegalStateException("No serializer found for typeToken ["
+						+ typeToken + "]");
+			} else {
+				return object -> object.toString();
+			}
 		}
 	}
 }

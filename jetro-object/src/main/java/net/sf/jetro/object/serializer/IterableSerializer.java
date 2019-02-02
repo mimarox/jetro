@@ -49,7 +49,7 @@ public class IterableSerializer implements TypeSerializer<Iterable<?>> {
 			JsonArrayVisitor<?> arrayVisitor = recipient.visitArray();
 
 			for (Object element : toSerialize) {
-				TypeSerializer<Object> serializer = context.getSerializer(element);
+				TypeSerializer<Object> serializer = context.getTypeSerializer(element);
 				serializer.serialize(element, arrayVisitor);
 			}
 

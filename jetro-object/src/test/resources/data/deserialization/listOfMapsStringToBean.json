@@ -1,0 +1,9 @@
+[{
+	"first":  { "baseString": "first" },
+	"second": { "baseString": "second" },
+	"third":  { "baseString": "third" }
+},{
+	"fourth": { "baseString": "fourth" },
+	"fifth":  { "baseString": "fifth" },
+	"sixth":  { "baseString": "sixth" }
+}]

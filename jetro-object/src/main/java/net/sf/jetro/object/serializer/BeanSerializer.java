@@ -77,7 +77,7 @@ public class BeanSerializer implements TypeSerializer<Object> {
 
 				if (isRealGetter(getter)) {
 					Object value = getter.invoke(toSerialize);
-					TypeSerializer<Object> serializer = context.getSerializer(value);
+					TypeSerializer<Object> serializer = context.getTypeSerializer(value);
 
 					objectVisitor.visitProperty(property.getName());
 					serializer.serialize(value, objectVisitor);

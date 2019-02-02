@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import net.sf.jetro.object.exception.DeserializationException;
@@ -35,24 +36,57 @@ import net.sf.jetro.object.reflect.TypeToken;
  */
 public class DeserializationContext {
 	private final ObjectConstructor objectConstructor = new ObjectConstructor();
-	private final Map<TypeToken<?>, Function<String, ?>> stringDeserializers = new HashMap<>();
-	private final Map<TypeToken<?>, Function<Number, ?>> numberDeserializers = new HashMap<>();
+	private final Map<TypeToken<?>, Function<String, Object>> stringDeserializers = new HashMap<>();
+	private final Map<TypeToken<?>, Function<Number, Object>> numberDeserializers = new HashMap<>();
 	private boolean throwOnMissingDeserializer = true;
 	
-	public <T> void addInstanceCreator(TypeToken<T> typeToken, InstanceCreator<T> instanceCreator) {
-		objectConstructor.addInstanceCreator(typeToken, instanceCreator);
+	public DeserializationContext() {
+		addNumberDeserializer(TypeToken.of(Number.class), value -> value);
+		addNumberDeserializer(TypeToken.of(byte.class), value -> value.byteValue());
+		addNumberDeserializer(TypeToken.of(Byte.class), value -> value.byteValue());
+		addNumberDeserializer(TypeToken.of(short.class), value -> value.shortValue());
+		addNumberDeserializer(TypeToken.of(Short.class), value -> value.shortValue());
+		addNumberDeserializer(TypeToken.of(int.class), value -> value.intValue());
+		addNumberDeserializer(TypeToken.of(Integer.class), value -> value.intValue());
+		addNumberDeserializer(TypeToken.of(long.class), value -> value.longValue());
+		addNumberDeserializer(TypeToken.of(Long.class), value -> value.longValue());
+		addNumberDeserializer(TypeToken.of(float.class), value -> value.floatValue());
+		addNumberDeserializer(TypeToken.of(Float.class), value -> value.floatValue());
+		addNumberDeserializer(TypeToken.of(double.class), value -> value.doubleValue());
+		addNumberDeserializer(TypeToken.of(Double.class), value -> value.doubleValue());
+	}
+	
+	public <T> DeserializationContext addInstanceCreator(TypeToken<T> typeToken,
+			InstanceCreator<T> instanceCreator) {
+		if (typeToken != null && instanceCreator != null) {
+			objectConstructor.addInstanceCreator(typeToken, instanceCreator);
+		}
+
+		return this;
 	}
 
 	public <T> T createInstanceOf(TypeToken<T> type) {
 		return (T) objectConstructor.constructFrom(type);
 	}
 
-	public <T> void addStringDeserializer(TypeToken<T> typeToken, Function<String, T> deserializer) {
-		stringDeserializers.put(typeToken, deserializer);
+	@SuppressWarnings("unchecked")
+	public <T> DeserializationContext addStringDeserializer(TypeToken<T> typeToken,
+			Function<String, T> deserializer) {
+		if (typeToken != null && deserializer != null) {
+			stringDeserializers.put(typeToken, (Function<String, Object>) deserializer);
+		}
+
+		return this;
 	}
 	
-	public <T> void addNumberDeserializer(TypeToken<T> typeToken, Function<Number, T> deserializer) {
-		numberDeserializers.put(typeToken, deserializer);
+	@SuppressWarnings("unchecked")
+	public <T> DeserializationContext addNumberDeserializer(TypeToken<T> typeToken,
+			Function<Number, T> deserializer) {
+		if (typeToken != null && deserializer != null) {
+			numberDeserializers.put(typeToken, (Function<Number, Object>) deserializer);
+		}
+
+		return this;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -60,7 +94,14 @@ public class DeserializationContext {
 		if (stringDeserializers.containsKey(typeToken)) {
 			return (T) stringDeserializers.get(typeToken).apply(value);
 		} else {
-			if (throwOnMissingDeserializer) {
+			Optional<Function<String, Object>> optional = stringDeserializers.entrySet()
+					.parallelStream().filter(entry -> entry.getKey().getRawType()
+							.equals(typeToken.getRawType()))
+					.map(entry -> entry.getValue()).findFirst();
+			
+			if (optional.isPresent()) {
+				return (T) optional.get().apply(value);
+			} else if (throwOnMissingDeserializer) {
 				throw new DeserializationException("Found no deserializer for type " +
 						typeToken.getType());
 			} else {
@@ -74,7 +115,14 @@ public class DeserializationContext {
 		if (numberDeserializers.containsKey(typeToken)) {
 			return (T) numberDeserializers.get(typeToken).apply(value);
 		} else {
-			if (throwOnMissingDeserializer) {
+			Optional<Function<Number, Object>> optional = numberDeserializers.entrySet()
+					.parallelStream().filter(entry -> entry.getKey().getRawType()
+							.equals(typeToken.getRawType()))
+					.map(entry -> entry.getValue()).findFirst();
+
+			if (optional.isPresent()) {
+				return (T) optional.get().apply(value);
+			} else if (throwOnMissingDeserializer) {
 				throw new DeserializationException("Found no deserializer for type " +
 						typeToken.getType());
 			} else {
@@ -94,19 +142,6 @@ public class DeserializationContext {
 		context.addInstanceCreator(TypeToken.of(Map.class), typeToken -> new HashMap<>());
 		
 		context.addNumberDeserializer(TypeToken.of(Date.class), value -> new Date(value.longValue()));
-		context.addNumberDeserializer(TypeToken.of(Number.class), value -> value);
-		context.addNumberDeserializer(TypeToken.of(byte.class), value -> value.byteValue());
-		context.addNumberDeserializer(TypeToken.of(Byte.class), value -> value.byteValue());
-		context.addNumberDeserializer(TypeToken.of(short.class), value -> value.shortValue());
-		context.addNumberDeserializer(TypeToken.of(Short.class), value -> value.shortValue());
-		context.addNumberDeserializer(TypeToken.of(int.class), value -> value.intValue());
-		context.addNumberDeserializer(TypeToken.of(Integer.class), value -> value.intValue());
-		context.addNumberDeserializer(TypeToken.of(long.class), value -> value.longValue());
-		context.addNumberDeserializer(TypeToken.of(Long.class), value -> value.longValue());
-		context.addNumberDeserializer(TypeToken.of(float.class), value -> value.floatValue());
-		context.addNumberDeserializer(TypeToken.of(Float.class), value -> value.floatValue());
-		context.addNumberDeserializer(TypeToken.of(double.class), value -> value.doubleValue());
-		context.addNumberDeserializer(TypeToken.of(Double.class), value -> value.doubleValue());
 		
 		return context;
 	}

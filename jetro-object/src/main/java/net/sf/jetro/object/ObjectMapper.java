@@ -26,7 +26,9 @@ import java.io.StringReader;
 
 import net.sf.jetro.object.deserializer.DeserializationContext;
 import net.sf.jetro.object.reflect.TypeToken;
+import net.sf.jetro.object.serializer.SerializationContext;
 import net.sf.jetro.object.visitor.ObjectBuildingVisitor;
+import net.sf.jetro.object.visitor.ObjectVisitingReader;
 import net.sf.jetro.stream.JsonReader;
 import net.sf.jetro.stream.visitor.JsonReturningVisitor;
 import net.sf.jetro.stream.visitor.StreamVisitingReader;
@@ -37,23 +39,51 @@ import net.sf.jetro.visitor.VisitingReader;
  * @since 26.02.14.
  */
 public class ObjectMapper {
+	private static SerializationContext serializationContext;
+	private static DeserializationContext deserializationContext;
+	
+	private static DeserializationContext getDeserializationContext() {
+		if (deserializationContext == null) {
+			deserializationContext = DeserializationContext.getDefault();
+		}
+		
+		return deserializationContext;
+	}
+	
+	private static SerializationContext getSerializationContext() {
+		if (serializationContext == null) {
+			serializationContext = new SerializationContext();
+		}
+		
+		return serializationContext;
+	}
+
+	/**
+	 * @deprecated Use {@link #toJson(Object)} directly.
+	 */
+	@Deprecated
 	public ObjectMerger merge(Object toMerge) {
 		return new ObjectMerger(toMerge);
 	}
-
+	
 	public String toJson(Object object) {
-		JsonReturningVisitor receiver = new JsonReturningVisitor();
-		merge(object).into(receiver);
-		return receiver.getVisitingResult();
+		return toJson(object, getSerializationContext());
 	}
 
+	public String toJson(Object object, SerializationContext context) {
+		JsonReturningVisitor receiver = new JsonReturningVisitor();
+		ObjectVisitingReader reader = new ObjectVisitingReader(object, context);
+		reader.accept(receiver);
+		return receiver.getVisitingResult();
+	}
+	
 	public <T> T fromJson(String json, Class<T> targetClass) {
 		return fromJson(json, TypeToken.of(targetClass));
 	}
 	
 	public <T> T fromJson(String json, TypeToken<T> targetTypeToken) {
 		try (StreamVisitingReader reader = new StreamVisitingReader(new JsonReader(new StringReader(json)))) {
-			return fromJson(reader, targetTypeToken, DeserializationContext.getDefault());
+			return fromJson(reader, targetTypeToken, getDeserializationContext());
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -78,7 +108,7 @@ public class ObjectMapper {
 	public <T> T fromJson(InputStream in, TypeToken<T> targetTypeToken) {
 		try (StreamVisitingReader reader = new StreamVisitingReader(new JsonReader(
 				new InputStreamReader(in, "UTF-8")))) {
-			return fromJson(reader, targetTypeToken, DeserializationContext.getDefault());
+			return fromJson(reader, targetTypeToken, getDeserializationContext());
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}

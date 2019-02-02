@@ -33,6 +33,14 @@ import net.sf.jetro.object.reflect.TypeToken;
 public class ObjectConstructor {
 	private Map<TypeToken<Object>, InstanceCreator<Object>> instanceCreatorMap = new HashMap<>();
 
+	@SuppressWarnings("unchecked")
+	public <T> void addInstanceCreator(TypeToken<T> typeToken, InstanceCreator<T> instanceCreator) {
+		if (typeToken != null && instanceCreator != null) {
+			instanceCreatorMap.put((TypeToken<Object>) typeToken,
+					(InstanceCreator<Object>) instanceCreator);
+		}
+	}
+
 	public <T> T constructFrom(Class<T> clazz) {
 		return (T) constructFrom(TypeToken.of(clazz));
 	}
@@ -71,10 +79,5 @@ public class ObjectConstructor {
 				return null;
 			}
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T> void addInstanceCreator(TypeToken<T> clazz, InstanceCreator<T> instanceCreator) {
-		instanceCreatorMap.put((TypeToken<Object>) clazz, (InstanceCreator<Object>) instanceCreator);
 	}
 }
