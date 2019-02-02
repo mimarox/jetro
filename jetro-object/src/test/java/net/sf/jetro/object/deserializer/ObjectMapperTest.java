@@ -33,13 +33,13 @@ import java.util.Map;
 import org.testng.annotations.Test;
 
 import net.sf.jetro.object.ObjectMapper;
-import net.sf.jetro.object.deserializer.DeserializationElement.ElementType;
 import net.sf.jetro.object.deserializer.beans.BaseBean;
 import net.sf.jetro.object.deserializer.beans.BeanWithEnums;
 import net.sf.jetro.object.deserializer.beans.BeanWithLists;
 import net.sf.jetro.object.deserializer.beans.BeforeAndAfter;
 import net.sf.jetro.object.deserializer.beans.ChildBean;
 import net.sf.jetro.object.deserializer.beans.DateBean;
+import net.sf.jetro.object.deserializer.beans.ElementType;
 import net.sf.jetro.object.deserializer.beans.LeafBean;
 import net.sf.jetro.object.deserializer.beans.RootBean;
 import net.sf.jetro.object.deserializer.beans.SimpleBean;

@@ -3,8 +3,6 @@ package net.sf.jetro.object.deserializer.beans;
 import java.util.List;
 import java.util.Objects;
 
-import net.sf.jetro.object.deserializer.DeserializationElement.ElementType;
-
 public class BeanWithEnums {
 	private ElementType elementType;
 	private List<ElementType> elementTypes;
