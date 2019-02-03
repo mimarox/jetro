@@ -158,4 +158,22 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 			childPath.hasArrayIndexAt(parentPath.getDepth())
 		).findFirst();
 	}
+
+	@Override
+	public boolean addElementAt(JsonPath path, JsonType element) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public JsonType replaceElementAt(JsonPath path, JsonType element) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public void removeElementAt(JsonPath path) {
+		// TODO Auto-generated method stub
+		
+	}
 }

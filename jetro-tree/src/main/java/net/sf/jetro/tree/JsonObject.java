@@ -273,6 +273,24 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	}
 
 	@Override
+	public boolean addElementAt(JsonPath path, JsonType element) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public JsonType replaceElementAt(JsonPath path, JsonType element) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void removeElementAt(JsonPath path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
 	public String toJson() {
 		return new DefaultJsonRenderer().render(this);
 	}
