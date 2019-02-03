@@ -26,7 +26,7 @@ import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
-public class VirtualJsonRoot extends ArrayList<JsonElement> implements JsonElement {
+public final class VirtualJsonRoot extends ArrayList<JsonElement> implements JsonElement {
 	private static final long serialVersionUID = 463431682418006955L;
 
 	@Override

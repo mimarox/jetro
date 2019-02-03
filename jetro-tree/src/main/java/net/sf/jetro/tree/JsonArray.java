@@ -20,9 +20,10 @@
 package net.sf.jetro.tree;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import net.sf.jetro.path.ArrayIndexPathElement;
 import net.sf.jetro.path.JsonPath;
@@ -31,13 +32,12 @@ import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
-public class JsonArray extends ArrayList<JsonType> implements JsonCollection {
+public final class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	private static final long serialVersionUID = -853759861392315220L;
 
-	// JSON path relative to the root element of the JSON tree this element belongs to
-	// if null this element is the root element
-	private JsonPath path;
-	private int pathDepth;
+	// JSON paths relative to the root element of the JSON tree this element belongs to
+	// if empty this element is the root element
+	private final Set<JsonPath> paths = new HashSet<>();
 
 	public JsonArray() {
 	}
@@ -47,20 +47,20 @@ public class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	}
 
 	public JsonArray(final List<? extends JsonType> values) {
-		this(null, values);
+		this((JsonPath) null, values);
 	}
 
 	public JsonArray(final JsonPath path, final List<? extends JsonType> values) {
-		this(path, values, false);
+		this(values, false);
+		paths.add(path);
 	}
-	
-	private JsonArray(final JsonPath path, final List<? extends JsonType> values, boolean deepCopy) {
-		this.path = path;
 
-		if (path != null) {
-			pathDepth = path.getDepth();
-		}
+	private JsonArray(final Set<JsonPath> paths, final List<? extends JsonType> values) {
+		this(values, true);
+		this.paths.addAll(paths);
+	}
 
+	private JsonArray(final List<? extends JsonType> values, final boolean deepCopy) {
 		if (values != null) {
 			if (deepCopy) {
 				for (JsonType value : values) {
@@ -71,62 +71,36 @@ public class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 			}
 		}
 	}
-
-	@Override
-	public boolean add(JsonType element) {
-		return super.add(element.deepCopy());
-	}
-	
-	@Override
-	public void add(int index, JsonType element) {
-		super.add(index, element.deepCopy());
-	}
-	
-	@Override
-	public boolean addAll(Collection<? extends JsonType> elements) {
-		for (JsonType element : elements) {
-			add(element);
-		}
-		
-		return elements.size() != 0;
-	}
-	
-	@Override
-	public boolean addAll(int index, Collection<? extends JsonType> elements) {
-		JsonType[] array = elements.toArray(new JsonType[] {});
-		
-		for (int i = 0; i < elements.size(); i++, index++) {
-			add(index, array[i]);
-		}
-		
-		return elements.size() != 0;
-	}
-	
-	@Override
-	public JsonType get(int index) {
-		return super.get(index).deepCopy();
-	}
 	
 	@Override
 	public JsonArray deepCopy() {
-		return new JsonArray(path, this, true);
+		return new JsonArray(paths, this);
 	}
 
 	@Override
-	public void setPath(final JsonPath path) {
-		this.path = path;
-		this.pathDepth = path.getDepth(); 
+	public void addPath(final JsonPath path) {
+		paths.add(path);
+	}
+
+	@Override
+	public void resetPathsRecursively() {
+		paths.clear();
+		forEach(element -> element.resetPaths());
 	}
 	
 	@Override
-	public void recalculateTreePaths(boolean treeRoot) {
+	public void recalculateTreePaths(final boolean treeRoot) {
 		if (treeRoot) {
-			setPath(new JsonPath());
+			resetPaths();
+			addPath(new JsonPath());
 		}
 		
 		for (int i = 0; i < size(); i++) {
-			JsonType element = super.get(i);
-			element.setPath(path.append(new ArrayIndexPathElement(i)));
+			JsonType element = get(i);
+			
+			for (JsonPath path : paths) {
+				element.addPath(path.append(new ArrayIndexPathElement(i)));
+			}
 			
 			if (element instanceof JsonCollection) {
 				((JsonCollection) element).recalculateTreePaths(false);
@@ -153,22 +127,35 @@ public class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("JsonArray [values=").append(super.toString()).append(", path=").append(path).append("]");
+		builder.append("JsonArray [values=").append(super.toString())
+			.append(", paths=").append(paths).append("]");
 		return builder.toString();
 	}
 
 	@Override
-	public Optional<JsonType> getElementAt(JsonPath path) {
-		if (this.path == path || (this.path != null && this.path.equals(path))) {
-			return Optional.of(this.deepCopy());
-		} else if (pathDepth < path.getDepth() && path.isChildPathOf(this.path) && path.hasArrayIndexAt(pathDepth)) {
-			int expectedIndex = path.getArrayIndexAt(pathDepth);
-
-			if (expectedIndex < size()) {
-				return super.get(expectedIndex).getElementAt(path);
+	public Optional<JsonType> getElementAt(final JsonPath path) {
+		if (paths.contains(path)) {
+			return Optional.of(this);
+		} else {
+			Optional<JsonPath> parentPath = findParentPath(path);
+			
+			if (parentPath.isPresent()) {
+				int expectedIndex = path.getArrayIndexAt(parentPath.get().getDepth());
+	
+				if (expectedIndex < size()) {
+					return get(expectedIndex).getElementAt(path);
+				}
 			}
 		}
 		
 		return Optional.empty();
+	}
+	
+	private Optional<JsonPath> findParentPath(final JsonPath childPath) {
+		return paths.parallelStream().filter(parentPath -> 
+			parentPath.getDepth() < childPath.getDepth() &&
+			childPath.isChildPathOf(parentPath) &&
+			childPath.hasArrayIndexAt(parentPath.getDepth())
+		).findFirst();
 	}
 }

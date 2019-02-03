@@ -24,6 +24,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
+import java.util.Optional;
+
 import net.sf.jetro.path.JsonPath;
 
 import net.sf.jetro.tree.renderer.JsonRenderer;
@@ -81,5 +85,31 @@ public class JsonPrimitiveTest {
 		assertEquals(actual, expected);
 	}
 
+	@Test
+	public void shouldGetSamePrimitiveAtDifferentPaths() {
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonString", jsonString));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonString);
+		jsonArray.add(jsonObject);
+		
+		jsonArray.recalculateTreePaths();
+		
+		Optional<JsonType> optional1 =
+				jsonArray.getElementAt(JsonPath.compile("$[1].jsonString"));
+		
+		assertTrue(optional1.isPresent());
+		assertTrue(optional1.get() == jsonString);
+		
+		Optional<JsonType> optional2 =
+				jsonArray.getElementAt(JsonPath.compile("$[0]"));
+		
+		assertTrue(optional2.isPresent());
+		assertTrue(optional2.get() == jsonString);
+	}
+	
 	// TODO put a wrong path in element then test that NoSuchElementException is actually thrown	
 }

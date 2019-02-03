@@ -22,6 +22,7 @@ package net.sf.jetro.tree;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
@@ -37,10 +38,10 @@ import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
-public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollection {
+public final class JsonObject extends AbstractSet<JsonProperty> implements JsonCollection {
 	private static final long serialVersionUID = -2961271887393587301L;
 
-	private class JsonPropertiesIterator implements Iterator<Entry<String, JsonType>> {
+	private final class JsonPropertiesIterator implements Iterator<Entry<String, JsonType>> {
 		private Iterator<JsonProperty> backingIterator;
 
 		private JsonPropertiesIterator(Iterator<JsonProperty> backingIterator) {
@@ -54,13 +55,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 
 		@Override
 		public Entry<String, JsonType> next() {
-			JsonProperty property = backingIterator.next();
-			
-			if (property != null) {
-				property = property.deepCopy();
-			}
-			
-			return property;
+			return backingIterator.next();
 		}
 
 		@Override
@@ -69,7 +64,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 		}
 	}
 
-	private class JsonPropertiesSet extends AbstractSet<Entry<String, JsonType>> {
+	private final class JsonPropertiesSet extends AbstractSet<Entry<String, JsonType>> {
 		@Override
 		public Iterator<Entry<String, JsonType>> iterator() {
 			return new JsonPropertiesIterator(properties.iterator());
@@ -81,19 +76,8 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 		}
 	}
 
-	public class JsonProperties extends AbstractMap<String, JsonType> {
+	public final class JsonProperties extends AbstractMap<String, JsonType> {
 		private JsonPropertiesSet entrySet;
-
-		@Override
-		public JsonType get(Object key) {
-			JsonType value = super.get(key);
-			
-			if (value != null) {
-				value = value.deepCopy();
-			}
-			
-			return value;
-		}
 
 		public JsonType put(String key, String value) {
 			return put(key, new JsonString(value));
@@ -132,7 +116,7 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 			}
 
 			JsonType oldValue = property.getValue();
-			property.setValue(value != null ? value.deepCopy() : value);
+			property.setValue(value);
 			return oldValue;
 		}
 
@@ -154,9 +138,8 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 	private JsonProperties mapView;
 
 	// JSON path relative to the root element of the JSON tree this element belongs to
-	// if null this element is the root element
-	private JsonPath path;
-	private int pathDepth;
+	// if empty this element is the root element
+	private final Set<JsonPath> paths = new HashSet<>();
 
 	public JsonObject() {
 	}
@@ -166,20 +149,20 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 	}
 
 	public JsonObject(final Set<JsonProperty> properties) {
-		this(null, properties);
+		this((JsonPath) null, properties);
 	}
 
 	public JsonObject(final JsonPath path, final Set<JsonProperty> properties) {
-		this(path, properties, false);
+		this(properties, false);
+		paths.add(path);
+	}
+
+	private JsonObject(final Set<JsonPath> paths, final Set<JsonProperty> properties) {
+		this(properties, true);
+		this.paths.addAll(paths);
 	}
 	
-	private JsonObject(final JsonPath path, final Set<JsonProperty> properties, boolean deepCopy) {
-		this.path = path;
-
-		if (path != null) {
-			pathDepth = path.getDepth();
-		}
-
+	private JsonObject(final Set<JsonProperty> properties, final boolean deepCopy) {
 		if (properties != null) {
 			if (deepCopy) {
 				properties.forEach(property -> this.properties.add(property.deepCopy()));
@@ -190,8 +173,12 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 	}
 
 	@Override
-	public JsonType deepCopy() {
-		return new JsonObject(path, this, true);
+	public JsonObject deepCopy() {
+		return new JsonObject(paths, this);
+	}
+	
+	public boolean add(JsonProperty e) {
+		return properties.add(e);
 	}
 	
 	public JsonProperties asMap() {
@@ -203,20 +190,26 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 	}
 
 	@Override
-	public void setPath(final JsonPath path) {
-		this.path = path;
-		this.pathDepth = path.getDepth(); 
+	public void addPath(final JsonPath path) {
+		paths.add(path);
+	}
+
+	@Override
+	public void resetPathsRecursively() {
+		paths.clear();
+		forEach(property -> property.getValue().resetPaths());
 	}
 	
 	@Override
-	public void recalculateTreePaths(boolean treeRoot) {
+	public void recalculateTreePaths(final boolean treeRoot) {
 		if (treeRoot) {
-			setPath(new JsonPath());
+			addPath(new JsonPath());
 		}
 		
-		for (JsonProperty property : properties) {
+		for (final JsonProperty property : properties) {
 			JsonType element = property.getValue();
-			element.setPath(path.append(new PropertyNamePathElement(property.getKey())));
+			paths.forEach(path -> element.addPath(
+					path.append(new PropertyNamePathElement(property.getKey()))));
 			
 			if (element instanceof JsonCollection) {
 				((JsonCollection) element).recalculateTreePaths(false);
@@ -234,25 +227,32 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 		return properties.iterator();
 	}
 
-	@Override
-	public boolean add(final JsonProperty e) {
-		return properties.add(e.deepCopy());
-	}
-
 	public JsonType get(Object key) {
 		return asMap().get(key);
 	}
 	
 	@Override
 	public Optional<JsonType> getElementAt(final JsonPath path) {
-		if (this.path == path || (this.path != null && this.path.equals(path))) {
-			return Optional.of(this.deepCopy());
-		} else if (pathDepth < path.getDepth() && path.isChildPathOf(this.path) && path.hasPropertyNameAt(pathDepth)) {
-			String expectedName = path.getPropertyNameAt(pathDepth);
-			return findElement(expectedName, path);
+		if (paths.contains(path)) {
+			return Optional.of(this);
 		} else {
-			return Optional.empty();
+			Optional<JsonPath> parentPath = findParentPath(path);
+			
+			if (parentPath.isPresent()) {
+				String expectedName = path.getPropertyNameAt(parentPath.get().getDepth());
+				return findElement(expectedName, path);
+			}
 		}
+
+		return Optional.empty();
+	}
+
+	private Optional<JsonPath> findParentPath(JsonPath childPath) {
+		return paths.parallelStream().filter(parentPath ->
+				parentPath.getDepth() < childPath.getDepth() &&
+				childPath.isChildPathOf(parentPath) &&
+				childPath.hasPropertyNameAt(parentPath.getDepth())
+			).findFirst();
 	}
 
 	private Optional<JsonType> findElement(String expectedName, JsonPath path) {
@@ -291,7 +291,8 @@ public class JsonObject extends AbstractSet<JsonProperty> implements JsonCollect
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("JsonObject [properties=").append(properties).append(", path=").append(path).append("]");
+		builder.append("JsonObject [properties=").append(properties)
+			.append(", paths=").append(paths).append("]");
 		return builder.toString();
 	}
 

@@ -24,7 +24,7 @@ package net.sf.jetro.tree;
  * 
  * @author matthias.rothe
  */
-public class Null {
+public final class Null {
 	/**
 	 * The only instance of this class that will ever get generated
 	 */

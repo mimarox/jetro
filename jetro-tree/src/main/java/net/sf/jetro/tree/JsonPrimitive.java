@@ -19,7 +19,9 @@
  */
 package net.sf.jetro.tree;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.path.JsonPath;
@@ -31,9 +33,9 @@ import net.sf.jetro.visitor.JsonVisitor;
 public abstract class JsonPrimitive<T> implements JsonType {
 	private static final long serialVersionUID = -200661848423590056L;
 
-	// JSON path relative to the root element of the JSON tree this element belongs to
-	// if null this element is the root element
-	protected JsonPath path;
+	// JSON paths relative to the root element of the JSON tree this element belongs to
+	// if empty this element is the root element
+	protected final Set<JsonPath> paths = new HashSet<>();
 	private T value;
 
 	public JsonPrimitive() {
@@ -44,14 +46,19 @@ public abstract class JsonPrimitive<T> implements JsonType {
 	}
 
 	public JsonPrimitive(final T value) {
-		this(null, value);
+		this((JsonPath) null, value);
 	}
 
 	public JsonPrimitive(final JsonPath path, final T value) {
-		this.path = path;
+		paths.add(path);
 		this.value = value;
 	}
-
+	
+	protected JsonPrimitive(final Set<JsonPath> paths, final T value) {
+		this.paths.addAll(paths);
+		this.value = value;
+	}
+	
 	public T getValue() {
 		return value;
 	}
@@ -61,14 +68,19 @@ public abstract class JsonPrimitive<T> implements JsonType {
 	}
 	
 	@Override
-	public void setPath(JsonPath path) {
-		this.path = path;
+	public void addPath(JsonPath path) {
+		paths.add(path);
+	}
+	
+	@Override
+	public void resetPaths() {
+		paths.clear();
 	}
 	
 	@Override
 	public Optional<JsonType> getElementAt(JsonPath path) {
-		if (this.path == path || (this.path != null && this.path.equals(path))) {
-			return Optional.of(this.deepCopy());
+		if (this.paths.contains(path)) {
+			return Optional.of(this);
 		} else {
 			return Optional.empty();
 		}
@@ -93,8 +105,8 @@ public abstract class JsonPrimitive<T> implements JsonType {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append(getClass().getSimpleName() + " [value=").append(value).append(", path=").append(path)
-			.append("]");
+		builder.append(getClass().getSimpleName() + " [value=").append(value)
+			.append(", paths=").append(paths).append("]");
 		return builder.toString();
 	}
 	

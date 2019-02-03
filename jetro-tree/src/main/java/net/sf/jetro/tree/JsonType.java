@@ -30,5 +30,7 @@ public interface JsonType extends JsonElement {
 
 	Optional<JsonType> getElementAt(JsonPath path);
 	
-	void setPath(JsonPath path);
+	void addPath(JsonPath path);
+	
+	void resetPaths();
 }

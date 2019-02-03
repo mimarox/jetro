@@ -28,7 +28,7 @@ import net.sf.jetro.visitor.JsonVisitor;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-public class JsonProperty implements JsonElement, Entry<String, JsonType> {
+public final class JsonProperty implements JsonElement, Entry<String, JsonType> {
 	private static final long serialVersionUID = 1421897236649764494L;
 
 	private String key;
