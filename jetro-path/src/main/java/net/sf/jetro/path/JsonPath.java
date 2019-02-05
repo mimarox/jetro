@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class JsonPath implements Cloneable, Serializable {
 	private static final long serialVersionUID = -7011229423184378717L;
@@ -203,10 +204,7 @@ public class JsonPath implements Cloneable, Serializable {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(pathElements);
-		return result;
+		return Objects.hashCode(toString());
 	}
 
 	@Override
