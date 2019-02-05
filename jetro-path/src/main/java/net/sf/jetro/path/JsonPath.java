@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class JsonPath implements Cloneable, Serializable {
 	private static final long serialVersionUID = -7011229423184378717L;
@@ -35,6 +36,7 @@ public class JsonPath implements Cloneable, Serializable {
 	private JsonPathElement[] pathElements;
 	private boolean containsOptionals;
 	private int size;
+	private String string;
 
 	public JsonPath() {
 		this(new JsonPathElement[] {}, false);
@@ -55,7 +57,8 @@ public class JsonPath implements Cloneable, Serializable {
 			JsonPath clone = (JsonPath) super.clone();
 
 			clone.pathElements = Arrays.copyOf(pathElements, size + 1);
-
+			clone.string = null;
+			
 			return clone;
 		} catch (CloneNotSupportedException e) {
 			throw new IllegalStateException(e);
@@ -203,10 +206,7 @@ public class JsonPath implements Cloneable, Serializable {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(pathElements);
-		return result;
+		return Objects.hash(toString());
 	}
 
 	@Override
@@ -228,13 +228,17 @@ public class JsonPath implements Cloneable, Serializable {
 	}
 
 	public String toString() {
-		StringBuilder builder = new StringBuilder("$");
+		if (string == null) {
+			StringBuilder builder = new StringBuilder("$");
 
-		for (int i = 0; i < size; i++) {
-			builder.append(pathElements[i].toString());
+			for (int i = 0; i < size; i++) {
+				builder.append(pathElements[i].toString());
+			}
+
+			string = builder.toString();
 		}
-
-		return builder.toString();
+		
+		return string;
 	}
 
 	public static JsonPath compile(final String jsonPath) {

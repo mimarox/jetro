@@ -24,10 +24,14 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotSame;
 import static org.testng.Assert.assertTrue;
-import net.sf.testng.databinding.DataBinding;
-import net.sf.testng.databinding.TestInput;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.testng.annotations.Test;
+
+import net.sf.testng.databinding.DataBinding;
+import net.sf.testng.databinding.TestInput;
 
 public class JsonPathTest {
 	private JsonPath jsonPath = new JsonPath(new JsonPathElement[] { new PropertyNamePathElement("foo"),
@@ -247,5 +251,18 @@ public class JsonPathTest {
 			@TestInput(name = "notChildPath") final String notChildPath) {
 		assertFalse(JsonPath.compile(jsonPath).isParentPathOf(JsonPath.compile(notChildPath)), jsonPath
 				+ " should not have been parent path of " + notChildPath);
+	}
+	
+	@Test
+	public void shouldHaveConsistentEqualsAndHashcode() {
+		JsonPath firstPath = JsonPath.compile("$[0]");
+		JsonPath secondPath = JsonPath.compile("$[0][0]").removeLastElement();
+		
+		assertEquals(firstPath, secondPath);
+		
+		Set<JsonPath> paths = new HashSet<>();
+		paths.add(firstPath);
+		
+		assertTrue(paths.contains(secondPath));
 	}
 }
