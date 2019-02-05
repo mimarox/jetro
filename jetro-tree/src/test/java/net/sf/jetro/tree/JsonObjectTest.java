@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
@@ -260,5 +261,33 @@ public class JsonObjectTest {
 		
 		assertTrue(optional.isPresent());
 		assertEquals(optional.get(), new JsonString("value"));
+	}
+	
+	@Test
+	public void shouldRemoveElementAtFromObject() {
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonObject innerObject = new JsonObject();
+		innerObject.add(new JsonProperty("jsonString", jsonString));
+		
+		JsonObject outerObject = new JsonObject();
+		outerObject.add(new JsonProperty("innerObject", innerObject));
+		
+		outerObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.innerObject.jsonString");
+		
+		Optional<JsonType> optionalBeforeRemove = outerObject.getElementAt(path);
+		
+		assertTrue(optionalBeforeRemove.isPresent());
+		assertEquals(optionalBeforeRemove.get(), jsonString);
+		
+		boolean removed = outerObject.removeElementAt(path);
+		
+		assertTrue(removed);
+		
+		Optional<JsonType> optionalAfterRemove = outerObject.getElementAt(path);
+		
+		assertFalse(optionalAfterRemove.isPresent());
 	}
 }
