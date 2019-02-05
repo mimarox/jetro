@@ -285,9 +285,9 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	}
 
 	@Override
-	public void removeElementAt(JsonPath path) {
+	public boolean removeElementAt(JsonPath path) {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
 	@Override

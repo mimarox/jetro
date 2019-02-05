@@ -172,8 +172,8 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	}
 	
 	@Override
-	public void removeElementAt(JsonPath path) {
+	public boolean removeElementAt(JsonPath path) {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 }

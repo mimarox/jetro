@@ -50,5 +50,5 @@ public interface JsonCollection extends JsonType {
 	 * Removes the {@link JsonType element} at the given {@link JsonPath path}
 	 * @param path The path to remove the element at
 	 */
-	void removeElementAt(JsonPath path);
+	boolean removeElementAt(JsonPath path);
 }
