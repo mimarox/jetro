@@ -24,10 +24,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.Optional;
 
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import net.sf.jetro.path.JsonPath;
@@ -189,5 +192,39 @@ public class JsonArrayTest {
 		
 		assertTrue(optional.isPresent());
 		assertEquals(optional.get(), new JsonString("value"));
+	}
+	
+	@Test
+	public void shouldRemoveElementAt() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonArray innerArray = new JsonArray();
+		innerArray.add(jsonBoolean);
+		
+		JsonArray outerArray = new JsonArray();
+		outerArray.add(innerArray);
+		
+		outerArray.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$[0][0]");
+		
+		Optional<JsonType> optionalBeforeRemove = outerArray.getElementAt(path);
+		
+		assertTrue(optionalBeforeRemove.isPresent());
+		assertTrue(optionalBeforeRemove.get() == jsonBoolean);
+		
+		boolean removed = outerArray.removeElementAt(path);
+		
+		assertTrue(removed);
+		
+		Optional<JsonType> optionalAfterRemove = outerArray.getElementAt(path);
+		
+		assertFalse(optionalAfterRemove.isPresent());
+	}
+	
+	@Ignore
+	@Test
+	public void shouldRemoveElementOnlyAt() {
+		fail("Not implemented yet!");
 	}
 }

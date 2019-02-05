@@ -172,8 +172,20 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	}
 	
 	@Override
-	public void removeElementAt(JsonPath path) {
-		// TODO Auto-generated method stub
+	public boolean removeElementAt(JsonPath path) {
+		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
 		
+		if (parentElement.isPresent() && !(parentElement.get() instanceof JsonPrimitive)) {
+			if (parentElement.get() instanceof JsonArray &&
+					path.hasArrayIndexAt(path.getDepth() - 1)) {
+				JsonType childElement = ((JsonArray) parentElement.get())
+						.remove(path.getArrayIndexAt(path.getDepth() - 1));
+				return childElement != null;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 }
