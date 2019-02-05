@@ -21,6 +21,7 @@ package net.sf.jetro.tree;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -286,7 +287,15 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 
 	@Override
 	public boolean removeElementAt(JsonPath path) {
-		// TODO Auto-generated method stub
+		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
+		
+		if (parentElement.isPresent() && !(parentElement.get() instanceof JsonPrimitive)) {
+			if (parentElement.get() instanceof JsonObject && path.hasPropertyNameAt(path.getDepth() - 1)) {
+				return ((JsonObject) parentElement.get()).removeAllByKey(
+						Arrays.asList(path.getPropertyNameAt(path.getDepth() - 1)));
+			}
+		}
+		
 		return false;
 	}
 
