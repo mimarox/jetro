@@ -181,11 +181,9 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 				JsonType childElement = ((JsonArray) parentElement.get())
 						.remove(path.getArrayIndexAt(path.getDepth() - 1));
 				return childElement != null;
-			} else {
-				return false;
 			}
-		} else {
-			return false;
 		}
+		
+		return false;
 	}
 }

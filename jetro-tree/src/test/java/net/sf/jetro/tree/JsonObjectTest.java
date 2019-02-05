@@ -290,4 +290,32 @@ public class JsonObjectTest {
 		
 		assertFalse(optionalAfterRemove.isPresent());
 	}
+	
+	@Test
+	public void shouldRemoveElementAtFromArray() {
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonString);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonArray", jsonArray));
+		
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.jsonArray[0]");
+		
+		Optional<JsonType> optionalBeforeRemove = jsonObject.getElementAt(path);
+		
+		assertTrue(optionalBeforeRemove.isPresent());
+		assertEquals(optionalBeforeRemove.get(), jsonString);
+		
+		boolean removed = jsonObject.removeElementAt(path);
+		
+		assertTrue(removed);
+		
+		Optional<JsonType> optionalAfterRemove = jsonObject.getElementAt(path);
+		
+		assertFalse(optionalAfterRemove.isPresent());
+	}
 }

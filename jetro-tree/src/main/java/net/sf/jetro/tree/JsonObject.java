@@ -290,9 +290,15 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
 		
 		if (parentElement.isPresent() && !(parentElement.get() instanceof JsonPrimitive)) {
-			if (parentElement.get() instanceof JsonObject && path.hasPropertyNameAt(path.getDepth() - 1)) {
+			if (parentElement.get() instanceof JsonObject &&
+					path.hasPropertyNameAt(path.getDepth() - 1)) {
 				return ((JsonObject) parentElement.get()).removeAllByKey(
 						Arrays.asList(path.getPropertyNameAt(path.getDepth() - 1)));
+			} else if (parentElement.get() instanceof JsonArray &&
+					path.hasArrayIndexAt(path.getDepth() - 1)) {
+				JsonType childElement = ((JsonArray) parentElement.get())
+						.remove(path.getArrayIndexAt(path.getDepth() - 1));
+				return childElement != null;
 			}
 		}
 
