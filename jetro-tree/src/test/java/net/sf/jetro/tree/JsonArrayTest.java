@@ -26,11 +26,10 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
+import java.util.Arrays;
 import java.util.Optional;
 
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import net.sf.jetro.path.JsonPath;
@@ -195,7 +194,7 @@ public class JsonArrayTest {
 	}
 	
 	@Test
-	public void shouldRemoveElementAt() {
+	public void shouldRemoveElementAtFromArray() {
 		JsonBoolean jsonBoolean = new JsonBoolean(true);
 		
 		JsonArray innerArray = new JsonArray();
@@ -222,9 +221,113 @@ public class JsonArrayTest {
 		assertFalse(optionalAfterRemove.isPresent());
 	}
 	
-	@Ignore
 	@Test
-	public void shouldRemoveElementOnlyAt() {
-		fail("Not implemented yet!");
+	public void shouldRemoveElementAtFromObject() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonBoolean", jsonBoolean));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonObject);
+		
+		jsonArray.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$[0].jsonBoolean");
+		
+		Optional<JsonType> optionalBeforeRemove = jsonArray.getElementAt(path);
+		
+		assertTrue(optionalBeforeRemove.isPresent());
+		assertTrue(optionalBeforeRemove.get() == jsonBoolean);
+		
+		boolean removed = jsonArray.removeElementAt(path);
+		
+		assertTrue(removed);
+		
+		Optional<JsonType> optionalAfterRemove = jsonArray.getElementAt(path);
+		
+		assertFalse(optionalAfterRemove.isPresent());
+	}
+	
+	@Test
+	public void shouldNotRemoveElementAtFromPrimitive() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonBoolean", jsonBoolean));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonObject);
+		
+		jsonArray.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$[0].jsonBoolean[0]");
+		
+		Optional<JsonType> optionalBeforeRemove = jsonArray.getElementAt(path);
+		
+		assertFalse(optionalBeforeRemove.isPresent());
+		
+		boolean removed = jsonArray.removeElementAt(path);
+		
+		assertFalse(removed);
+	}
+	
+	@Test
+	public void shouldNotRemoveElementAtWithNonexistingElement() {
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.recalculateTreePaths();
+		
+		assertFalse(jsonArray.removeElementAt(JsonPath.compile("$[0]")));
+	}
+	
+	@Test
+	public void shouldNotRemoveElementAtWithNonexistingProperty() {
+		JsonObject jsonObject = new JsonObject();
+		
+		JsonArray jsonArray = new JsonArray(Arrays.asList(jsonObject));
+		jsonArray.recalculateTreePaths();
+		
+		assertFalse(jsonArray.removeElementAt(JsonPath.compile("$[0].property")));
+	}
+	
+	@Test
+	public void shouldNotRemoveElementAtWithNonexistingPath() {
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.recalculateTreePaths();
+		
+		assertFalse(jsonArray.removeElementAt(JsonPath.compile("$[0][0]")));
+	}
+	
+	@Test(dependsOnMethods = {"shouldRemoveElementAtFromArray"})
+	public void shouldRemoveElementOnlyAtFromArray() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonArray thirdArray = new JsonArray();
+		thirdArray.add(jsonBoolean);
+		
+		JsonArray secondArray = new JsonArray();
+		secondArray.add(thirdArray);
+		
+		JsonArray firstArray = new JsonArray();
+		firstArray.add(secondArray);
+		firstArray.add(thirdArray);
+		
+		firstArray.recalculateTreePaths();
+		
+		Optional<JsonType> optionalBeforeRemove =
+				firstArray.getElementAt(JsonPath.compile("$[0][0][0]"));
+		
+		assertTrue(optionalBeforeRemove.isPresent());
+		assertEquals(optionalBeforeRemove.get(), jsonBoolean);
+		
+		boolean removed = firstArray.removeElementAt(JsonPath.compile("$[1][0]"));
+		
+		assertTrue(removed);
+		
+		Optional<JsonType> optionalAfterRemove =
+				firstArray.getElementAt(JsonPath.compile("$[0][0][0]"));
+		
+		assertTrue(optionalAfterRemove.isPresent());
+		assertEquals(optionalAfterRemove.get(), jsonBoolean);
 	}
 }

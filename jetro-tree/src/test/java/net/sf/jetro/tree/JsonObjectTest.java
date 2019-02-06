@@ -318,4 +318,55 @@ public class JsonObjectTest {
 		
 		assertFalse(optionalAfterRemove.isPresent());
 	}
+	
+	@Test
+	public void shouldNotRemoveElementAtFromPrimitive() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonBoolean);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonArray", jsonArray));
+		
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.jsonArray[0][0]");
+		
+		Optional<JsonType> optionalBeforeRemove = jsonObject.getElementAt(path);
+		
+		assertFalse(optionalBeforeRemove.isPresent());
+		
+		boolean removed = jsonObject.removeElementAt(path);
+		
+		assertFalse(removed);
+	}
+	
+	@Test
+	public void shouldNotRemoveElementAtWithNonexistingElement() {
+		JsonArray jsonArray = new JsonArray();
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonArray", jsonArray));
+		
+		jsonObject.recalculateTreePaths();
+		
+		assertFalse(jsonObject.removeElementAt(JsonPath.compile("$.jsonArray[0]")));
+	}
+	
+	@Test
+	public void shouldNotRemoveElementAtWithNonexistingProperty() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.recalculateTreePaths();
+		
+		assertFalse(jsonObject.removeElementAt(JsonPath.compile("$.property")));
+	}
+	
+	@Test
+	public void shouldNotRemoveElementAtWithNonexistingPath() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.recalculateTreePaths();
+		
+		assertFalse(jsonObject.removeElementAt(JsonPath.compile("$.foo.bar")));
+	}
 }

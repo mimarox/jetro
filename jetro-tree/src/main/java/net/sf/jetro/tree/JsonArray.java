@@ -20,6 +20,7 @@
 package net.sf.jetro.tree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -35,10 +36,12 @@ import net.sf.jetro.visitor.JsonVisitor;
 public final class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	private static final long serialVersionUID = -853759861392315220L;
 
-	// JSON paths relative to the root element of the JSON tree this element belongs to
-	// if empty this element is the root element
-	private final Set<JsonPath> paths = new HashSet<>();
+	final Set<JsonPath> paths = new HashSet<>();
 
+	{
+		paths.add(new JsonPath());
+	}
+	
 	public JsonArray() {
 	}
 
@@ -160,30 +163,84 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	}
 
 	@Override
-	public boolean addElementAt(JsonPath path, JsonType element) {
-		// TODO Auto-generated method stub
+	public boolean addElementAt(final JsonPath path, final JsonType element) {
+		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
+		
+		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
+			if (parentElement.get() instanceof JsonArray &&
+					path.hasArrayIndexAt(path.getDepth() - 1)) {
+				try {
+					((JsonArray) parentElement.get()).add(
+							path.getArrayIndexAt(path.getDepth() - 1), element);
+					return true;
+				} catch (IndexOutOfBoundsException e) {
+					return false;
+				}
+			}
+		}
+		
 		return false;
 	}
 
 	@Override
-	public JsonType replaceElementAt(JsonPath path, JsonType element) {
+	public JsonType replaceElementAt(final JsonPath path, final JsonType element) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	@Override
 	public boolean removeElementAt(JsonPath path) {
+		if (!isTreeRoot()) {
+			throw new IllegalStateException(
+					"removeElementAt can only be called on the JSON tree root.");
+		}
+		
 		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
 		
-		if (parentElement.isPresent() && !(parentElement.get() instanceof JsonPrimitive)) {
+		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
 			if (parentElement.get() instanceof JsonArray &&
 					path.hasArrayIndexAt(path.getDepth() - 1)) {
-				JsonType childElement = ((JsonArray) parentElement.get())
-						.remove(path.getArrayIndexAt(path.getDepth() - 1));
-				return childElement != null;
+				JsonArray parent = prepareJsonArrayForChildRemoval(parentElement, path);
+				
+				try {
+					JsonType child = parent.remove(path.getArrayIndexAt(path.getDepth() - 1));
+					return child != null;
+				} catch (IndexOutOfBoundsException e) {
+					return false;
+				}
+			} else if (parentElement.get() instanceof JsonObject &&
+					path.hasPropertyNameAt(path.getDepth() - 1)) {
+				return ((JsonObject) parentElement.get()).removeAllByKey(
+						Arrays.asList(path.getPropertyNameAt(path.getDepth() - 1)));
 			}
 		}
 		
 		return false;
+	}
+
+	private boolean isTreeRoot() {
+		return paths.size() == 1 && paths.contains(new JsonPath());
+	}
+
+	private JsonArray prepareJsonArrayForChildRemoval(Optional<JsonType> parentElement,
+			JsonPath path) {
+		JsonArray jsonArray = (JsonArray) parentElement.get();
+		
+		if (hasMultiplePaths(jsonArray)) {
+			JsonArray shallowCopy = new JsonArray(jsonArray);
+			
+			removeElementAt(path.removeLastElement());
+			addElementAt(path.removeLastElement(), shallowCopy);
+			
+			recalculateTreePaths();
+			
+			return shallowCopy;
+		} else {
+			return jsonArray;
+		}
+	}
+
+	private boolean hasMultiplePaths(JsonArray jsonArray) {
+		return jsonArray.paths.size() > 1;
 	}
 }

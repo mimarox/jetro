@@ -135,12 +135,10 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		}
 	}
 
-	private Set<JsonProperty> properties = new LinkedHashSet<>();
+	private final Set<JsonProperty> properties = new LinkedHashSet<>();
 	private JsonProperties mapView;
 
-	// JSON path relative to the root element of the JSON tree this element belongs to
-	// if empty this element is the root element
-	private final Set<JsonPath> paths = new HashSet<>();
+	final Set<JsonPath> paths = new HashSet<>();
 
 	public JsonObject() {
 	}
@@ -296,9 +294,13 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 						Arrays.asList(path.getPropertyNameAt(path.getDepth() - 1)));
 			} else if (parentElement.get() instanceof JsonArray &&
 					path.hasArrayIndexAt(path.getDepth() - 1)) {
-				JsonType childElement = ((JsonArray) parentElement.get())
-						.remove(path.getArrayIndexAt(path.getDepth() - 1));
-				return childElement != null;
+				try {
+					JsonType childElement = ((JsonArray) parentElement.get())
+							.remove(path.getArrayIndexAt(path.getDepth() - 1));
+					return childElement != null;
+				} catch (IndexOutOfBoundsException e) {
+					return false;
+				}
 			}
 		}
 
