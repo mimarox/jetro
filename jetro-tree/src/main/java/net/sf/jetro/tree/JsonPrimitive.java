@@ -33,12 +33,11 @@ import net.sf.jetro.visitor.JsonVisitor;
 public abstract class JsonPrimitive<T> implements JsonType {
 	private static final long serialVersionUID = -200661848423590056L;
 
-	// JSON paths relative to the root element of the JSON tree this element belongs to
-	// if empty this element is the root element
 	protected final Set<JsonPath> paths = new HashSet<>();
 	private T value;
 
 	public JsonPrimitive() {
+		paths.add(new JsonPath());
 	}
 
 	public JsonPrimitive(final JsonPath path) {
@@ -50,7 +49,12 @@ public abstract class JsonPrimitive<T> implements JsonType {
 	}
 
 	public JsonPrimitive(final JsonPath path, final T value) {
-		paths.add(path);
+		if (path != null) {
+			paths.add(path);
+		} else {
+			paths.add(new JsonPath());
+		}
+		
 		this.value = value;
 	}
 	

@@ -141,6 +141,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	final Set<JsonPath> paths = new HashSet<>();
 
 	public JsonObject() {
+		paths.add(new JsonPath());
 	}
 
 	public JsonObject(final JsonPath path) {
@@ -153,7 +154,12 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 
 	public JsonObject(final JsonPath path, final Set<JsonProperty> properties) {
 		this(properties, false);
-		paths.add(path);
+		
+		if (path != null) {
+			paths.add(path);
+		} else {
+			paths.add(new JsonPath());
+		}
 	}
 
 	private JsonObject(final Set<JsonPath> paths, final Set<JsonProperty> properties) {
@@ -202,6 +208,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	@Override
 	public void recalculateTreePaths(final boolean treeRoot) {
 		if (treeRoot) {
+			resetPaths();
 			addPath(new JsonPath());
 		}
 		
@@ -273,8 +280,36 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 
 	@Override
 	public boolean addElementAt(JsonPath path, JsonType element) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean success = false;
+		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
+		
+		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
+			if (parentElement.get() instanceof JsonObject &&
+					path.hasPropertyNameAt(path.getDepth() - 1)) {
+				final JsonProperties jsonObject = ((JsonObject) parentElement.get()).asMap();
+				final String key = path.getPropertyNameAt(path.getDepth() -1);
+				
+				if (!jsonObject.containsKey(key)) {
+					jsonObject.put(key, element);
+					success = true;
+				}
+			} else if (parentElement.get() instanceof JsonArray &&
+					path.hasArrayIndexAt(path.getDepth() - 1)) {
+				try {
+					((JsonArray) parentElement.get()).add(
+							path.getArrayIndexAt(path.getDepth() - 1), element);
+					success = true;
+				} catch (IndexOutOfBoundsException e) {
+					success = false;
+				}
+			}			
+		}
+		
+		if (success) {
+			recalculateTreePaths(isTreeRoot());
+		}
+		
+		return success;
 	}
 
 	@Override
@@ -285,28 +320,88 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 
 	@Override
 	public boolean removeElementAt(JsonPath path) {
+		if (!isTreeRoot()) {
+			throw new IllegalStateException(
+					"removeElementAt can only be called on the JSON tree root.");
+		}
+		
+		boolean success = false;
 		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
 		
 		if (parentElement.isPresent() && !(parentElement.get() instanceof JsonPrimitive)) {
 			if (parentElement.get() instanceof JsonObject &&
 					path.hasPropertyNameAt(path.getDepth() - 1)) {
-				return ((JsonObject) parentElement.get()).removeAllByKey(
+				JsonObject parent = prepareJsonObjectForChildRemoval(parentElement, path);
+				
+				success = parent.removeAllByKeys(
 						Arrays.asList(path.getPropertyNameAt(path.getDepth() - 1)));
 			} else if (parentElement.get() instanceof JsonArray &&
 					path.hasArrayIndexAt(path.getDepth() - 1)) {
 				try {
-					JsonType childElement = ((JsonArray) parentElement.get())
-							.remove(path.getArrayIndexAt(path.getDepth() - 1));
-					return childElement != null;
+					JsonArray parent = prepareJsonArrayForChildRemoval(parentElement, path);
+					
+					JsonType childElement = parent.remove(
+							path.getArrayIndexAt(path.getDepth() - 1));
+					success = childElement != null;
 				} catch (IndexOutOfBoundsException e) {
-					return false;
+					success = false;
 				}
 			}
 		}
 
-		return false;
+		if (success) {
+			recalculateTreePaths();
+		}
+		
+		return success;
 	}
 
+	private boolean isTreeRoot() {
+		return paths.size() == 1 && paths.contains(new JsonPath());
+	}
+
+	private JsonObject prepareJsonObjectForChildRemoval(Optional<JsonType> parentElement,
+			JsonPath path) {
+		JsonObject jsonObject = (JsonObject) parentElement.get();
+		
+		if (hasMultiplePaths(jsonObject)) {
+			JsonObject shallowCopy = new JsonObject(jsonObject);
+			JsonPath parentPath = path.removeLastElement();
+			
+			removeElementAt(parentPath);
+			addElementAt(parentPath, shallowCopy);
+			
+			return shallowCopy;
+		} else {
+			return jsonObject;
+		}
+	}
+
+	private boolean hasMultiplePaths(JsonObject jsonObject) {
+		return jsonObject.paths.size() > 1;
+	}
+	
+	private JsonArray prepareJsonArrayForChildRemoval(Optional<JsonType> parentElement,
+			JsonPath path) {
+		JsonArray jsonArray = (JsonArray) parentElement.get();
+		
+		if (hasMultiplePaths(jsonArray)) {
+			JsonArray shallowCopy = new JsonArray(jsonArray);
+			JsonPath parentPath = path.removeLastElement();
+			
+			removeElementAt(parentPath);
+			addElementAt(parentPath, shallowCopy);
+			
+			return shallowCopy;
+		} else {
+			return jsonArray;
+		}
+	}
+	
+	private boolean hasMultiplePaths(JsonArray jsonArray) {
+		return jsonArray.paths.size() > 1;
+	}
+	
 	@Override
 	public String toJson() {
 		return new DefaultJsonRenderer().render(this);
@@ -358,7 +453,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		return retainOrRemoveAllByKey(keys, shouldBeRemoved -> !shouldBeRemoved);
 	}
 	
-	public boolean removeAllByKey(Collection<String> keys) {
+	public boolean removeAllByKeys(Collection<String> keys) {
 		return retainOrRemoveAllByKey(keys, shouldBeRemoved -> shouldBeRemoved);
 		
 	}

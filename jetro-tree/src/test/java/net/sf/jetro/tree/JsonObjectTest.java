@@ -29,6 +29,7 @@ import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.testng.annotations.Test;
@@ -37,6 +38,50 @@ import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.renderer.JsonRenderer;
 
 public class JsonObjectTest {
+	private class JsonTypeVerifier {
+		private final JsonObject jsonObject;
+		private final JsonPath path;
+		
+		private JsonTypeVerifier(final JsonObject jsonObject, final JsonPath path) {
+			Objects.requireNonNull(jsonObject);
+			Objects.requireNonNull(path);
+			
+			this.jsonObject = jsonObject;
+			this.path = path;
+		}
+		
+		private void is(final JsonType element) {
+			Optional<JsonType> optionalElement = jsonObject.getElementAt(path);
+			
+			assertTrue(optionalElement.isPresent());
+			assertTrue(optionalElement.get() == element);
+		}
+		
+		private void equals(final JsonType element) {
+			Optional<JsonType> optionalElement = jsonObject.getElementAt(path);
+			
+			assertTrue(optionalElement.isPresent());
+			assertEquals(optionalElement.get(), element);
+		}
+	}
+	
+	private class JsonObjectHolder {
+		private final JsonObject jsonObject;
+		
+		private JsonObjectHolder(final JsonObject jsonObject) {
+			Objects.requireNonNull(jsonObject);
+			
+			this.jsonObject = jsonObject;
+		}
+		
+		private JsonTypeVerifier at(final JsonPath path) {
+			return new JsonTypeVerifier(jsonObject, path);
+		}
+	}
+	
+	private JsonObjectHolder verifyElementFrom(final JsonObject jsonObject) {
+		return new JsonObjectHolder(jsonObject);
+	}
 
 	@Test
 	public void shouldRenderItself() {
@@ -150,7 +195,7 @@ public class JsonObjectTest {
 		jsonObject.add(new JsonProperty("c", 3));
 		jsonObject.add(new JsonProperty("d", 4));
 		
-		jsonObject.removeAllByKey(Arrays.asList("a", "b"));
+		jsonObject.removeAllByKeys(Arrays.asList("a", "b"));
 		
 		JsonObject expected = new JsonObject();
 		expected.add(new JsonProperty("c", 3));
@@ -191,23 +236,9 @@ public class JsonObjectTest {
 		
 		root.recalculateTreePaths();
 		
-		Optional<JsonType> optional1 =
-				root.getElementAt(JsonPath.compile("$.jsonArray[1].jsonString"));
-		
-		assertTrue(optional1.isPresent());
-		assertTrue(optional1.get() == jsonString);
-		
-		Optional<JsonType> optional2 =
-				root.getElementAt(JsonPath.compile("$.jsonArray[0]"));
-		
-		assertTrue(optional2.isPresent());
-		assertTrue(optional2.get() == jsonString);
-		
-		Optional<JsonType> optional3 =
-				root.getElementAt(JsonPath.compile("$.jsonObject.jsonString"));
-		
-		assertTrue(optional3.isPresent());
-		assertTrue(optional3.get() == jsonString);
+		verifyElementFrom(root).at(JsonPath.compile("$.jsonArray[1].jsonString")).is(jsonString);
+		verifyElementFrom(root).at(JsonPath.compile("$.jsonArray[0]")).is(jsonString);
+		verifyElementFrom(root).at(JsonPath.compile("$.jsonObject.jsonString")).is(jsonString);
 	}
 	
 	@Test
@@ -227,17 +258,8 @@ public class JsonObjectTest {
 		
 		root.recalculateTreePaths();
 		
-		Optional<JsonType> optional1 =
-				root.getElementAt(JsonPath.compile("$.jsonArray[1]"));
-		
-		assertTrue(optional1.isPresent());
-		assertTrue(optional1.get() == jsonObject);
-		
-		Optional<JsonType> optional2 =
-				root.getElementAt(JsonPath.compile("$.jsonObject"));
-		
-		assertTrue(optional2.isPresent());
-		assertTrue(optional2.get() == jsonObject);
+		verifyElementFrom(root).at(JsonPath.compile("$.jsonArray[1]")).is(jsonObject);
+		verifyElementFrom(root).at(JsonPath.compile("$.jsonObject")).is(jsonObject);
 	}
 	
 	@Test
@@ -256,11 +278,8 @@ public class JsonObjectTest {
 		assertEquals(deepCopied, root);
 		assertTrue(deepCopied != root);
 		
-		Optional<JsonType> optional = deepCopied.getElementAt(
-				JsonPath.compile("$.objectKey.stringKey"));
-		
-		assertTrue(optional.isPresent());
-		assertEquals(optional.get(), new JsonString("value"));
+		verifyElementFrom(deepCopied).at(
+				JsonPath.compile("$.objectKey.stringKey")).equals(new JsonString("value"));
 	}
 	
 	@Test
@@ -277,17 +296,12 @@ public class JsonObjectTest {
 		
 		JsonPath path = JsonPath.compile("$.innerObject.jsonString");
 		
-		Optional<JsonType> optionalBeforeRemove = outerObject.getElementAt(path);
-		
-		assertTrue(optionalBeforeRemove.isPresent());
-		assertEquals(optionalBeforeRemove.get(), jsonString);
+		verifyElementFrom(outerObject).at(path).is(jsonString);
 		
 		boolean removed = outerObject.removeElementAt(path);
-		
 		assertTrue(removed);
 		
 		Optional<JsonType> optionalAfterRemove = outerObject.getElementAt(path);
-		
 		assertFalse(optionalAfterRemove.isPresent());
 	}
 	
@@ -305,17 +319,12 @@ public class JsonObjectTest {
 		
 		JsonPath path = JsonPath.compile("$.jsonArray[0]");
 		
-		Optional<JsonType> optionalBeforeRemove = jsonObject.getElementAt(path);
-		
-		assertTrue(optionalBeforeRemove.isPresent());
-		assertEquals(optionalBeforeRemove.get(), jsonString);
+		verifyElementFrom(jsonObject).at(path).is(jsonString);
 		
 		boolean removed = jsonObject.removeElementAt(path);
-		
 		assertTrue(removed);
 		
 		Optional<JsonType> optionalAfterRemove = jsonObject.getElementAt(path);
-		
 		assertFalse(optionalAfterRemove.isPresent());
 	}
 	
@@ -333,12 +342,7 @@ public class JsonObjectTest {
 		
 		JsonPath path = JsonPath.compile("$.jsonArray[0][0]");
 		
-		Optional<JsonType> optionalBeforeRemove = jsonObject.getElementAt(path);
-		
-		assertFalse(optionalBeforeRemove.isPresent());
-		
 		boolean removed = jsonObject.removeElementAt(path);
-		
 		assertFalse(removed);
 	}
 	
@@ -368,5 +372,274 @@ public class JsonObjectTest {
 		jsonObject.recalculateTreePaths();
 		
 		assertFalse(jsonObject.removeElementAt(JsonPath.compile("$.foo.bar")));
+	}
+
+	@Test(dependsOnMethods = {"shouldRemoveElementAtFromObject", "shouldAddElementAtToObject"})
+	public void shouldRemoveElementOnlyAtFromObject() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonObject thirdObject = new JsonObject();
+		thirdObject.add(new JsonProperty("jsonBoolean", jsonBoolean));
+		thirdObject.add(new JsonProperty("jsonString", jsonString));
+		
+		JsonObject secondObject = new JsonObject();
+		secondObject.add(new JsonProperty("thirdObject", thirdObject));
+		
+		JsonObject firstObject = new JsonObject();
+		firstObject.add(new JsonProperty("secondObject", secondObject));
+		firstObject.add(new JsonProperty("thirdObject", thirdObject));
+		
+		firstObject.recalculateTreePaths();
+		
+		JsonPath booleanPath = JsonPath.compile("$.secondObject.thirdObject.jsonBoolean");
+		JsonPath stringPath = JsonPath.compile("$.thirdObject.jsonString");
+		
+		verifyElementFrom(firstObject).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(firstObject).at(stringPath).is(jsonString);
+		
+		boolean removed = firstObject.removeElementAt(
+				JsonPath.compile("$.thirdObject.jsonBoolean"));
+		assertTrue(removed);
+		
+		verifyElementFrom(firstObject).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(firstObject).at(stringPath).is(jsonString);
+	}
+
+	@Test(dependsOnMethods = {"shouldRemoveElementAtFromObject", "shouldAddElementAtToObject"})
+	public void shouldRemoveElementOnlyAtFromInnerObject() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonObject fourthObject = new JsonObject();
+		fourthObject.add(new JsonProperty("jsonBoolean", jsonBoolean));
+		fourthObject.add(new JsonProperty("jsonString", jsonString));
+		
+		JsonObject thirdObject = new JsonObject();
+		thirdObject.add(new JsonProperty("fourthObject", fourthObject));
+		
+		JsonObject secondObject = new JsonObject();
+		secondObject.add(new JsonProperty("thirdObject", thirdObject));
+		
+		JsonObject firstObject = new JsonObject();
+		firstObject.add(new JsonProperty("secondObject", secondObject));
+		firstObject.add(new JsonProperty("thirdObject", thirdObject));
+		
+		firstObject.recalculateTreePaths();
+		
+		JsonPath booleanPath = JsonPath.compile("$.secondObject.thirdObject"
+				+ ".fourthObject.jsonBoolean");
+		JsonPath stringPath = JsonPath.compile("$.thirdObject.fourthObject.jsonString");
+		
+		verifyElementFrom(firstObject).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(firstObject).at(stringPath).is(jsonString);
+		
+		boolean removed = firstObject.removeElementAt(
+				JsonPath.compile("$.thirdObject.fourthObject.jsonBoolean"));
+		assertTrue(removed);
+		
+		verifyElementFrom(firstObject).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(firstObject).at(stringPath).is(jsonString);
+	}
+	
+	@Test(dependsOnMethods = {"shouldRemoveElementAtFromObject", "shouldAddElementAtToObject"})
+	public void shouldRemoveElementOnlyAtFromFlatSameObjectDuplicate() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonObject innerObject = new JsonObject();
+		innerObject.add(new JsonProperty("jsonBoolean", jsonBoolean));
+		
+		JsonObject outerObject = new JsonObject();
+		outerObject.add(new JsonProperty("innerObject1", innerObject));
+		outerObject.add(new JsonProperty("innerObject2", innerObject));
+		
+		outerObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.innerObject1.jsonBoolean");
+		
+		verifyElementFrom(outerObject).at(path).is(jsonBoolean);
+		
+		boolean removed = outerObject.removeElementAt(
+				JsonPath.compile("$.innerObject2.jsonBoolean"));
+		assertTrue(removed);
+		
+		verifyElementFrom(outerObject).at(path).is(jsonBoolean);
+	}
+	
+	@Test(dependsOnMethods = {"shouldRemoveElementAtFromArray", "shouldAddElementAtToArray"})
+	public void shouldRemoveElementOnlyAtFromArray() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonArray secondArray = new JsonArray();
+		secondArray.add(jsonBoolean);
+		secondArray.add(jsonString);
+		
+		JsonArray firstArray = new JsonArray();
+		firstArray.add(secondArray);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("firstArray", firstArray));
+		jsonObject.add(new JsonProperty("secondArray", secondArray));
+		
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath booleanPath = JsonPath.compile("$.firstArray[0][0]");
+		JsonPath stringPathBeforeRemove = JsonPath.compile("$.secondArray[1]");		
+		JsonPath stringPathAfterRemove = JsonPath.compile("$.secondArray[0]");
+		
+		verifyElementFrom(jsonObject).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(jsonObject).at(stringPathBeforeRemove).is(jsonString);
+		
+		boolean removed = jsonObject.removeElementAt(JsonPath.compile("$.secondArray[0]"));
+		assertTrue(removed);
+		
+		verifyElementFrom(jsonObject).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(jsonObject).at(stringPathAfterRemove).is(jsonString);
+	}
+
+	@Test(dependsOnMethods = {"shouldRemoveElementAtFromArray", "shouldAddElementAtToArray"})
+	public void shouldRemoveElementOnlyAtFromInnerArray() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonArray thirdArray = new JsonArray();
+		thirdArray.add(jsonBoolean);
+		thirdArray.add(jsonString);
+		
+		JsonArray secondArray = new JsonArray();
+		secondArray.add(thirdArray);
+		
+		JsonArray firstArray = new JsonArray();
+		firstArray.add(secondArray);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("firstArray", firstArray));
+		jsonObject.add(new JsonProperty("secondArray", secondArray));
+		
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath booleanPath = JsonPath.compile("$.firstArray[0][0][0]");
+		JsonPath stringPathBeforeRemove = JsonPath.compile("$.secondArray[0][1]");
+		JsonPath stringPathAfterRemove = JsonPath.compile("$.secondArray[0][0]");
+		
+		verifyElementFrom(jsonObject).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(jsonObject).at(stringPathBeforeRemove).is(jsonString);
+		
+		boolean removed = jsonObject.removeElementAt(JsonPath.compile("$.secondArray[0][0]"));
+		assertTrue(removed);
+		
+		verifyElementFrom(jsonObject).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(jsonObject).at(stringPathAfterRemove).is(jsonString);
+	}
+
+	@Test(dependsOnMethods = {"shouldRemoveElementAtFromArray", "shouldAddElementAtToArray"})
+	public void shouldRemoveElementOnlyAtFromFlatSameArrayDuplicate() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonBoolean);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonArray1", jsonArray));
+		jsonObject.add(new JsonProperty("jsonArray2", jsonArray));
+		
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.jsonArray1[0]");
+		
+		verifyElementFrom(jsonObject).at(path).is(jsonBoolean);
+		
+		boolean removed = jsonObject.removeElementAt(JsonPath.compile("$.jsonArray2[0]"));
+		assertTrue(removed);
+		
+		verifyElementFrom(jsonObject).at(path).is(jsonBoolean);
+	}
+	
+	@Test
+	public void shouldAddElementAtToArray() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonArray", new JsonArray()));
+		
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.jsonArray[0]");
+		jsonObject.addElementAt(path, jsonBoolean);
+		
+		verifyElementFrom(jsonObject).at(path).is(jsonBoolean);
+	}
+	
+	@Test
+	public void shouldAddElementAtToObject() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		JsonObject jsonObject = new JsonObject();
+		
+		JsonPath path = JsonPath.compile("$.jsonBoolean");
+		jsonObject.addElementAt(path, jsonBoolean);
+		
+		verifyElementFrom(jsonObject).at(path).is(jsonBoolean);
+	}
+	
+	@Test(dependsOnMethods = {"shouldAddElementAtToArray", "shouldAddElementAtToObject"})
+	public void shouldAddElementAtToNonRoot() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		JsonObject innerObject = new JsonObject();
+		
+		JsonObject root = new JsonObject();
+		root.add(new JsonProperty("innerObject", innerObject));
+		root.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.innerObject.jsonBoolean");
+		
+		innerObject.addElementAt(path, jsonBoolean);
+		
+		verifyElementFrom(root).at(path).is(jsonBoolean);
+	}
+	
+	@Test
+	public void shouldNotAddElementAtToPrimitive() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonBoolean", new JsonBoolean(true)));
+		
+		jsonObject.recalculateTreePaths();
+		
+		boolean added = jsonObject.addElementAt(
+				JsonPath.compile("$.jsonBoolean.jsonString"), new JsonString());
+		assertFalse(added);
+	}
+	
+	@Test
+	public void shouldNotAddElementAtToObjectWithExistingPropertyKey() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonBoolean", jsonBoolean));
+				
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.jsonBoolean");
+		
+		boolean added = jsonObject.addElementAt(path, new JsonBoolean(false));
+		assertFalse(added);
+		
+		verifyElementFrom(jsonObject).at(path).is(jsonBoolean);
+	}
+	
+	@Test
+	public void shouldNotAddElementAtToArrayWithInvalidIndex() {
+		JsonArray jsonArray = new JsonArray();
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonArray", jsonArray));
+		
+		jsonObject.recalculateTreePaths();
+		
+		boolean added = jsonObject.addElementAt(
+				JsonPath.compile("$.jsonArray[1]"), new JsonBoolean());
+		assertFalse(added);
+		
+		assertTrue(jsonArray.isEmpty());
 	}
 }

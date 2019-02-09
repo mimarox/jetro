@@ -27,8 +27,8 @@ public interface JsonCollection extends JsonType {
 	 * Adds the given {@link JsonType element} to the JSON tree at the
 	 * given {@link JsonPath path}.
 	 *  
-	 * @param path
-	 * @param element
+	 * @param path The path to add the element at
+	 * @param element The element to add
 	 * @return <code>true</code> if and only if the element has been successfully
 	 * added to the JSON tree at the given path, <code>false</code> otherwise
 	 * (especially if the JSON tree already had an element at the given path)
@@ -57,4 +57,15 @@ public interface JsonCollection extends JsonType {
 	 * from a {@link JsonArray} and the index was index < 0 || index >= size().
 	 */
 	boolean removeElementAt(JsonPath path);
+	
+	/**
+	 * Checks whether the JSON tree has an element at the given {@link JsonPath path}.
+	 *  
+	 * @param path The path to check at
+	 * @return <code>true</code> if and only if the JSON tree has an element at the
+	 * given path, <code>false</code> otherwise.
+	 */
+	default boolean hasElementAt(JsonPath path) {
+		return getElementAt(path).isPresent();
+	}
 }

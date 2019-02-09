@@ -28,6 +28,7 @@ import java.util.Set;
 
 import net.sf.jetro.path.ArrayIndexPathElement;
 import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.tree.JsonObject.JsonProperties;
 import net.sf.jetro.tree.renderer.DefaultJsonRenderer;
 import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
@@ -38,11 +39,8 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 
 	final Set<JsonPath> paths = new HashSet<>();
 
-	{
-		paths.add(new JsonPath());
-	}
-	
 	public JsonArray() {
+		paths.add(new JsonPath());
 	}
 
 	public JsonArray(final JsonPath path) {
@@ -55,7 +53,12 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 
 	public JsonArray(final JsonPath path, final List<? extends JsonType> values) {
 		this(values, false);
-		paths.add(path);
+		
+		if (path != null) {
+			paths.add(path);
+		} else {
+			paths.add(new JsonPath());
+		}
 	}
 
 	private JsonArray(final Set<JsonPath> paths, final List<? extends JsonType> values) {
@@ -164,6 +167,7 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 
 	@Override
 	public boolean addElementAt(final JsonPath path, final JsonType element) {
+		boolean success = false;
 		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
 		
 		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
@@ -172,14 +176,27 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 				try {
 					((JsonArray) parentElement.get()).add(
 							path.getArrayIndexAt(path.getDepth() - 1), element);
-					return true;
+					success = true;
 				} catch (IndexOutOfBoundsException e) {
-					return false;
+					success = false;
+				}
+			} else if (parentElement.get() instanceof JsonObject &&
+					path.hasPropertyNameAt(path.getDepth() - 1)) {
+				final JsonProperties jsonObject = ((JsonObject) parentElement.get()).asMap();
+				final String key = path.getPropertyNameAt(path.getDepth() -1);
+				
+				if (!jsonObject.containsKey(key)) {
+					jsonObject.put(key, element);
+					success = true;
 				}
 			}
 		}
 		
-		return false;
+		if (success) {
+			recalculateTreePaths(isTreeRoot());
+		}
+		
+		return success;
 	}
 
 	@Override
@@ -195,6 +212,7 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 					"removeElementAt can only be called on the JSON tree root.");
 		}
 		
+		boolean success = false;
 		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
 		
 		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
@@ -204,18 +222,24 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 				
 				try {
 					JsonType child = parent.remove(path.getArrayIndexAt(path.getDepth() - 1));
-					return child != null;
+					success = child != null;
 				} catch (IndexOutOfBoundsException e) {
-					return false;
+					success = false;
 				}
 			} else if (parentElement.get() instanceof JsonObject &&
 					path.hasPropertyNameAt(path.getDepth() - 1)) {
-				return ((JsonObject) parentElement.get()).removeAllByKey(
+				JsonObject parent = prepareJsonObjectForChildRemoval(parentElement, path);
+				
+				success = parent.removeAllByKeys(
 						Arrays.asList(path.getPropertyNameAt(path.getDepth() - 1)));
 			}
 		}
 		
-		return false;
+		if (success) {
+			recalculateTreePaths();
+		}
+		
+		return success;
 	}
 
 	private boolean isTreeRoot() {
@@ -228,19 +252,39 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		
 		if (hasMultiplePaths(jsonArray)) {
 			JsonArray shallowCopy = new JsonArray(jsonArray);
+			JsonPath parentPath = path.removeLastElement();
 			
-			removeElementAt(path.removeLastElement());
-			addElementAt(path.removeLastElement(), shallowCopy);
-			
-			recalculateTreePaths();
+			removeElementAt(parentPath);
+			addElementAt(parentPath, shallowCopy);
 			
 			return shallowCopy;
 		} else {
 			return jsonArray;
 		}
 	}
-
+	
 	private boolean hasMultiplePaths(JsonArray jsonArray) {
 		return jsonArray.paths.size() > 1;
+	}
+	
+	private JsonObject prepareJsonObjectForChildRemoval(Optional<JsonType> parentElement,
+			JsonPath path) {
+		JsonObject jsonObject = (JsonObject) parentElement.get();
+		
+		if (hasMultiplePaths(jsonObject)) {
+			JsonObject shallowCopy = new JsonObject(jsonObject);
+			JsonPath parentPath = path.removeLastElement();
+			
+			removeElementAt(parentPath);
+			addElementAt(parentPath, shallowCopy);
+			
+			return shallowCopy;
+		} else {
+			return jsonObject;
+		}
+	}
+
+	private boolean hasMultiplePaths(JsonObject jsonObject) {
+		return jsonObject.paths.size() > 1;
 	}
 }
