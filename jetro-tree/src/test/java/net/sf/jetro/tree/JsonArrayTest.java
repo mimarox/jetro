@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -52,6 +53,7 @@ public class JsonArrayTest {
 		private void is(final JsonType element) {
 			Optional<JsonType> optionalElement = jsonArray.getElementAt(path);
 			
+			assertNotNull(optionalElement);
 			assertTrue(optionalElement.isPresent());
 			assertTrue(optionalElement.get() == element);
 		}
@@ -507,6 +509,27 @@ public class JsonArrayTest {
 		verifyElementFrom(jsonArray).at(path).is(jsonBoolean);
 	}
 	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp =
+			"A non-null path to remove the element at must be specified")
+	public void shouldThrowForRemoveElementAtNullPath() {
+		new JsonArray().removeElementAt(null);
+	}
+	
+	@Test(expectedExceptions = IllegalArgumentException.class,
+			expectedExceptionsMessageRegExp = "Cannot remove JSON tree root")
+	public void shouldThrowForRemoveElementAtRootPath() {
+		new JsonArray().removeElementAt(new JsonPath());
+	}
+	
+	@Test(expectedExceptions = IllegalStateException.class,
+			expectedExceptionsMessageRegExp =
+			"removeElementAt can only be called on the JSON tree root.")
+	public void shouldThrowForRemoveElementAtNotTreeRoot() {
+		JsonPath path = JsonPath.compile("$.jsonArray");
+		new JsonArray(path).removeElementAt(path);
+	}
+	
 	@Test
 	public void shouldAddElementAtToArray() {
 		JsonBoolean jsonBoolean = new JsonBoolean(true);
@@ -552,6 +575,54 @@ public class JsonArrayTest {
 		verifyElementFrom(root).at(path).is(jsonBoolean);
 	}
 	
+	@Test(dependsOnMethods = "shouldAddElementAtToNonRoot")
+	public void shouldAddElementOnlyAtToArray() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonArray thirdArray = new JsonArray();
+		
+		JsonArray secondArray = new JsonArray();
+		secondArray.add(thirdArray);
+		
+		JsonArray firstArray = new JsonArray();
+		firstArray.add(secondArray);
+		firstArray.add(thirdArray);
+		
+		firstArray.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$[1][0]");
+		
+		boolean added = firstArray.addElementAt(path, jsonBoolean);
+		assertTrue(added);
+		
+		verifyElementFrom(firstArray).at(path).is(jsonBoolean);
+		assertFalse(firstArray.hasElementAt(JsonPath.compile("$[0][0][0]")));
+	}
+	
+	@Test(dependsOnMethods = "shouldAddElementAtToNonRoot")
+	public void shouldAddElementOnlyAtToObject() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonObject jsonObject = new JsonObject();
+		
+		JsonArray secondArray = new JsonArray();
+		secondArray.add(jsonObject);
+		
+		JsonArray firstArray = new JsonArray();
+		firstArray.add(secondArray);
+		firstArray.add(jsonObject);
+		
+		firstArray.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$[1].jsonBoolean");
+		
+		boolean added = firstArray.addElementAt(path, jsonBoolean);
+		assertTrue(added);
+		
+		verifyElementFrom(firstArray).at(path).is(jsonBoolean);
+		assertFalse(firstArray.hasElementAt(JsonPath.compile("$[0][0].jsonBoolean")));
+	}
+	
 	@Test
 	public void shouldNotAddElementAtToPrimitive() {
 		JsonArray jsonArray = new JsonArray();
@@ -593,6 +664,26 @@ public class JsonArrayTest {
 		assertTrue(jsonArray.isEmpty());
 	}
 	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp =
+			"A non-null path to add the element at must be specified")
+	public void shouldThrowForAddElementAtNullPath() {
+		new JsonArray().addElementAt(null, new JsonBoolean());
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp =
+			"A non-null element to be added must be specified")
+	public void shouldThrowForAddElementAtNullElement() {
+		new JsonArray().addElementAt(new JsonPath(), null);
+	}
+	
+	@Test(expectedExceptions = IllegalArgumentException.class,
+			expectedExceptionsMessageRegExp = "Cannot add JSON tree root")
+	public void shouldThrowForAddElementAtRootPath() {
+		new JsonArray().addElementAt(new JsonPath(), new JsonBoolean());
+	}
+	
 	@Test
 	public void shouldHaveElementAt() {
 		JsonArray jsonArray = new JsonArray();
@@ -610,5 +701,365 @@ public class JsonArrayTest {
 		
 		boolean hasElement = jsonArray.hasElementAt(JsonPath.compile("$[0]"));
 		assertFalse(hasElement);
+	}
+
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp =
+			"A non-null path to replace the element at must be specified")
+	public void shouldThrowForReplaceElementAtNullPath() {
+		new JsonArray().replaceElementAt(null, new JsonBoolean());
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp =
+			"A non-null element to be inserted must be specified")
+	public void shouldThrowForReplaceElementAtNullElement() {
+		new JsonArray().replaceElementAt(new JsonPath(), null);
+	}
+
+	@Test(expectedExceptions = IllegalArgumentException.class,
+			expectedExceptionsMessageRegExp = "Cannot replace JSON tree root")
+	public void shouldThrowForReplaceElementAtRootPath() {
+		new JsonArray().replaceElementAt(new JsonPath(), new JsonBoolean());
+	}
+	
+	@Test
+	public void shouldReplaceElementAtInArray() {
+		JsonString jsonString = new JsonString();
+		JsonNumber jsonNumber = new JsonNumber(1);
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonString);
+		jsonArray.add(jsonNumber);
+		
+		jsonArray.recalculateTreePaths();
+		
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonPath replacePath = JsonPath.compile("$[0]");
+		JsonPath numberPath = JsonPath.compile("$[1]");
+		
+		verifyElementFrom(jsonArray).at(numberPath).is(jsonNumber);
+		
+		Optional<JsonType> replacedElement =
+				jsonArray.replaceElementAt(replacePath, jsonBoolean);
+		
+		assertNotNull(replacedElement);
+		assertTrue(replacedElement.isPresent());
+		assertTrue(replacedElement.get() == jsonString);
+		
+		verifyElementFrom(jsonArray).at(replacePath).is(jsonBoolean);
+		verifyElementFrom(jsonArray).at(numberPath).is(jsonNumber);
+		assertEquals(jsonArray.size(), 2);
+	}
+	
+	@Test
+	public void shouldReplaceElementOnlyAtInArray() {
+		JsonString jsonString = new JsonString();
+		JsonNumber jsonNumber = new JsonNumber(1);
+		
+		JsonArray thirdArray = new JsonArray();
+		thirdArray.add(jsonString);
+		thirdArray.add(jsonNumber);
+		
+		JsonArray secondArray = new JsonArray();
+		secondArray.add(thirdArray);
+		
+		JsonArray firstArray = new JsonArray();
+		firstArray.add(secondArray);
+		firstArray.add(thirdArray);
+		
+		firstArray.recalculateTreePaths();
+		
+		JsonBoolean jsonBoolean = new JsonBoolean();
+		
+		JsonPath stringPath = JsonPath.compile("$[0][0][0]");
+		JsonPath replacePath = JsonPath.compile("$[1][0]");
+		JsonPath numberPath1 = JsonPath.compile("$[0][0][1]");
+		JsonPath numberPath2 = JsonPath.compile("$[1][1]");
+		
+		verifyElementFrom(firstArray).at(replacePath).is(jsonString);
+		verifyElementFrom(firstArray).at(stringPath).is(jsonString);
+		verifyElementFrom(firstArray).at(numberPath1).is(jsonNumber);
+		verifyElementFrom(firstArray).at(numberPath2).is(jsonNumber);
+		
+		Optional<JsonType> replacedElement =
+				firstArray.replaceElementAt(replacePath, jsonBoolean);
+		
+		assertNotNull(replacedElement);
+		assertTrue(replacedElement.isPresent());
+		assertTrue(replacedElement.get() == jsonString);
+		
+		verifyElementFrom(firstArray).at(replacePath).is(jsonBoolean);
+		verifyElementFrom(firstArray).at(stringPath).is(jsonString);
+		verifyElementFrom(firstArray).at(numberPath1).is(jsonNumber);
+		verifyElementFrom(firstArray).at(numberPath2).is(jsonNumber);
+	}
+	
+	@Test
+	public void shouldReplaceElementAtInObject() {
+		JsonString jsonString = new JsonString();
+		JsonNumber jsonNumber = new JsonNumber(1);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("replaceable", jsonString));
+		jsonObject.add(new JsonProperty("jsonNumber", jsonNumber));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonObject);
+		
+		jsonArray.recalculateTreePaths();
+		
+		JsonBoolean jsonBoolean = new JsonBoolean();
+		
+		JsonPath replacePath = JsonPath.compile("$[0].replaceable");
+		JsonPath numberPath = JsonPath.compile("$[0].jsonNumber");
+		
+		verifyElementFrom(jsonArray).at(replacePath).is(jsonString);
+		verifyElementFrom(jsonArray).at(numberPath).is(jsonNumber);
+		
+		Optional<JsonType> replacedElement =
+				jsonArray.replaceElementAt(replacePath, jsonBoolean);
+		
+		assertNotNull(replacedElement);
+		assertTrue(replacedElement.isPresent());
+		assertTrue(replacedElement.get() == jsonString);
+		
+		verifyElementFrom(jsonArray).at(replacePath).is(jsonBoolean);
+		verifyElementFrom(jsonArray).at(numberPath).is(jsonNumber);
+		assertEquals(jsonObject.size(), 2);
+	}
+	
+	@Test
+	public void shouldReplaceElementOnlyAtInObject() {
+		JsonString jsonString = new JsonString();
+		JsonNumber jsonNumber = new JsonNumber();
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("replaceable", jsonString));
+		jsonObject.add(new JsonProperty("jsonNumber", jsonNumber));
+		
+		JsonArray secondArray = new JsonArray();
+		secondArray.add(jsonObject);
+		
+		JsonArray firstArray = new JsonArray();
+		firstArray.add(secondArray);
+		firstArray.add(jsonObject);
+		
+		firstArray.recalculateTreePaths();
+		
+		JsonBoolean jsonBoolean = new JsonBoolean();
+		
+		JsonPath stringPath = JsonPath.compile("$[0][0].replaceable");
+		JsonPath replacePath = JsonPath.compile("$[1].replaceable");
+		JsonPath numberPath1 = JsonPath.compile("$[0][0].jsonNumber");
+		JsonPath numberPath2 = JsonPath.compile("$[1].jsonNumber");
+		
+		verifyElementFrom(firstArray).at(stringPath).is(jsonString);
+		verifyElementFrom(firstArray).at(replacePath).is(jsonString);
+		verifyElementFrom(firstArray).at(numberPath1).is(jsonNumber);
+		verifyElementFrom(firstArray).at(numberPath2).is(jsonNumber);
+		
+		Optional<JsonType> replacedElement =
+				firstArray.replaceElementAt(replacePath, jsonBoolean);
+		
+		assertNotNull(replacedElement);
+		assertTrue(replacedElement.isPresent());
+		assertTrue(replacedElement.get() == jsonString);
+		
+		verifyElementFrom(firstArray).at(stringPath).is(jsonString);
+		verifyElementFrom(firstArray).at(replacePath).is(jsonBoolean);
+		verifyElementFrom(firstArray).at(numberPath1).is(jsonNumber);
+		verifyElementFrom(firstArray).at(numberPath2).is(jsonNumber);
+	}
+
+	@Test
+	public void shouldNotReplaceElementAtFromPrimitive() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonBoolean", jsonBoolean));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonObject);
+		
+		jsonArray.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$[0].jsonBoolean[0]");
+		
+		Optional<JsonType> optionalBeforeReplace = jsonArray.getElementAt(path);
+		
+		assertFalse(optionalBeforeReplace.isPresent());
+		
+		boolean replaced = jsonArray.replaceElementAt(path, new JsonString()).isPresent();
+		
+		assertFalse(replaced);
+	}
+	
+	@Test
+	public void shouldNotReplaceElementAtWithNonexistingElement() {
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.recalculateTreePaths();
+		
+		assertFalse(jsonArray.replaceElementAt(
+				JsonPath.compile("$[0]"), new JsonBoolean()).isPresent());
+	}
+	
+	@Test
+	public void shouldNotReplaceElementAtWithNonexistingProperty() {
+		JsonObject jsonObject = new JsonObject();
+		
+		JsonArray jsonArray = new JsonArray(Arrays.asList(jsonObject));
+		jsonArray.recalculateTreePaths();
+		
+		assertFalse(jsonArray.replaceElementAt(
+				JsonPath.compile("$[0].property"), new JsonBoolean()).isPresent());
+	}
+	
+	@Test
+	public void shouldNotReplaceElementAtWithNonexistingPath() {
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.recalculateTreePaths();
+		
+		assertFalse(jsonArray.replaceElementAt(
+				JsonPath.compile("$[0][0]"), new JsonBoolean()).isPresent());
+	}
+
+	@Test(dependsOnMethods = {"shouldReplaceElementAtInArray", "shouldAddElementAtToArray"})
+	public void shouldReplaceElementOnlyAtInInnerArray() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonArray fourthArray = new JsonArray();
+		fourthArray.add(jsonBoolean);
+		fourthArray.add(jsonString);
+		
+		JsonArray thirdArray = new JsonArray();
+		thirdArray.add(fourthArray);
+		
+		JsonArray secondArray = new JsonArray();
+		secondArray.add(thirdArray);
+		
+		JsonArray firstArray = new JsonArray();
+		firstArray.add(secondArray);
+		firstArray.add(thirdArray);
+		
+		firstArray.recalculateTreePaths();
+		
+		JsonPath booleanPath = JsonPath.compile("$[0][0][0][0]");
+		JsonPath stringPath = JsonPath.compile("$[1][0][1]");
+		JsonPath replacePath = JsonPath.compile("$[1][0][0]");
+		
+		JsonNumber jsonNumber = new JsonNumber();
+		
+		verifyElementFrom(firstArray).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(firstArray).at(stringPath).is(jsonString);
+		
+		Optional<JsonType> replaced = firstArray.replaceElementAt(
+				replacePath, jsonNumber);
+		
+		assertTrue(replaced.isPresent());
+		assertTrue(replaced.get() == jsonBoolean);
+		
+		verifyElementFrom(firstArray).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(firstArray).at(stringPath).is(jsonString);
+		verifyElementFrom(firstArray).at(replacePath).is(jsonNumber);
+	}
+
+	@Test(dependsOnMethods = {"shouldReplaceElementAtInArray", "shouldAddElementAtToArray"})
+	public void shouldReplaceElementOnlyAtInFlatSameArrayDuplicate() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonArray secondArray = new JsonArray();
+		secondArray.add(jsonBoolean);
+		
+		JsonArray firstArray = new JsonArray();
+		firstArray.add(secondArray);
+		firstArray.add(secondArray);
+		
+		firstArray.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$[0][0]");
+		JsonPath replacePath = JsonPath.compile("$[1][0]");
+		
+		JsonString jsonString = new JsonString();
+		
+		verifyElementFrom(firstArray).at(path).is(jsonBoolean);
+		
+		Optional<JsonType> replaced = firstArray.replaceElementAt(replacePath, jsonString);
+		assertTrue(replaced.isPresent());
+		assertTrue(replaced.get() == jsonBoolean);
+		
+		verifyElementFrom(firstArray).at(path).is(jsonBoolean);
+		verifyElementFrom(firstArray).at(replacePath).is(jsonString);
+	}
+	
+	@Test(dependsOnMethods = {"shouldReplaceElementAtInObject", "shouldAddElementAtToObject"})
+	public void shouldReplaceElementOnlyAtInInnerObject() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonObject innerObject = new JsonObject();
+		innerObject.add(new JsonProperty("jsonBoolean", jsonBoolean));
+		innerObject.add(new JsonProperty("jsonString", jsonString));
+		
+		JsonObject outerObject = new JsonObject();
+		outerObject.add(new JsonProperty("innerObject", innerObject));
+		
+		JsonArray innerArray = new JsonArray();
+		innerArray.add(outerObject);
+		
+		JsonArray outerArray = new JsonArray();
+		outerArray.add(innerArray);
+		outerArray.add(outerObject);
+		
+		outerArray.recalculateTreePaths();
+		
+		JsonPath booleanPath = JsonPath.compile("$[0][0].innerObject.jsonBoolean");
+		JsonPath stringPath = JsonPath.compile("$[1].innerObject.jsonString");
+		JsonPath replacePath = JsonPath.compile("$[1].innerObject.jsonBoolean");
+		
+		JsonNumber jsonNumber = new JsonNumber();
+		
+		verifyElementFrom(outerArray).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(outerArray).at(stringPath).is(jsonString);
+		
+		Optional<JsonType> replaced = outerArray.replaceElementAt(
+				replacePath, jsonNumber);
+		
+		assertTrue(replaced.isPresent());
+		assertTrue(replaced.get() == jsonBoolean);
+		
+		verifyElementFrom(outerArray).at(booleanPath).is(jsonBoolean);
+		verifyElementFrom(outerArray).at(stringPath).is(jsonString);
+		verifyElementFrom(outerArray).at(replacePath).is(jsonNumber);
+	}
+
+	@Test(dependsOnMethods = {"shouldReplaceElementAtInObject", "shouldAddElementAtToObject"})
+	public void shouldReplaceElementOnlyAtInFlatSameObjectDuplicate() {
+		JsonBoolean jsonBoolean = new JsonBoolean(true);
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonBoolean", jsonBoolean));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonObject);
+		jsonArray.add(jsonObject);
+		
+		jsonArray.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$[0].jsonBoolean");
+		JsonPath replacePath = JsonPath.compile("$[1].jsonBoolean");
+		
+		JsonNumber jsonNumber = new JsonNumber();
+		
+		verifyElementFrom(jsonArray).at(path).is(jsonBoolean);
+		
+		Optional<JsonType> replaced = jsonArray.replaceElementAt(replacePath, jsonNumber);
+		assertTrue(replaced.isPresent());
+		assertTrue(replaced.get() == jsonBoolean);
+
+		verifyElementFrom(jsonArray).at(path).is(jsonBoolean);
+		verifyElementFrom(jsonArray).at(replacePath).is(jsonNumber);
 	}
 }

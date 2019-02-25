@@ -1,5 +1,7 @@
 package net.sf.jetro.tree;
 
+import java.util.Optional;
+
 import net.sf.jetro.path.JsonPath;
 
 public interface JsonCollection extends JsonType {
@@ -41,10 +43,10 @@ public interface JsonCollection extends JsonType {
 	 *  
 	 * @param path The path at which to replace the value
 	 * @param element The new element
-	 * @return the previous value set at the specified path
-	 * or null if there was no element for the path.
+	 * @return an {@link Optional} containing the previous value set at the specified
+	 * path or {@link Optional#empty()} if there was no element for the path.
 	 */
-	JsonType replaceElementAt(JsonPath path, JsonType element);
+	Optional<JsonType> replaceElementAt(JsonPath path, JsonType element);
 		
 	/**
 	 * Removes the {@link JsonType element} at the given {@link JsonPath path}
@@ -65,7 +67,7 @@ public interface JsonCollection extends JsonType {
 	 * @return <code>true</code> if and only if the JSON tree has an element at the
 	 * given path, <code>false</code> otherwise.
 	 */
-	default boolean hasElementAt(JsonPath path) {
+	default boolean hasElementAt(final JsonPath path) {
 		return getElementAt(path).isPresent();
 	}
 }

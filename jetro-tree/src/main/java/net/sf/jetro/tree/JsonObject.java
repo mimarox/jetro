@@ -172,7 +172,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 			if (deepCopy) {
 				properties.forEach(property -> this.properties.add(property.deepCopy()));
 			} else {
-				this.properties.addAll(properties);
+				properties.forEach(property -> this.properties.add(property.shallowCopy()));
 			}
 		}
 	}
@@ -182,8 +182,13 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		return new JsonObject(paths, this);
 	}
 	
+	@Override
 	public boolean add(JsonProperty e) {
-		return properties.add(e);
+		if (!properties.parallelStream().anyMatch(property -> property.keyEquals(e))) {
+			return properties.add(e);
+		}
+		
+		return false;
 	}
 	
 	public JsonProperties asMap() {
@@ -280,14 +285,22 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 
 	@Override
 	public boolean addElementAt(JsonPath path, JsonType element) {
+		Objects.requireNonNull(path, "A non-null path to add the element at must be specified");
+		Objects.requireNonNull(element, "A non-null element to be added must be specified");
+		
+		if (path.isRootPath()) {
+			throw new IllegalArgumentException("Cannot add JSON tree root");
+		}
+		
 		boolean success = false;
 		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
 		
 		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
 			if (parentElement.get() instanceof JsonObject &&
 					path.hasPropertyNameAt(path.getDepth() - 1)) {
-				final JsonProperties jsonObject = ((JsonObject) parentElement.get()).asMap();
-				final String key = path.getPropertyNameAt(path.getDepth() -1);
+				final JsonProperties jsonObject = prepareJsonObjectForChildManipulation(
+						parentElement, path).asMap();
+				final String key = path.getPropertyNameAt(path.getDepth() - 1);
 				
 				if (!jsonObject.containsKey(key)) {
 					jsonObject.put(key, element);
@@ -295,9 +308,10 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 				}
 			} else if (parentElement.get() instanceof JsonArray &&
 					path.hasArrayIndexAt(path.getDepth() - 1)) {
+				JsonArray parent = prepareJsonArrayForChildManipulation(parentElement, path);
+				
 				try {
-					((JsonArray) parentElement.get()).add(
-							path.getArrayIndexAt(path.getDepth() - 1), element);
+					parent.add(path.getArrayIndexAt(path.getDepth() - 1), element);
 					success = true;
 				} catch (IndexOutOfBoundsException e) {
 					success = false;
@@ -313,9 +327,49 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	}
 
 	@Override
-	public JsonType replaceElementAt(JsonPath path, JsonType element) {
-		// TODO Auto-generated method stub
-		return null;
+	public Optional<JsonType> replaceElementAt(JsonPath path, JsonType element) {
+		Objects.requireNonNull(path,
+				"A non-null path to replace the element at must be specified");
+		Objects.requireNonNull(element, "A non-null element to be inserted must be specified");
+		
+		if (path.isRootPath()) {
+			throw new IllegalArgumentException("Cannot replace JSON tree root");
+		}
+		
+		JsonType replacedElement = null;
+		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
+		
+		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
+			if (parentElement.get() instanceof JsonArray &&
+					path.hasArrayIndexAt(path.getDepth() - 1)) {
+				JsonArray parent = prepareJsonArrayForChildManipulation(parentElement, path);
+				int index = path.getArrayIndexAt(path.getDepth() - 1);
+				
+				try {
+					replacedElement = parent.remove(index);
+					parent.add(index, element);
+				} catch (IndexOutOfBoundsException e) {
+					/* do nothing, Optional.empty() will be returned
+					 * to indicate that no replacement took place
+					 */
+				}
+			} else if (parentElement.get() instanceof JsonObject &&
+					path.hasPropertyNameAt(path.getDepth() - 1)) {
+				JsonProperties parent = prepareJsonObjectForChildManipulation(
+						parentElement, path).asMap();
+				String propertyName = path.getPropertyNameAt(path.getDepth() - 1);
+				
+				if (parent.containsKey(propertyName)) {
+					replacedElement = parent.put(propertyName, element);
+				}
+			}
+		}
+		
+		if (replacedElement != null) {
+			recalculateTreePaths(isTreeRoot());
+		}
+		
+		return Optional.ofNullable(replacedElement);
 	}
 
 	@Override
@@ -325,20 +379,27 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 					"removeElementAt can only be called on the JSON tree root.");
 		}
 		
+		Objects.requireNonNull(path,
+				"A non-null path to remove the element at must be specified");
+		
+		if (path.isRootPath()) {
+			throw new IllegalArgumentException("Cannot remove JSON tree root");
+		}
+		
 		boolean success = false;
 		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
 		
 		if (parentElement.isPresent() && !(parentElement.get() instanceof JsonPrimitive)) {
 			if (parentElement.get() instanceof JsonObject &&
 					path.hasPropertyNameAt(path.getDepth() - 1)) {
-				JsonObject parent = prepareJsonObjectForChildRemoval(parentElement, path);
+				JsonObject parent = prepareJsonObjectForChildManipulation(parentElement, path);
 				
 				success = parent.removeAllByKeys(
 						Arrays.asList(path.getPropertyNameAt(path.getDepth() - 1)));
 			} else if (parentElement.get() instanceof JsonArray &&
 					path.hasArrayIndexAt(path.getDepth() - 1)) {
 				try {
-					JsonArray parent = prepareJsonArrayForChildRemoval(parentElement, path);
+					JsonArray parent = prepareJsonArrayForChildManipulation(parentElement, path);
 					
 					JsonType childElement = parent.remove(
 							path.getArrayIndexAt(path.getDepth() - 1));
@@ -360,7 +421,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		return paths.size() == 1 && paths.contains(new JsonPath());
 	}
 
-	private JsonObject prepareJsonObjectForChildRemoval(Optional<JsonType> parentElement,
+	private JsonObject prepareJsonObjectForChildManipulation(Optional<JsonType> parentElement,
 			JsonPath path) {
 		JsonObject jsonObject = (JsonObject) parentElement.get();
 		
@@ -381,7 +442,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		return jsonObject.paths.size() > 1;
 	}
 	
-	private JsonArray prepareJsonArrayForChildRemoval(Optional<JsonType> parentElement,
+	private JsonArray prepareJsonArrayForChildManipulation(Optional<JsonType> parentElement,
 			JsonPath path) {
 		JsonArray jsonArray = (JsonArray) parentElement.get();
 		

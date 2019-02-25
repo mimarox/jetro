@@ -84,9 +84,16 @@ public class JsonPath implements Cloneable, Serializable {
 	}
 
 	public JsonPath removeLastElement() {
+		if (isRootPath()) {
+			throw new IllegalStateException("Cannot remove last element from root path.");
+		}
 		return clone().removeInternal();
 	}
-
+	
+	public boolean isRootPath() {
+		return size == 0;
+	}
+	
 	private JsonPath removeInternal() {
 		pathElements[--size] = null;
 		return this;
