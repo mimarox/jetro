@@ -46,7 +46,7 @@ public class ArraySerializer implements TypeSerializer<Object> {
 
 		for (int i = 0, length = Array.getLength(toSerialize); i < length; i++) {
 			Object element = Array.get(toSerialize, i);
-			TypeSerializer<Object> serializer = context.getSerializer(element);
+			TypeSerializer<Object> serializer = context.getTypeSerializer(element);
 			serializer.serialize(element, arrayVisitor);
 		}
 

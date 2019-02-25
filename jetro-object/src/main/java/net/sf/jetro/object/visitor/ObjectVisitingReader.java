@@ -32,14 +32,21 @@ public class ObjectVisitingReader implements VisitingReader {
 	private SerializationContext context;
 	private Object toSerialize;
 
+	/**
+	 * @deprecated Use {@link #ObjectVisitingReader(Object,SerializationContext)} instead
+	 */
 	public ObjectVisitingReader(SerializationContext context, Object toSerialize) {
+		this(toSerialize, context);
+	}
+
+	public ObjectVisitingReader(Object toSerialize, SerializationContext context) {
 		this.context = context;
 		this.toSerialize = toSerialize;
 	}
 
 	@Override
 	public void accept(JsonVisitor<?> visitor) {
-		TypeSerializer<Object> serializer = context.getSerializer(toSerialize);
+		TypeSerializer<Object> serializer = context.getTypeSerializer(toSerialize);
 		serializer.serialize(toSerialize, visitor);
 	}
 }

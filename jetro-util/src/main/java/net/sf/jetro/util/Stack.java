@@ -133,6 +133,32 @@ public class Stack<E> {
 		return isEmpty();
 	}
 
+	/**
+	 * Returns the number of elements on this stack. If there are more elements than
+	 * {@link Integer#MAX_VALUE} on this stack, returns {@link Integer#MAX_VALUE}.
+	 * <p>
+	 * This method is unsynchronized and therefore not thread-safe. If you need thread-safe access to this stack,
+	 * use {@link #sizeSynchronized()} instead.
+	 * 
+	 * @return the number of elements on this stack.
+	 */
+	public int size() {
+		return store.size();
+	}
+	
+	/**
+	 * Returns the number of elements on this stack. If there are more elements than
+	 * {@link Integer#MAX_VALUE} on this stack, returns {@link Integer#MAX_VALUE}.
+	 * <p>
+	 * This method is synchronized and therefore thread-safe. If you don't need thread-safe access to this stack,
+	 * use {@link #size()} instead to increase performance.
+	 * 
+	 * @return the number of elements on this stack.
+	 */
+	public synchronized int sizeSynchronized() {
+		return size();
+	}
+	
 	private int getIndex() {
 		int index = store.size() - 1;
 

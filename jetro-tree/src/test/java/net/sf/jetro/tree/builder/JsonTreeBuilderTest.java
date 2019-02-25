@@ -20,9 +20,10 @@
 package net.sf.jetro.tree.builder;
 
 import static org.testng.Assert.assertEquals;
-import net.sf.jetro.tree.JsonElement;
 
 import org.testng.annotations.Test;
+
+import net.sf.jetro.tree.JsonElement;
 
 public class JsonTreeBuilderTest {
 
@@ -35,5 +36,21 @@ public class JsonTreeBuilderTest {
 
 		String actual = root.toJson();
 		assertEquals(actual, json);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeWithTransformers() {
+		String json = "[\"0\"]";
+		
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonElement root = builder.build(json,
+				new StringValueTransformingVisitor("1"),
+				new StringValueTransformingVisitor("2"),
+				new StringValueTransformingVisitor("3"));
+		
+		String actual = root.toJson();
+		String expected = "[\"0123\"]";
+		
+		assertEquals(actual, expected);
 	}
 }

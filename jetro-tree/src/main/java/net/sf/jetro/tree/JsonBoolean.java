@@ -19,9 +19,11 @@
  */
 package net.sf.jetro.tree;
 
+import java.util.Set;
+
 import net.sf.jetro.path.JsonPath;
 
-public class JsonBoolean extends JsonPrimitive<Boolean> {
+public final class JsonBoolean extends JsonPrimitive<Boolean> {
 	private static final long serialVersionUID = -8707418235663464907L;
 
 	public JsonBoolean() {
@@ -38,5 +40,14 @@ public class JsonBoolean extends JsonPrimitive<Boolean> {
 
 	public JsonBoolean(JsonPath path) {
 		super(path);
+	}
+	
+	private JsonBoolean(Set<JsonPath> paths, Boolean value) {
+		super(paths, value);
+	}
+
+	@Override
+	public JsonBoolean deepCopy() {
+		return new JsonBoolean(paths, getValue());
 	}
 }

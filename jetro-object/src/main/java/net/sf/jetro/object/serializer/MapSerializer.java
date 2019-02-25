@@ -19,11 +19,13 @@
  */
 package net.sf.jetro.object.serializer;
 
-import net.sf.jetro.visitor.JsonObjectVisitor;
-import net.sf.jetro.visitor.JsonVisitor;
-
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
+
+import net.sf.jetro.object.reflect.TypeToken;
+import net.sf.jetro.visitor.JsonObjectVisitor;
+import net.sf.jetro.visitor.JsonVisitor;
 
 /**
  * @author matthias.rothe
@@ -51,9 +53,11 @@ public class MapSerializer implements TypeSerializer<Map<?, ?>> {
 		JsonObjectVisitor<?> objectVisitor = recipient.visitObject();
 
 		for (Entry<?, ?> entry : toSerialize.entrySet()) {
-			TypeSerializer<Object> serializer = context.getSerializer(entry.getValue());
-
-			objectVisitor.visitProperty(entry.getKey().toString());
+			TypeToken<?> typeToken = TypeToken.of(entry.getKey().getClass());
+			Function<Object, String> keySerializer = context.getStringSerializer(typeToken);
+			objectVisitor.visitProperty(keySerializer.apply(entry.getKey()));
+			
+			TypeSerializer<Object> serializer = context.getTypeSerializer(entry.getValue());
 			serializer.serialize(entry.getValue(), objectVisitor);
 		}
 

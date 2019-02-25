@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Jetro Tree Suite" parallel="methods">
+<suite name="Jetro Tree Suite" parallel="classes">
 	<test name="All Tests" >
 		<packages>
 			<package name="net.sf.jetro.tree" />
 			<package name="net.sf.jetro.tree.builder" />
 			<package name="net.sf.jetro.tree.visitor" />
 		</packages>
-	</test> <!-- All Tests -->
-</suite> <!-- Jetro Stream Suite -->
+	</test>
+</suite>

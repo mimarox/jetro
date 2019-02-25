@@ -90,7 +90,7 @@ public class ReplacingTransformationsOnMixedObjectTest {
 				favorite.setPage(value);
 				favorite.setTitle("Title for: " + value);
 
-				mapper.merge(favorite).into(getNextVisitor());
+				mapper.merge(favorite).mergeInto(getNextVisitor());
 
 				return null;
 			}

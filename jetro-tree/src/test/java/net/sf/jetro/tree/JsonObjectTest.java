@@ -24,12 +24,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.Optional;
+
+import org.testng.annotations.Test;
 
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.renderer.JsonRenderer;
-import org.testng.annotations.Test;
-
-import java.util.NoSuchElementException;
 
 public class JsonObjectTest {
 
@@ -74,34 +78,187 @@ public class JsonObjectTest {
 	}
 
 	/**
-	 * Test that getChildElementAt returns String representing the correct element.
+	 * Test that getElementAt returns String representing the correct element.
 	 *
 	 */
-	// TODO when internal path setting is implemented remove the expectedExceptions directive
-	@Test(expectedExceptions = NoSuchElementException.class)
-	public void shouldGetChildElementAt() {
+	@Test
+	public void shouldGetElementAt() {
 		// Setup JSON tree representing {"foo":[1,"two",{"bar":true}]}
-		JsonObject jsonObject = new JsonObject();
-		JsonProperty foo = new JsonProperty("foo");
-		JsonArray jsonArray = new JsonArray();
-		jsonArray.add(new JsonNumber(1));
-		jsonArray.add(new JsonString("two"));
 		JsonObject barObject = new JsonObject();
-		JsonProperty bar = new JsonProperty("bar");
-		bar.setValue(new JsonBoolean(true));
-		barObject.add(bar);
-		jsonArray.add(barObject);
-		foo.setValue(jsonArray);
-		jsonObject.add(foo);
+		barObject.add(new JsonProperty("bar", true));
+		
+		JsonArray fooArray = new JsonArray();
+		fooArray.add(new JsonNumber(1));
+		fooArray.add(new JsonString("two"));
+		fooArray.add(barObject);
 
-		// define path for third element
-		JsonPath jsonPath = JsonPath.compile("$.foo[2]");
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("foo", fooArray));
+		
+		// Recalculate Json Tree Path
+		fooArray = fooArray.deepCopy();
+		fooArray.recalculateTreePaths();
+		jsonObject.recalculateTreePaths();
+		
+		// Define path for third element
+		JsonPath jsonPath1 = JsonPath.compile("$.foo[2]");
 
-		// call getElementAt on JsonArray
-		String actual = jsonObject.getElementAt(jsonPath).toString();
+		// Call getElementAt on JsonArray
+		String actual1 = jsonObject.getElementAt(jsonPath1).get().toJson();
 		String expected = "{\"bar\":true}";
 
 		// Assert
-		assertEquals(actual, expected);
+		assertEquals(actual1, expected);
+
+		// Define path for third element
+		JsonPath jsonPath2 = JsonPath.compile("$[2]");
+
+		// Call getElementAt on JsonArray
+		String actual2 = fooArray.getElementAt(jsonPath2).get().toJson();
+
+		// Assert
+		assertEquals(actual2, expected);
+	}
+	
+	@Test
+	public void shouldRetainAllByKey() {
+		//prepare JsonObject
+		JsonObject jsonObject = new JsonObject();
+		
+		jsonObject.add(new JsonProperty("a", 1));
+		jsonObject.add(new JsonProperty("b", 2));
+		jsonObject.add(new JsonProperty("c", 3));
+		jsonObject.add(new JsonProperty("d", 4));
+		
+		jsonObject.retainAllByKey(Arrays.asList("a", "b"));
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("a", 1));
+		expected.add(new JsonProperty("b", 2));
+		
+		assertEquals(jsonObject, expected);
+	}
+	
+	@Test
+	public void shouldRemoveAllByKey() {
+		//prepare JsonObject
+		JsonObject jsonObject = new JsonObject();
+		
+		jsonObject.add(new JsonProperty("a", 1));
+		jsonObject.add(new JsonProperty("b", 2));
+		jsonObject.add(new JsonProperty("c", 3));
+		jsonObject.add(new JsonProperty("d", 4));
+		
+		jsonObject.removeAllByKey(Arrays.asList("a", "b"));
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("c", 3));
+		expected.add(new JsonProperty("d", 4));
+		
+		assertEquals(jsonObject, expected);
+	}
+	
+	@Test
+	public void shouldContainAllKeys() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("a", 1));
+		jsonObject.add(new JsonProperty("b", 2));
+		jsonObject.add(new JsonProperty("c", 3));
+		
+		assertTrue(jsonObject.containsAllKeys(Arrays.asList("a", "b")));
+	}
+	
+	@Test
+	public void shouldNotThrowNPEWhenGettingNonExistingValue() {
+		assertNull(new JsonObject().get("key"));
+	}
+
+	@Test
+	public void shouldGetSameChildOfObjectAtDifferentPaths() {
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonString", jsonString));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonString);
+		jsonArray.add(jsonObject);
+		
+		JsonObject root = new JsonObject();
+		root.add(new JsonProperty("jsonObject", jsonObject));
+		root.add(new JsonProperty("jsonArray", jsonArray));
+		
+		root.recalculateTreePaths();
+		
+		Optional<JsonType> optional1 =
+				root.getElementAt(JsonPath.compile("$.jsonArray[1].jsonString"));
+		
+		assertTrue(optional1.isPresent());
+		assertTrue(optional1.get() == jsonString);
+		
+		Optional<JsonType> optional2 =
+				root.getElementAt(JsonPath.compile("$.jsonArray[0]"));
+		
+		assertTrue(optional2.isPresent());
+		assertTrue(optional2.get() == jsonString);
+		
+		Optional<JsonType> optional3 =
+				root.getElementAt(JsonPath.compile("$.jsonObject.jsonString"));
+		
+		assertTrue(optional3.isPresent());
+		assertTrue(optional3.get() == jsonString);
+	}
+	
+	@Test
+	public void shouldGetSameObjectAtDifferentPaths() {
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonString", jsonString));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonString);
+		jsonArray.add(jsonObject);
+		
+		JsonObject root = new JsonObject();
+		root.add(new JsonProperty("jsonObject", jsonObject));
+		root.add(new JsonProperty("jsonArray", jsonArray));
+		
+		root.recalculateTreePaths();
+		
+		Optional<JsonType> optional1 =
+				root.getElementAt(JsonPath.compile("$.jsonArray[1]"));
+		
+		assertTrue(optional1.isPresent());
+		assertTrue(optional1.get() == jsonObject);
+		
+		Optional<JsonType> optional2 =
+				root.getElementAt(JsonPath.compile("$.jsonObject"));
+		
+		assertTrue(optional2.isPresent());
+		assertTrue(optional2.get() == jsonObject);
+	}
+	
+	@Test
+	public void shouldDeepCopyWithPaths() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("stringKey", "value"));
+		jsonObject.add(new JsonProperty("numberKey", 1));
+		
+		JsonObject root = new JsonObject();
+		root.add(new JsonProperty("objectKey", jsonObject));
+		
+		root.recalculateTreePaths();
+		
+		JsonObject deepCopied = root.deepCopy();
+		
+		assertEquals(deepCopied, root);
+		assertTrue(deepCopied != root);
+		
+		Optional<JsonType> optional = deepCopied.getElementAt(
+				JsonPath.compile("$.objectKey.stringKey"));
+		
+		assertTrue(optional.isPresent());
+		assertEquals(optional.get(), new JsonString("value"));
 	}
 }

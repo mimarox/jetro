@@ -19,9 +19,11 @@
  */
 package net.sf.jetro.tree;
 
+import java.util.Set;
+
 import net.sf.jetro.path.JsonPath;
 
-public class JsonNull extends JsonPrimitive<Null> {
+public final class JsonNull extends JsonPrimitive<Null> {
 	private static final long serialVersionUID = 7408732762751496156L;
 
 	public JsonNull() {
@@ -30,5 +32,14 @@ public class JsonNull extends JsonPrimitive<Null> {
 
 	public JsonNull(JsonPath path) {
 		super(path, Null.instance);
+	}
+	
+	private JsonNull(Set<JsonPath> paths) {
+		super(paths, Null.instance);
+	}
+
+	@Override
+	public JsonNull deepCopy() {
+		return new JsonNull(paths);
 	}
 }

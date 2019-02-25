@@ -24,6 +24,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
+import java.util.Optional;
+
 import net.sf.jetro.path.JsonPath;
 
 import net.sf.jetro.tree.renderer.JsonRenderer;
@@ -64,15 +68,48 @@ public class JsonPrimitiveTest {
 		// define path for third element
 		JsonPath jsonPath = JsonPath.compile("$.foo[2]");
 
-		JsonPrimitive<String> jsonString = new JsonPrimitive<String>(jsonPath, "happy") {};
+		@SuppressWarnings("serial")
+		JsonPrimitive<String> jsonString = new JsonPrimitive<String>(jsonPath, "happy") {
+
+			@Override
+			public JsonType deepCopy() {
+				return this;
+			}};
 
 		// call getElementAt on JSON primitive
-		String actual = ((JsonPrimitive<String>) jsonString.getElementAt(JsonPath.compile("$.foo[2]"))).getValue();
+			@SuppressWarnings("unchecked")
+		String actual = ((JsonPrimitive<String>) jsonString.getElementAt(jsonPath).get()).getValue();
 		String expected = "happy";
 
 		// Assert
 		assertEquals(actual, expected);
 	}
 
+	@Test
+	public void shouldGetSamePrimitiveAtDifferentPaths() {
+		JsonString jsonString = new JsonString("jsonString");
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("jsonString", jsonString));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(jsonString);
+		jsonArray.add(jsonObject);
+		
+		jsonArray.recalculateTreePaths();
+		
+		Optional<JsonType> optional1 =
+				jsonArray.getElementAt(JsonPath.compile("$[1].jsonString"));
+		
+		assertTrue(optional1.isPresent());
+		assertTrue(optional1.get() == jsonString);
+		
+		Optional<JsonType> optional2 =
+				jsonArray.getElementAt(JsonPath.compile("$[0]"));
+		
+		assertTrue(optional2.isPresent());
+		assertTrue(optional2.get() == jsonString);
+	}
+	
 	// TODO put a wrong path in element then test that NoSuchElementException is actually thrown	
 }

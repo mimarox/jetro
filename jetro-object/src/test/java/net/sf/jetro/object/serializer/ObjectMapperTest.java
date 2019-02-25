@@ -19,15 +19,20 @@
  */
 package net.sf.jetro.object.serializer;
 
-import net.sf.jetro.object.ObjectMapper;
-import net.sf.jetro.object.serializer.beans.NestedTestBean;
-import net.sf.jetro.object.serializer.beans.TestBean;
-import net.sf.jetro.stream.visitor.JsonReturningVisitor;
-import org.testng.annotations.Test;
-
+import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.testng.annotations.Test;
+
+import net.sf.jetro.object.ObjectMapper;
+import net.sf.jetro.object.deserializer.beans.DateBean;
+import net.sf.jetro.object.serializer.addons.DateSerializer;
+import net.sf.jetro.object.serializer.addons.ToStringSerializer;
+import net.sf.jetro.object.serializer.beans.NestedTestBean;
+import net.sf.jetro.object.serializer.beans.TestBean;
 
 /**
  * Created by matthias.rothe on 27.02.14.
@@ -37,12 +42,11 @@ public class ObjectMapperTest {
 	@Test
 	public void testBeanSerialization() {
 		TestBean bean = buildTestBean();
-		JsonReturningVisitor receiver = new JsonReturningVisitor();
 
 		ObjectMapper mapper = new ObjectMapper();
-		mapper.merge(bean).into(receiver);
+		String json = mapper.toJson(bean);
 
-		System.out.println(receiver.getVisitingResult());
+		System.out.println(json);
 	}
 
 	private TestBean buildTestBean() {
@@ -64,5 +68,21 @@ public class ObjectMapperTest {
 		bean.setVisible(true);
 
 		return bean;
+	}
+
+	@Test
+	public void testDateLocalDateSerialization() {
+		SerializationContext context = new SerializationContext();
+		context.addTypeSerializer(new DateSerializer())
+				.addTypeSerializer(new ToStringSerializer(LocalDateTime.class));
+		
+		DateBean dateBean = new DateBean();
+		dateBean.setDate(new Date());
+		dateBean.setDateTime(LocalDateTime.now());
+		
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.toJson(dateBean, context);
+		
+		System.out.println(json);
 	}
 }
