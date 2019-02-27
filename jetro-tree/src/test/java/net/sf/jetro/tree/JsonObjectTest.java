@@ -29,6 +29,8 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +41,7 @@ import org.testng.annotations.Test;
 
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.JsonObject.JsonProperties;
+import net.sf.jetro.tree.builder.JsonTreeBuilder;
 import net.sf.jetro.tree.renderer.JsonRenderer;
 
 public class JsonObjectTest {
@@ -1126,5 +1129,24 @@ public class JsonObjectTest {
 		assertEquals(jsonProperties.put("key", "value2"), new JsonString("value1"));
 		
 		assertEquals(jsonObject.size(), 1);
+	}
+	
+	@Test
+	public void shouldBeDeepEqual() throws Exception {
+		JsonObject innerObject = new JsonObject();
+		innerObject.add(new JsonProperty("string", "string"));
+		
+		JsonObject outerObject = new JsonObject();
+		outerObject.add(new JsonProperty("innerObject", innerObject));
+		
+		outerObject.recalculateTreePaths();
+		
+		JsonObject expected = outerObject.deepCopy();
+		
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonObject actual = (JsonObject) builder.build(new InputStreamReader(
+				new ByteArrayInputStream(outerObject.toJson().getBytes("UTF-8")), "UTF-8"));
+		
+		assertEquals(actual, expected);
 	}
 }
