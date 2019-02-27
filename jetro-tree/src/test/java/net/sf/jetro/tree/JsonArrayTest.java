@@ -675,7 +675,7 @@ public class JsonArrayTest {
 			expectedExceptionsMessageRegExp =
 			"A non-null element to be added must be specified")
 	public void shouldThrowForAddElementAtNullElement() {
-		new JsonArray().addElementAt(new JsonPath(), null);
+		new JsonArray().addElementAt(new JsonPath(), (JsonType) null);
 	}
 	
 	@Test(expectedExceptions = IllegalArgumentException.class,
@@ -714,7 +714,7 @@ public class JsonArrayTest {
 			expectedExceptionsMessageRegExp =
 			"A non-null element to be inserted must be specified")
 	public void shouldThrowForReplaceElementAtNullElement() {
-		new JsonArray().replaceElementAt(new JsonPath(), null);
+		new JsonArray().replaceElementAt(new JsonPath(), (JsonType) null);
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class,
