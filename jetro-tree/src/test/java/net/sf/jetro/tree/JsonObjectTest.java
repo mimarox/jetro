@@ -727,7 +727,7 @@ public class JsonObjectTest {
 			expectedExceptionsMessageRegExp =
 			"A non-null element to be added must be specified")
 	public void shouldThrowForAddElementAtNullElement() {
-		new JsonObject().addElementAt(new JsonPath(), null);
+		new JsonObject().addElementAt(new JsonPath(), (JsonType) null);
 	}
 	
 	@Test(expectedExceptions = IllegalArgumentException.class,
@@ -747,7 +747,7 @@ public class JsonObjectTest {
 			expectedExceptionsMessageRegExp =
 			"A non-null element to be inserted must be specified")
 	public void shouldThrowForReplaceElementAtNullElement() {
-		new JsonObject().replaceElementAt(new JsonPath(), null);
+		new JsonObject().replaceElementAt(new JsonPath(), (JsonType) null);
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class,
@@ -1093,6 +1093,78 @@ public class JsonObjectTest {
 
 		verifyElementFrom(outerObject).at(path).is(jsonBoolean);
 		verifyElementFrom(outerObject).at(replacePath).is(jsonNumber);
+	}
+
+	@Test(dependsOnMethods = "shouldAddElementAtToObject")
+	public void shouldAddStringValueAt() {
+		JsonObject jsonObject = new JsonObject();
+		
+		JsonPath path = JsonPath.compile("$.key");
+		String value = "value";
+		
+		assertTrue(jsonObject.addElementAt(path, value));
+		verifyElementFrom(jsonObject).at(path).equals(new JsonString(value));
+	}
+
+	@Test(dependsOnMethods = "shouldAddElementAtToObject")
+	public void shouldAddNumberValueAt() {
+		JsonObject jsonObject = new JsonObject();
+		
+		JsonPath path = JsonPath.compile("$.key");
+		Number value = 1;
+		
+		assertTrue(jsonObject.addElementAt(path, value));
+		verifyElementFrom(jsonObject).at(path).equals(new JsonNumber(value));
+	}
+
+	@Test(dependsOnMethods = "shouldAddElementAtToObject")
+	public void shouldAddBooleanValueAt() {
+		JsonObject jsonObject = new JsonObject();
+		
+		JsonPath path = JsonPath.compile("$.key");
+		Boolean value = true;
+		
+		assertTrue(jsonObject.addElementAt(path, value));
+		verifyElementFrom(jsonObject).at(path).equals(new JsonBoolean(value));
+	}
+
+	@Test(dependsOnMethods = "shouldReplaceElementAtInObject")
+	public void shouldReplaceElementAtWithStringValue() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("key", "oldValue"));
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.key");
+		String newValue = "newValue";
+		
+		jsonObject.replaceElementAt(path, newValue);
+		verifyElementFrom(jsonObject).at(path).equals(new JsonString(newValue));
+	}
+
+	@Test(dependsOnMethods = "shouldReplaceElementAtInObject")
+	public void shouldReplaceElementAtWithNumberValue() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("key", "oldValue"));
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.key");
+		Number newValue = 1;
+		
+		jsonObject.replaceElementAt(path, newValue);
+		verifyElementFrom(jsonObject).at(path).equals(new JsonNumber(newValue));
+	}
+
+	@Test(dependsOnMethods = "shouldReplaceElementAtInObject")
+	public void shouldReplaceElementAtWithBooleanValue() {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add(new JsonProperty("key", "oldValue"));
+		jsonObject.recalculateTreePaths();
+		
+		JsonPath path = JsonPath.compile("$.key");
+		Boolean newValue = true;
+		
+		jsonObject.replaceElementAt(path, newValue);
+		verifyElementFrom(jsonObject).at(path).equals(new JsonBoolean(newValue));
 	}
 
 	@Test

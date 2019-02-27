@@ -210,10 +210,10 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	}
 
 	@Override
-	public Optional<JsonType> replaceElementAt(final JsonPath path, final JsonType element) {
+	public Optional<JsonType> replaceElementAt(final JsonPath path, final JsonType newElement) {
 		Objects.requireNonNull(path,
 				"A non-null path to replace the element at must be specified");
-		Objects.requireNonNull(element, "A non-null element to be inserted must be specified");
+		Objects.requireNonNull(newElement, "A non-null element to be inserted must be specified");
 		
 		if (path.isRootPath()) {
 			throw new IllegalArgumentException("Cannot replace JSON tree root");
@@ -230,7 +230,7 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 				
 				try {
 					replacedElement = parent.remove(index);
-					parent.add(index, element);
+					parent.add(index, newElement);
 				} catch (IndexOutOfBoundsException e) {
 					/* do nothing, Optional.empty() will be returned
 					 * to indicate that no replacement took place
@@ -243,7 +243,7 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 				String propertyName = path.getPropertyNameAt(path.getDepth() - 1);
 				
 				if (parent.containsKey(propertyName)) {
-					replacedElement = parent.put(propertyName, element);
+					replacedElement = parent.put(propertyName, newElement);
 				}
 			}
 		}
