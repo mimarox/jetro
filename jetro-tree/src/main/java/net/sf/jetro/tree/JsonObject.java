@@ -104,20 +104,26 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 
 			JsonProperty property = null;
 
-			for (JsonProperty candidate : properties) {
+			Iterator<JsonProperty> iterator = properties.iterator();
+			while (iterator.hasNext()) {
+				JsonProperty candidate = iterator.next();
+				
 				if (candidate.getKey().equals(key)) {
-					property = candidate;
+					property = candidate.shallowCopy();
+					iterator.remove();
 					break;
 				}
 			}
 
 			if (property == null) {
 				property = new JsonProperty(key);
-				properties.add(property);
 			}
 
 			JsonType oldValue = property.getValue();
 			property.setValue(value);
+			
+			properties.add(property);
+			
 			return oldValue;
 		}
 
