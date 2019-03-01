@@ -80,7 +80,19 @@ public class JsonPath implements Cloneable, Serializable {
 
 	private JsonPath replaceWithInternal(final JsonPathElement newElement) {
 		pathElements[size - 1] = newElement;
+		recalculateOptionals();
 		return this;
+	}
+
+	private void recalculateOptionals() {
+		containsOptionals = false;
+		
+		for (int i = 0; i < size; i++) {
+			if (pathElements[i].isOptional()) {
+				containsOptionals = true;
+				break;
+			}
+		}
 	}
 
 	public JsonPath removeLastElement() {
@@ -90,13 +102,14 @@ public class JsonPath implements Cloneable, Serializable {
 		return clone().removeInternal();
 	}
 	
-	public boolean isRootPath() {
-		return size == 0;
-	}
-	
 	private JsonPath removeInternal() {
 		pathElements[--size] = null;
+		recalculateOptionals();
 		return this;
+	}
+	
+	public boolean isRootPath() {
+		return size == 0;
 	}
 
 	public boolean matches(final JsonPath jsonPathPattern) {
@@ -211,6 +224,18 @@ public class JsonPath implements Cloneable, Serializable {
 		}
 	}
 
+	public boolean hasWildcardAt(final int depth) {
+		return pathElements[depth].isWildcard();
+	}
+
+	public boolean hasOptionalAt(final int depth) {
+		return pathElements[depth].isOptional();
+	}
+	
+	public boolean containsOptionals() {
+		return containsOptionals;
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(toString());

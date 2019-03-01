@@ -23,8 +23,8 @@ import java.io.Serializable;
 
 abstract class JsonPathElement implements Serializable {
 	private static final long serialVersionUID = -3286390362790937905L;
-	private boolean wildcard;
-	private boolean optional;
+	private final boolean wildcard;
+	private final boolean optional;
 
 	JsonPathElement(final boolean wildcard, final boolean optional) {
 		this.wildcard = wildcard;
