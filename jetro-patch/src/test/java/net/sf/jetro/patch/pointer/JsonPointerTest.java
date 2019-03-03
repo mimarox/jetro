@@ -40,4 +40,20 @@ public class JsonPointerTest {
 		assertNotNull(expected);
 		assertEquals(actual, expected);
 	}
+	
+	@Test
+	@DataBinding
+	public void shouldCompile(@TestInput(name = "jsonPointer") final String jsonPointer) {
+		JsonPointer pointer = JsonPointer.compile(jsonPointer);
+		String actual = pointer.toString();
+		
+		assertEquals(actual, jsonPointer);
+	}
+	
+	@Test(expectedExceptions = JsonPointerException.class,
+			expectedExceptionsMessageRegExp = "jsonPointer is not a valid JsonPointer, " + 
+			"since it doesn't start with a separator \\(/\\)")
+	public void shouldNotCompile() {
+		JsonPointer.compile("foo");
+	}
 }

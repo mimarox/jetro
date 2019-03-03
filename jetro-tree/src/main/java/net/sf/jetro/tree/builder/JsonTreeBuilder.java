@@ -33,7 +33,10 @@ import net.sf.jetro.visitor.chained.ChainedJsonVisitor;
 
 public class JsonTreeBuilder {
 	private boolean lenient;
-
+	
+	/**
+	 * Creates a JsonTreeBuilder with lenient set to false
+	 */
 	public JsonTreeBuilder() {
 		this(false);
 	}

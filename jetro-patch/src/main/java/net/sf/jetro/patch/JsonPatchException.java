@@ -17,25 +17,25 @@
  * limitations under the License.
  * #L%
  */
-package net.sf.jetro.patch.pointer;
+package net.sf.jetro.patch;
 
-import java.util.Objects;
+/**
+ * If thrown this exception indicates that an error occurred while a JSON patch
+ * was applied and requires that the original source JSON structure be returned
+ * unchanged.
+ */
+public class JsonPatchException extends Exception {
+	private static final long serialVersionUID = -912686328514490899L;
 
-public class PropertyNamePointerElement extends JsonPointerElement<String> {
-	private static final long serialVersionUID = -5239144044156146911L;
-
-	private PropertyNamePointerElement(final String value) {
-		super(value);
+	public JsonPatchException(String message) {
+		super(message);
 	}
 
-	@Override
-	public String toString() {
-		return "/" + getValue().toString().replaceAll("~", "~0").replaceAll("/", "~1");
+	public JsonPatchException(Throwable cause) {
+		super(cause);
 	}
-	
-	public static PropertyNamePointerElement of(final String value) {
-		Objects.requireNonNull(value);
-		String convertedValue = value.replaceAll("~1", "/").replaceAll("~0", "~");
-		return new PropertyNamePointerElement(convertedValue);
+
+	public JsonPatchException(String message, Throwable cause) {
+		super(message, cause);
 	}
 }

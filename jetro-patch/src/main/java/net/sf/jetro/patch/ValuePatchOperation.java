@@ -17,37 +17,30 @@
  * limitations under the License.
  * #L%
  */
-package net.sf.jetro.patch.pointer;
+package net.sf.jetro.patch;
 
-public class ArrayIndexPointerElement extends JsonPointerElement<Integer> {
-	private static final long serialVersionUID = 7455005293018033992L;
-	
-	private final boolean nextToLast;
-	
-	public ArrayIndexPointerElement() {
-		super(null);
-		this.nextToLast = true;
-	}
-	
-	public ArrayIndexPointerElement(final Integer value) {
-		super(value);
-		nextToLast = false;
-	}
-	
-	public boolean isNextToLast() {
-		return nextToLast;
-	}
+import java.util.Arrays;
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder("/");
+import net.sf.jetro.tree.JsonCollection;
+import net.sf.jetro.tree.JsonObject;
+import net.sf.jetro.tree.JsonType;
+
+public abstract class ValuePatchOperation extends JsonPatchOperation {
+	protected final JsonType value;
+	
+	public ValuePatchOperation(JsonObject patchDefinition) {
+		super(patchDefinition);
 		
-		if (nextToLast) {
-			builder.append("-");
-		} else {
-			builder.append(getValue());
+		if (!patchDefinition.containsAllKeys(Arrays.asList("value"))) {
+			throw new IllegalArgumentException("Missing property 'value'");
 		}
 		
-		return builder.toString();
+		value = patchDefinition.get("value").deepCopy();
+		
+		if (value instanceof JsonCollection) {
+			((JsonCollection) value).recalculateTreePaths();
+		} else {
+			value.resetPaths();
+		}
 	}
 }

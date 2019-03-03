@@ -17,25 +17,29 @@
  * limitations under the License.
  * #L%
  */
-package net.sf.jetro.patch.pointer;
+package net.sf.jetro.patch.data;
 
 import java.util.Objects;
 
-public class PropertyNamePointerElement extends JsonPointerElement<String> {
-	private static final long serialVersionUID = -5239144044156146911L;
+import net.sf.jetro.patch.pointer.JsonPointer;
 
-	private PropertyNamePointerElement(final String value) {
-		super(value);
-	}
-
-	@Override
-	public String toString() {
-		return "/" + getValue().toString().replaceAll("~", "~0").replaceAll("/", "~1");
-	}
+public abstract class PatchOperationData {
+	private final PatchOperation op;
+	private final JsonPointer path;
 	
-	public static PropertyNamePointerElement of(final String value) {
-		Objects.requireNonNull(value);
-		String convertedValue = value.replaceAll("~1", "/").replaceAll("~0", "~");
-		return new PropertyNamePointerElement(convertedValue);
+	PatchOperationData(final PatchOperation op, final JsonPointer path) {
+		Objects.requireNonNull(op, "Argument 'op' must not be null");
+		Objects.requireNonNull(path, "Argument 'path' must not be null");
+		
+		this.op = op;
+		this.path = path;
+	}
+
+	public PatchOperation getOp() {
+		return op;
+	}
+
+	public JsonPointer getPath() {
+		return path;
 	}
 }

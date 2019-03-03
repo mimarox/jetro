@@ -202,7 +202,8 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 		} else if (replace) {
 			nextVisitor = visitor;
 		} else {
-			throw new IllegalStateException("Cannot attach visitor as a visitor is already attached and replacement was not requested");
+			throw new IllegalStateException("Cannot attach visitor as a visitor is already "
+					+ "attached and replacement was not requested");
 		}
 	}
 

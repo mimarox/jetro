@@ -17,25 +17,32 @@
  * limitations under the License.
  * #L%
  */
-package net.sf.jetro.patch.pointer;
+package net.sf.jetro.patch;
 
 import java.util.Objects;
 
-public class PropertyNamePointerElement extends JsonPointerElement<String> {
-	private static final long serialVersionUID = -5239144044156146911L;
+import net.sf.jetro.tree.JsonCollection;
+import net.sf.jetro.tree.JsonObject;
+import net.sf.jetro.tree.JsonType;
 
-	private PropertyNamePointerElement(final String value) {
-		super(value);
+public class AddPatchOperation extends ValuePatchOperation {
+	public AddPatchOperation(JsonObject patchDefinition) {
+		super(patchDefinition);
 	}
 
 	@Override
-	public String toString() {
-		return "/" + getValue().toString().replaceAll("~", "~0").replaceAll("/", "~1");
-	}
-	
-	public static PropertyNamePointerElement of(final String value) {
-		Objects.requireNonNull(value);
-		String convertedValue = value.replaceAll("~1", "/").replaceAll("~0", "~");
-		return new PropertyNamePointerElement(convertedValue);
+	public JsonType applyPatch(JsonType source) throws JsonPatchException {
+		if (path.isRootPath()) {
+			return handleTarget(value);
+		}
+		
+		Objects.requireNonNull(source, "Argument 'source' must not be null");
+				
+		if (!(source instanceof JsonCollection)) {
+			throw new JsonPatchException(new IllegalArgumentException("source must either be "
+					+ "a JsonArray or a JsonObject"));
+		}
+		
+		return null;
 	}
 }
