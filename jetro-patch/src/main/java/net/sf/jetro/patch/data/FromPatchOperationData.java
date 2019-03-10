@@ -26,8 +26,8 @@ import net.sf.jetro.patch.pointer.JsonPointer;
 abstract class FromPatchOperationData extends PatchOperationData {
 	private final JsonPointer from;
 	
-	FromPatchOperationData(final PatchOperation op, final JsonPointer from,
-			final JsonPointer path) {
+	FromPatchOperationData(final PatchOperation op, final JsonPointer path,
+			final JsonPointer from) {
 		super(op, path);
 		
 		Objects.requireNonNull(from, "Argument 'from' must not be null");

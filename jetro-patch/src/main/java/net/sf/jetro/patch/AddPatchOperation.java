@@ -20,29 +20,78 @@
 package net.sf.jetro.patch;
 
 import java.util.Objects;
+import java.util.Optional;
 
+import net.sf.jetro.patch.pointer.JsonPointer;
+import net.sf.jetro.path.ArrayIndexPathElement;
+import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonCollection;
 import net.sf.jetro.tree.JsonObject;
 import net.sf.jetro.tree.JsonType;
 
-public class AddPatchOperation extends ValuePatchOperation {
-	public AddPatchOperation(JsonObject patchDefinition) {
+public class AddPatchOperation extends ValueBasedPatchOperation {
+	public AddPatchOperation(final JsonObject patchDefinition) {
 		super(patchDefinition);
 	}
 
 	@Override
-	public JsonType applyPatch(JsonType source) throws JsonPatchException {
+	public JsonType applyPatch(final JsonType source) throws JsonPatchException {
 		if (path.isRootPath()) {
 			return handleTarget(value);
 		}
 		
+		processPreconditions(source);
+		
+		final JsonCollection target = (JsonCollection) source.deepCopy();
+		target.recalculateTreePaths();
+		
+		if (path.hasNextToLastArrayIndexAt(path.getDepth())) {
+			addNextToLastOnArray(target);
+		} else {
+			addOrReplace(target);
+		}
+		
+		return handleTarget(target);
+	}
+
+	private void processPreconditions(final JsonType source) throws JsonPatchException {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 				
 		if (!(source instanceof JsonCollection)) {
 			throw new JsonPatchException(new IllegalArgumentException("source must either be "
 					+ "a JsonArray or a JsonObject"));
 		}
+	}
+
+	private void addNextToLastOnArray(final JsonCollection target) throws JsonPatchException {
+		final JsonPath parentPath = path.removeLastElement().toJsonPath();
+		final Optional<JsonType> optional = target.getElementAt(parentPath);
 		
-		return null;
+		if (optional.isPresent() && optional.get() instanceof JsonArray) {
+			final JsonPath targetPath = parentPath.append(new ArrayIndexPathElement(
+					((JsonArray) optional.get()).size()));
+			
+			if (!target.addElementAt(targetPath, value)) {
+				throw new JsonPatchException("Couldn't add " + value + " to " + target + " at "
+						+ "path " + JsonPointer.fromJsonPath(targetPath));
+			}
+		} else {
+			throw new JsonPatchException("Expected JsonArray at " +
+					JsonPointer.fromJsonPath(parentPath));
+		}
+	}
+
+	private void addOrReplace(final JsonCollection target) throws JsonPatchException {
+		final JsonPath targetPath = path.toJsonPath();
+		
+		if (target.hasElementAt(targetPath)) {
+			target.replaceElementAt(targetPath, value);
+		} else {
+			if (!target.addElementAt(targetPath, value)) {
+				throw new JsonPatchException("Couldn't add " + value + " to " + target +
+						" at path " + JsonPointer.fromJsonPath(targetPath));
+			}
+		}
 	}
 }

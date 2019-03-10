@@ -113,6 +113,83 @@ public class JsonPointer implements Cloneable, Serializable {
 		return size == 0;
 	}
 
+	public boolean hasArrayIndexAt(final int depth) {
+		return hasArrayIndexElementAt(depth) && !isNextToLastAt(depth);
+	}
+	
+	public boolean hasNextToLastArrayIndexAt(final int depth) {
+		return hasArrayIndexElementAt(depth) && isNextToLastAt(depth);
+	}
+	
+	public boolean hasArrayIndexElementAt(final int depth) {
+		return pointerElements[depth - 1] instanceof ArrayIndexPointerElement;
+	}
+	
+	private boolean isNextToLastAt(final int depth) {
+		return ((ArrayIndexPointerElement) pointerElements[depth - 1]).isNextToLast();
+	}
+	
+	public int getArrayIndexAt(final int depth) {
+		if (hasArrayIndexAt(depth)) {
+			return ((ArrayIndexPointerElement) pointerElements[depth - 1]).getValue();
+		} else {
+			throw new IllegalStateException("The pointer element at depth " + depth +
+					" in pointer " + this + " is not an array index");
+		}
+	}
+
+	public boolean hasPropertyNameAt(final int depth) {
+		return pointerElements[depth - 1] instanceof PropertyNamePointerElement;
+	}
+	
+	public String getPropertyNameAt(final int depth) {
+		if (hasPropertyNameAt(depth)) {
+			return ((PropertyNamePointerElement) pointerElements[depth - 1]).getValue();
+		} else {
+			throw new IllegalStateException("The pointer element at depth " + depth +
+					" in pointer " + this + " is not a property name");
+		}
+	}
+	
+	public JsonPointer removeLastElement() {
+		if (isRootPath()) {
+			throw new IllegalStateException("Cannot remove last element from root path.");
+		}
+		return clone().removeInternal();
+	}
+	
+	private JsonPointer removeInternal() {
+		pointerElements[--size] = null;
+		return this;
+	}
+	
+	public <T extends Serializable> JsonPointer append(final JsonPointerElement<T> newElement) {
+		return clone().appendInternal(newElement);
+	}
+
+	private <T extends Serializable> JsonPointer appendInternal(
+			final JsonPointerElement<T> newElement) {
+		pointerElements[++size - 1] = newElement;
+		return this;
+	}
+
+	public int getDepth() {
+		return size;
+	}
+	
+	public boolean isParentPointerOf(final JsonPointer pointer) {
+		boolean parentPointer = true;
+
+		for (int i = 0; i < size; i++) {
+			if (!pointerElements[i].equals(pointer.pointerElements[i])) {
+				parentPointer = false;
+				break;
+			}
+		}
+
+		return parentPointer;
+	}
+	
 	public static JsonPointer fromJsonPath(final JsonPath path) {
 		if (path == null) {
 			return null;

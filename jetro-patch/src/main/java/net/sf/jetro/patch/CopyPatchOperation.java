@@ -25,25 +25,26 @@ import java.util.Optional;
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.JsonCollection;
 import net.sf.jetro.tree.JsonObject;
+import net.sf.jetro.tree.JsonProperty;
 import net.sf.jetro.tree.JsonType;
 
-public class TestPatchOperation extends ValueBasedPatchOperation {
-	public TestPatchOperation(final JsonObject patchDefinition) {
+public class CopyPatchOperation extends FromBasedPatchOperation {
+	public CopyPatchOperation(final JsonObject patchDefinition) {
 		super(patchDefinition);
 	}
 
 	@Override
-	public JsonType applyPatch(final JsonType source) throws JsonPatchException {
+	public JsonType applyPatch(JsonType source) throws JsonPatchException {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
-		final JsonType target = prepareFrom(source);
-		final Optional<JsonType> optional = target.getElementAt(path.toJsonPath());
+		JsonType target = prepareFrom(source);
+		Optional<JsonType> optional = target.getElementAt(from.toJsonPath());
 		
-		if (optional.isPresent() && optional.get().equals(value)) {
-			return handleTarget(target);
+		if (optional.isPresent()) {
+			return handleTarget(createAddOperation(optional.get()).applyPatch(target));
 		} else {
-			throw new JsonPatchException("Expected value [" + value + "] could not be "
-					+ "found on source JSON [" + source + "] at path [" + path + "]");
+			throw new JsonPatchException("Couldn't copy non-existing value from " + from +
+					" in " + target);
 		}
 	}
 
@@ -58,5 +59,13 @@ public class TestPatchOperation extends ValueBasedPatchOperation {
 		}
 		
 		return target;
+	}
+
+	private AddPatchOperation createAddOperation(final JsonType value) {
+		final JsonObject patchDefinition = new JsonObject();
+		patchDefinition.add(new JsonProperty("path", path.toString()));
+		patchDefinition.add(new JsonProperty("value", value));
+		
+		return new AddPatchOperation(patchDefinition);
 	}
 }

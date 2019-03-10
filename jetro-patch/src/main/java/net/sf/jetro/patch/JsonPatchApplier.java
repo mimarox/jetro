@@ -75,7 +75,6 @@ public class JsonPatchApplier {
 	
 	public String andReturnAsJson(final JsonRenderer renderer) throws JsonPatchException {
 		Objects.requireNonNull(renderer, "Argument 'renderer' must not be null");
-		
 		return createTarget().toJson(renderer);
 	}
 	
@@ -141,7 +140,14 @@ public class JsonPatchApplier {
 	}
 	
 	private JsonType createTarget() throws JsonPatchException {
-		return createPatchOperations().applyPatch(source);
+		try {
+			return createPatchOperations().applyPatch(source);
+		} catch (JsonPatchException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new JsonPatchException("Exception while preparing or "
+					+ "executing patch operations", e);
+		}
 	}
 	
 	private JsonPatchOperation createPatchOperations() {
@@ -188,16 +194,16 @@ public class JsonPatchApplier {
 				patchOperation = new AddPatchOperation(patchDefinition);
 				break;
 			case "remove":
-				patchOperation = createRemovePatchOperation(patchDefinition);
+				patchOperation = new RemovePatchOperation(patchDefinition);
 				break;
 			case "replace":
 				patchOperation = new ReplacePatchOperation(patchDefinition);
 				break;
 			case "move":
-				patchOperation = createMovePatchOperation(patchDefinition);
+				patchOperation = new MovePatchOperation(patchDefinition);
 				break;
 			case "copy":
-				patchOperation = createCopyPatchOperation(patchDefinition);
+				patchOperation = new CopyPatchOperation(patchDefinition);
 				break;
 			case "test":
 				patchOperation = new TestPatchOperation(patchDefinition);
@@ -207,21 +213,6 @@ public class JsonPatchApplier {
 		}
 		
 		return patchOperation;
-	}
-
-	private JsonPatchOperation createRemovePatchOperation(JsonObject patchDefinition) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private JsonPatchOperation createMovePatchOperation(JsonObject patchDefinition) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private JsonPatchOperation createCopyPatchOperation(JsonObject patchDefinition) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	private JsonPatchOperation mergePatchOperations(

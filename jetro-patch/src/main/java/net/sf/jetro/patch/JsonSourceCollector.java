@@ -40,6 +40,7 @@ import net.sf.jetro.tree.visitor.JsonTreeBuildingVisitor;
 
 public class JsonSourceCollector {
 	private static final JsonTreeBuilder BUILDER = new JsonTreeBuilder();
+	private static SerializationContext serializationContext;
 	
 	private final JsonType source;
 	
@@ -107,7 +108,15 @@ public class JsonSourceCollector {
 	}
 
 	private JsonPatchApplier applying(final Object patchOperations) {
-		return applying(patchOperations, new SerializationContext());
+		return applying(patchOperations, getSerializationContext());
+	}
+	
+	private static SerializationContext getSerializationContext() {
+		if (serializationContext == null) {
+			serializationContext = new SerializationContext();
+		}
+		
+		return serializationContext;
 	}
 
 	private JsonPatchApplier applying(final Object patchOperations,

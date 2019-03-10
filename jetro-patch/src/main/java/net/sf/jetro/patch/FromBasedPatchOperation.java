@@ -21,26 +21,20 @@ package net.sf.jetro.patch;
 
 import java.util.Arrays;
 
-import net.sf.jetro.tree.JsonCollection;
+import net.sf.jetro.patch.pointer.JsonPointer;
 import net.sf.jetro.tree.JsonObject;
-import net.sf.jetro.tree.JsonType;
+import net.sf.jetro.tree.JsonString;
 
-public abstract class ValuePatchOperation extends JsonPatchOperation {
-	protected final JsonType value;
-	
-	public ValuePatchOperation(JsonObject patchDefinition) {
+public abstract class FromBasedPatchOperation extends JsonPatchOperation {
+	protected final JsonPointer from;
+
+	public FromBasedPatchOperation(JsonObject patchDefinition) {
 		super(patchDefinition);
 		
-		if (!patchDefinition.containsAllKeys(Arrays.asList("value"))) {
-			throw new IllegalArgumentException("Missing property 'value'");
+		if (!patchDefinition.containsAllKeys(Arrays.asList("from"))) {
+			throw new IllegalArgumentException("Missing property 'from'");
 		}
 		
-		value = patchDefinition.get("value").deepCopy();
-		
-		if (value instanceof JsonCollection) {
-			((JsonCollection) value).recalculateTreePaths();
-		} else {
-			value.resetPaths();
-		}
+		this.from = JsonPointer.compile(((JsonString) patchDefinition.get("from")).getValue());
 	}
 }

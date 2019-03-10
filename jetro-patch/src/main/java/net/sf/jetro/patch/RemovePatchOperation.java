@@ -21,35 +21,36 @@ package net.sf.jetro.patch;
 
 import java.util.Objects;
 
-import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.JsonCollection;
 import net.sf.jetro.tree.JsonObject;
 import net.sf.jetro.tree.JsonType;
 
-public class ReplacePatchOperation extends ValueBasedPatchOperation {
-	public ReplacePatchOperation(final JsonObject patchDefinition) {
+public class RemovePatchOperation extends JsonPatchOperation {
+	public RemovePatchOperation(final JsonObject patchDefinition) {
 		super(patchDefinition);
 	}
 
 	@Override
-	public JsonType applyPatch(final JsonType source) throws JsonPatchException {
-		Objects.requireNonNull(source, "Argument 'source' must not be null");
-		
-		if (!(source instanceof JsonCollection)) {
-			throw new JsonPatchException(new IllegalArgumentException("source must either be "
-					+ "a JsonArray or a JsonObject"));
-		}
+	public JsonType applyPatch(JsonType source) throws JsonPatchException {
+		processPreconditions(source);
 		
 		final JsonCollection target = (JsonCollection) source.deepCopy();
 		target.recalculateTreePaths();
 		
-		final JsonPath jsonPath = path.toJsonPath();
+		if (!target.removeElementAt(path.toJsonPath())) {
+			throw new JsonPatchException("Couldn't remove element at path " + path +
+					" from " + target);
+		}
 		
-		if (target.hasElementAt(jsonPath)) {
-			target.replaceElementAt(jsonPath, value);
-			return handleTarget(target);
-		} else {
-			throw new JsonPatchException("Cannot replace a non-existent value");
+		return handleTarget(target);
+	}
+	
+	private void processPreconditions(final JsonType source) throws JsonPatchException {
+		Objects.requireNonNull(source, "Argument 'source' must not be null");
+				
+		if (!(source instanceof JsonCollection)) {
+			throw new JsonPatchException(new IllegalArgumentException("source must either be "
+					+ "a JsonArray or a JsonObject"));
 		}
 	}
 }

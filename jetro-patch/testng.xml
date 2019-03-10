@@ -6,6 +6,7 @@
      </listeners>
 	<test name="All Tests" >
 		<packages>
+			<package name="net.sf.jetro.patch" />
 			<package name="net.sf.jetro.patch.pointer" />
 		</packages>
 	</test>

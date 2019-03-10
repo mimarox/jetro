@@ -22,7 +22,7 @@ package net.sf.jetro.patch.data;
 import net.sf.jetro.patch.pointer.JsonPointer;
 
 public class CopyPatchOperationData extends FromPatchOperationData {
-	public CopyPatchOperationData(final JsonPointer from, final JsonPointer path) {
-		super(PatchOperation.copy, from, path);
+	public CopyPatchOperationData(final JsonPointer path, final JsonPointer from) {
+		super(PatchOperation.copy, path, from);
 	}
 }
