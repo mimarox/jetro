@@ -265,4 +265,27 @@ public class JsonPathTest {
 		
 		assertTrue(paths.contains(secondPath));
 	}
+	
+	@Test
+	public void shouldNotContainOptionalsOnLastElementRemoval() {
+		JsonPath path = JsonPath.compile("$.foo.optional?");
+		
+		assertTrue(path.containsOptionals());
+		
+		path = path.removeLastElement().removeLastElement();
+		
+		assertFalse(path.containsOptionals());
+	}
+	
+	@Test
+	public void shouldNotContainOptionalsOnLastElementReplacement() {
+		JsonPath path = JsonPath.compile("$.foo.optional?");
+		
+		assertTrue(path.containsOptionals());
+		
+		path = path.removeLastElement().replaceLastElementWith(
+				new PropertyNamePathElement("required"));
+		
+		assertFalse(path.containsOptionals());
+	}
 }

@@ -43,6 +43,11 @@
 			<artifactId>jetro-object</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>net.sf.jetro</groupId>
+			<artifactId>jetro-patch</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

@@ -1,8 +1,8 @@
 /*
  * #%L
- * Jetro Core
+ * Jetro Patch
  * %%
- * Copyright (C) 2013 - 2016 The original author or authors.
+ * Copyright (C) 2013 - 2019 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,12 @@
  * limitations under the License.
  * #L%
  */
-package net.sf.jetro.visitor;
+package net.sf.jetro.patch.data;
 
-public interface JsonArrayVisitor<R> extends JsonVisitor<R> {
+import net.sf.jetro.patch.pointer.JsonPointer;
 
-	/**
-	 * Always throws {@link UnsupportedOperationException} as arrays don't support properties
-	 */
-	@Override
-	default void visitProperty(String name) {
-		throw new UnsupportedOperationException("JSON Arrays don't support properties");
+public class CopyPatchOperationData extends FromPatchOperationData {
+	public CopyPatchOperationData(final JsonPointer path, final JsonPointer from) {
+		super(PatchOperation.copy, path, from);
 	}
 }
