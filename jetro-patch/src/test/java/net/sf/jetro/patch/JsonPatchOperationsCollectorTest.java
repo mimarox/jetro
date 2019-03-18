@@ -19,12 +19,15 @@
  */
 package net.sf.jetro.patch;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -40,42 +43,61 @@ import net.sf.jetro.patch.data.TestPatchOperationData;
 import net.sf.jetro.patch.pointer.JsonPointer;
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonObject;
+import net.sf.jetro.tree.JsonProperty;
 
 @Test(groups = "individualTests")
-public class JsonSourceCollectorTest {
-	private JsonSourceCollector getJsonSourceCollector() {
-		return new JsonSourceCollector(new JsonObject());
+public class JsonPatchOperationsCollectorTest {
+	private static final JsonObject SOURCE = new JsonObject();
+	
+	private JsonPatchOperationsCollector getJsonSourceCollector() {
+		return new JsonPatchOperationsCollector(SOURCE);
 	}
 	
 	@Test
 	public void testApplyingString() {
 		JsonPatchApplier applier = getJsonSourceCollector().applying("[]");
+
 		assertNotNull(applier);
+		assertTrue(applier.getSource() == SOURCE);
+		assertEquals(applier.getPatchOperations(), new JsonArray());
 	}
 	
 	@Test
 	public void testApplyingInputStream() throws IOException {
 		JsonPatchApplier applier = getJsonSourceCollector().applying(
 				new ByteArrayInputStream("[]".getBytes("UTF-8")));
+		
 		assertNotNull(applier);
+		assertTrue(applier.getSource() == SOURCE);
+		assertEquals(applier.getPatchOperations(), new JsonArray());
 	}
 	
 	@Test
 	public void testApplyingReader() {
 		JsonPatchApplier applier = getJsonSourceCollector().applying(new StringReader("[]"));
+
 		assertNotNull(applier);
+		assertTrue(applier.getSource() == SOURCE);
+		assertEquals(applier.getPatchOperations(), new JsonArray());
 	}
 	
 	@Test
 	public void testApplyingJsonArray() {
 		JsonPatchApplier applier = getJsonSourceCollector().applying(new JsonArray());
+
 		assertNotNull(applier);
+		assertTrue(applier.getSource() == SOURCE);
+		assertEquals(applier.getPatchOperations(), new JsonArray());
 	}
 	
 	@Test
 	public void testApplyingJsonObject() {
 		JsonPatchApplier applier = getJsonSourceCollector().applying(new JsonObject());
+		
 		assertNotNull(applier);
+		assertTrue(applier.getSource() == SOURCE);
+		assertEquals(applier.getPatchOperations(), new JsonArray(
+				Arrays.asList(new JsonObject())));
 	}
 	
 	@Test
@@ -84,7 +106,14 @@ public class JsonSourceCollectorTest {
 		RemovePatchOperationData patchOperation = new RemovePatchOperationData(path);
 		JsonPatchApplier applier = getJsonSourceCollector().applying(patchOperation);
 		
+		JsonObject expectedOperation = new JsonObject();
+		expectedOperation.add(new JsonProperty("op", "remove"));
+		expectedOperation.add(new JsonProperty("path", path.toString()));
+		
 		assertNotNull(applier);
+		assertTrue(applier.getSource() == SOURCE);
+		assertEquals(applier.getPatchOperations(), new JsonArray(
+				Arrays.asList(expectedOperation)));
 	}
 	
 	@Test
@@ -103,7 +132,44 @@ public class JsonSourceCollectorTest {
 		
 		JsonPatchApplier applier = getJsonSourceCollector().applying(patchOperations);
 		
+		JsonProperty pathProperty = new JsonProperty("path", path.toString());
+		JsonProperty fromProperty = new JsonProperty("from", from.toString());
+		JsonProperty valueProperty = new JsonProperty("value", new JsonArray());
+		
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.add(new JsonProperty("op", "remove"));
+		removeOperation.add(pathProperty);
+		
+		JsonObject addOperation = new JsonObject();
+		addOperation.add(new JsonProperty("op", "add"));
+		addOperation.add(pathProperty);
+		addOperation.add(valueProperty);
+		
+		JsonObject replaceOperation = new JsonObject();
+		replaceOperation.add(new JsonProperty("op", "replace"));
+		replaceOperation.add(pathProperty);
+		replaceOperation.add(valueProperty);
+
+		JsonObject testOperation = new JsonObject();
+		testOperation.add(new JsonProperty("op", "test"));
+		testOperation.add(pathProperty);
+		testOperation.add(valueProperty);
+		
+		JsonObject moveOperation = new JsonObject();
+		moveOperation.add(new JsonProperty("op", "move"));
+		moveOperation.add(pathProperty);
+		moveOperation.add(fromProperty);
+
+		JsonObject copyOperation = new JsonObject();
+		copyOperation.add(new JsonProperty("op", "copy"));
+		copyOperation.add(pathProperty);
+		copyOperation.add(fromProperty);
+
 		assertNotNull(applier);
+		assertTrue(applier.getSource() == SOURCE);
+		assertEquals(applier.getPatchOperations(), new JsonArray(Arrays.asList(
+				removeOperation, addOperation, replaceOperation, testOperation,
+				moveOperation, copyOperation)));
 	}
 	
 	@Test
@@ -115,7 +181,14 @@ public class JsonSourceCollectorTest {
 		
 		JsonPatchApplier applier = getJsonSourceCollector().applying(patchOperation, context);
 		
+		JsonObject expectedOperation = new JsonObject();
+		expectedOperation.add(new JsonProperty("op", "remove"));
+		expectedOperation.add(new JsonProperty("path", path.toString()));
+
 		assertNotNull(applier);
+		assertTrue(applier.getSource() == SOURCE);
+		assertEquals(applier.getPatchOperations(), new JsonArray(
+				Arrays.asList(expectedOperation)));
 	}
 	
 	@Test
@@ -136,6 +209,43 @@ public class JsonSourceCollectorTest {
 		
 		JsonPatchApplier applier = getJsonSourceCollector().applying(patchOperations, context);
 		
+		JsonProperty pathProperty = new JsonProperty("path", path.toString());
+		JsonProperty fromProperty = new JsonProperty("from", from.toString());
+		JsonProperty valueProperty = new JsonProperty("value", new JsonArray());
+		
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.add(new JsonProperty("op", "remove"));
+		removeOperation.add(pathProperty);
+		
+		JsonObject addOperation = new JsonObject();
+		addOperation.add(new JsonProperty("op", "add"));
+		addOperation.add(pathProperty);
+		addOperation.add(valueProperty);
+		
+		JsonObject replaceOperation = new JsonObject();
+		replaceOperation.add(new JsonProperty("op", "replace"));
+		replaceOperation.add(pathProperty);
+		replaceOperation.add(valueProperty);
+
+		JsonObject testOperation = new JsonObject();
+		testOperation.add(new JsonProperty("op", "test"));
+		testOperation.add(pathProperty);
+		testOperation.add(valueProperty);
+		
+		JsonObject moveOperation = new JsonObject();
+		moveOperation.add(new JsonProperty("op", "move"));
+		moveOperation.add(pathProperty);
+		moveOperation.add(fromProperty);
+
+		JsonObject copyOperation = new JsonObject();
+		copyOperation.add(new JsonProperty("op", "copy"));
+		copyOperation.add(pathProperty);
+		copyOperation.add(fromProperty);
+
 		assertNotNull(applier);
+		assertTrue(applier.getSource() == SOURCE);
+		assertEquals(applier.getPatchOperations(), new JsonArray(Arrays.asList(
+				removeOperation, addOperation, replaceOperation, testOperation,
+				moveOperation, copyOperation)));
 	}
 }

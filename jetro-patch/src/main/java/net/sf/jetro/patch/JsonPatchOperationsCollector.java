@@ -38,17 +38,21 @@ import net.sf.jetro.tree.JsonType;
 import net.sf.jetro.tree.builder.JsonTreeBuilder;
 import net.sf.jetro.tree.visitor.JsonTreeBuildingVisitor;
 
-public class JsonSourceCollector {
+public class JsonPatchOperationsCollector {
 	private static final JsonTreeBuilder BUILDER = new JsonTreeBuilder();
 	private static SerializationContext serializationContext;
 	
 	private final JsonType source;
 	
-	JsonSourceCollector(final JsonType source) {
+	JsonPatchOperationsCollector(final JsonType source) {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		this.source = source;
 	}
-
+	
+	JsonType getSource() {
+		return source;
+	}
+	
 	public JsonPatchApplier applying(final String patchOperations) {
 		Objects.requireNonNull(patchOperations, "Argument 'patchOperations' must not be null");
 		

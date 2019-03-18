@@ -47,14 +47,14 @@ public class JsonPatch {
 	
 	private JsonPatch() {}
 	
-	public static JsonSourceCollector patch(final String source) {
+	public static JsonPatchOperationsCollector patch(final String source) {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 
 		JsonElement jsonElement = BUILDER.build(source);
 		return handleJsonElement(jsonElement);
 	}
 	
-	public static JsonSourceCollector patch(final InputStream source) {
+	public static JsonPatchOperationsCollector patch(final InputStream source) {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
 		try (InputStreamReader reader = new InputStreamReader(source, "UTF-8")) {
@@ -66,20 +66,20 @@ public class JsonPatch {
 		}
 	}
 
-	public static JsonSourceCollector patch(final Reader source) {
+	public static JsonPatchOperationsCollector patch(final Reader source) {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
 		JsonElement jsonElement = BUILDER.build(source);
 		return handleJsonElement(jsonElement);
 	}
 
-	public static JsonSourceCollector patch(final JsonType source) {
+	public static JsonPatchOperationsCollector patch(final JsonType source) {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
-		return new JsonSourceCollector(source);
+		return new JsonPatchOperationsCollector(source);
 	}
 
-	public static JsonSourceCollector patch(final Object source) {
+	public static JsonPatchOperationsCollector patch(final Object source) {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
 		return patch(source, getSerializationContext());
@@ -93,7 +93,7 @@ public class JsonPatch {
 		return serializationContext;
 	}
 
-	public static JsonSourceCollector patch(final Object source, final SerializationContext context) {
+	public static JsonPatchOperationsCollector patch(final Object source, final SerializationContext context) {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		Objects.requireNonNull(context, "Argument 'context' must not be null");
 		
@@ -105,9 +105,9 @@ public class JsonPatch {
 		return handleJsonElement(visitor.getVisitingResult());
 	}
 
-	private static JsonSourceCollector handleJsonElement(JsonElement jsonElement) {
+	private static JsonPatchOperationsCollector handleJsonElement(JsonElement jsonElement) {
 		if (jsonElement instanceof JsonType) {
-			return new JsonSourceCollector((JsonType) jsonElement);
+			return new JsonPatchOperationsCollector((JsonType) jsonElement);
 		} else {
 			throw new IllegalArgumentException("Argument 'source' must be "
 					+ "convertible to a valid JsonType");

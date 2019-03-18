@@ -19,6 +19,8 @@
  */
 package net.sf.jetro.stream.visitor;
 
+import java.util.Objects;
+
 public class LazilyParsedNumber extends Number {
 	private static final long serialVersionUID = 8387800346023499875L;
 	private String numericValue;
@@ -64,5 +66,25 @@ public class LazilyParsedNumber extends Number {
 	@Override
 	public String toString() {
 		return numericValue;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(numericValue);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		LazilyParsedNumber other = (LazilyParsedNumber) obj;
+		return Objects.equals(numericValue, other.numericValue);
 	}
 }

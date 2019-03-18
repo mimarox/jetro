@@ -62,7 +62,7 @@ public class VisitingJsonRendererTest {
 		// Render
 		visitingReader.accept(visitor);
 		String actual = visitor.getVisitingResult();
-		String expected = "{\"foo\":null,\"bar\":[true,\"hello\",2]}";
+		String expected = "{\"bar\":[true,\"hello\",2],\"foo\":null}";
 
 		// Assert
 		assertEquals(actual, expected);

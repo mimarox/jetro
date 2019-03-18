@@ -1,1 +1,68 @@
 [{"op":"add", "path":"/a", "value":[1]}]
+---
+[{
+	"op": "test",
+	"path": "/numbers",
+	"value": [1, 2, 3]
+},{
+	"op": "test",
+	"path": "/data",
+	"value": {
+		"boolean": true,
+		"string": "value",
+		"null": null
+	}
+},{
+	"op": "add",
+	"path": "/numbers/-",
+	"value": 4
+},{
+	"op": "add",
+	"path": "/numbers/0",
+	"value": 0
+},{
+	"op": "add",
+	"path": "/data/boolean",
+	"value": false
+},{
+	"op": "remove",
+	"path": "/data/null"
+},{
+	"op": "copy",
+	"from": "/data/string",
+	"path": "/string"
+},{
+	"op": "move",
+	"from": "/data/boolean",
+	"path": "/boolean"
+},{
+	"op": "replace",
+	"path": "/data/string",
+	"value": "newValue"
+}]
+---
+[{
+	"op": "move",
+	"from": "/oldData/number",
+	"path": "/newData/number"
+},{
+	"op": "copy",
+	"from": "/oldData/string",
+	"path": "/newData/string"
+},{
+	"op": "remove",
+	"path": "/oldData"
+}]
+---
+[{
+	"op": "remove",
+	"path": "/0"
+},{
+	"op": "replace",
+	"path": "/0",
+	"value": 5
+},{
+	"op": "test",
+	"path": "/0",
+	"value": 5
+}]

@@ -19,6 +19,10 @@
  */
 package net.sf.jetro.tree.visitor;
 
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
+
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonBoolean;
 import net.sf.jetro.tree.JsonElement;
@@ -73,8 +77,18 @@ public class JsonElementVisitingReader implements VisitingReader {
 
 	private void readJsonObject(JsonObject jsonElement) {
 		visitorStack.push(visitorStack.peek().visitObject());
+		
+		Set<JsonProperty> sortedProperties = new TreeSet<>(new Comparator<JsonProperty>() {
 
-		for (JsonProperty property : jsonElement) {
+					@Override
+					public int compare(JsonProperty p1, JsonProperty p2) {
+						return p1.getKey().compareTo(p2.getKey());
+					}
+		});
+		
+		sortedProperties.addAll(jsonElement);
+		
+		for (JsonProperty property : sortedProperties) {
 			readJsonProperty(property);
 		}
 

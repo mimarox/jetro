@@ -74,24 +74,52 @@ public class AddPatchOperation extends ValueBasedPatchOperation {
 			
 			if (!target.addElementAt(targetPath, value)) {
 				throw new JsonPatchException("Couldn't add " + value + " to " + target + " at "
-						+ "path " + JsonPointer.fromJsonPath(targetPath));
+						+ "path \"" + JsonPointer.fromJsonPath(targetPath) + "\"");
 			}
 		} else {
-			throw new JsonPatchException("Expected JsonArray at " +
-					JsonPointer.fromJsonPath(parentPath));
+			throw new JsonPatchException("Expected JsonArray at \"" +
+					JsonPointer.fromJsonPath(parentPath) + "\"");
 		}
 	}
 
 	private void addOrReplace(final JsonCollection target) throws JsonPatchException {
 		final JsonPath targetPath = path.toJsonPath();
+		final JsonPath parentPath = targetPath.removeLastElement();
 		
+		final Optional<JsonType> optional = target.getElementAt(parentPath);
+		
+		if (optional.isPresent()) {
+			if (optional.get() instanceof JsonObject) {
+				addOrReplaceOnJsonObject(target, targetPath);
+			} else if (optional.get() instanceof JsonArray) {
+				addToJsonCollection(target, targetPath);
+			} else {
+				throw new JsonPatchException("Couldn't add " + value + " to " + target +
+						" at path \"" + JsonPointer.fromJsonPath(targetPath) + "\". The parent " +
+						"value at \"" + JsonPointer.fromJsonPath(parentPath) + "\" is neither a "
+								+ "JsonObject nor a JsonArray");
+			}
+		} else {
+			throw new JsonPatchException("Couldn't add " + value + " to " + target +
+					" at path \"" + JsonPointer.fromJsonPath(targetPath) + "\". The parent " +
+					"value at \"" + JsonPointer.fromJsonPath(parentPath) + "\" does not exist.");
+		}
+	}
+
+	private void addOrReplaceOnJsonObject(final JsonCollection target, JsonPath targetPath)
+			throws JsonPatchException {
 		if (target.hasElementAt(targetPath)) {
 			target.replaceElementAt(targetPath, value);
 		} else {
-			if (!target.addElementAt(targetPath, value)) {
-				throw new JsonPatchException("Couldn't add " + value + " to " + target +
-						" at path " + JsonPointer.fromJsonPath(targetPath));
-			}
+			addToJsonCollection(target, targetPath);
+		}
+	}
+
+	private void addToJsonCollection(JsonCollection target, JsonPath targetPath)
+			throws JsonPatchException {
+		if (!target.addElementAt(targetPath, value)) {
+			throw new JsonPatchException("Couldn't add " + value + " to " + target +
+					" at path \"" + JsonPointer.fromJsonPath(targetPath) + "\"");
 		}
 	}
 }

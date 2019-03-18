@@ -22,15 +22,22 @@ package net.sf.jetro.tree.visitor;
 import static org.testng.Assert.assertEquals;
 
 import java.io.StringReader;
-
-import net.sf.jetro.stream.JsonReader;
-import net.sf.jetro.stream.visitor.JsonReturningVisitor;
-import net.sf.jetro.stream.visitor.StreamVisitingReader;
-import net.sf.jetro.tree.JsonElement;
-import net.sf.jetro.visitor.JsonVisitor;
-import net.sf.jetro.visitor.VisitingReader;
+import java.util.Arrays;
 
 import org.testng.annotations.Test;
+
+import net.sf.jetro.stream.JsonReader;
+import net.sf.jetro.stream.visitor.LazilyParsedNumber;
+import net.sf.jetro.stream.visitor.StreamVisitingReader;
+import net.sf.jetro.tree.JsonArray;
+import net.sf.jetro.tree.JsonBoolean;
+import net.sf.jetro.tree.JsonElement;
+import net.sf.jetro.tree.JsonNull;
+import net.sf.jetro.tree.JsonNumber;
+import net.sf.jetro.tree.JsonObject;
+import net.sf.jetro.tree.JsonProperty;
+import net.sf.jetro.tree.JsonString;
+import net.sf.jetro.visitor.VisitingReader;
 
 public class JsonTreeBuildingVisitorTest {
 
@@ -41,18 +48,19 @@ public class JsonTreeBuildingVisitorTest {
 		StringReader in = new StringReader(json);
 		JsonReader reader = new JsonReader(in);
 
+		@SuppressWarnings("resource")
 		VisitingReader visitingReader = new StreamVisitingReader(reader);
 		JsonTreeBuildingVisitor builder = new JsonTreeBuildingVisitor();
 
 		visitingReader.accept(builder);
-		JsonElement root = builder.getVisitingResult();
+		JsonElement actual = builder.getVisitingResult();
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("foo", new JsonNull()));
+		expected.add(new JsonProperty("bar", new JsonArray(Arrays.asList(
+				new JsonBoolean(true), new JsonString("hello"),
+				new JsonNumber(new LazilyParsedNumber("2"))))));
 
-		visitingReader = new JsonElementVisitingReader(root);
-		JsonVisitor<String> visitor = new JsonReturningVisitor();
-		visitingReader.accept(visitor);
-
-		String actual = visitor.getVisitingResult();
-
-		assertEquals(actual, json);
+		assertEquals(actual, expected);
 	}
 }

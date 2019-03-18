@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
@@ -141,7 +140,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		}
 	}
 
-	private final Set<JsonProperty> properties = new LinkedHashSet<>();
+	private final Set<JsonProperty> properties = new HashSet<>();
 	private JsonProperties mapView;
 
 	final Set<JsonPath> paths = new HashSet<>();
@@ -493,29 +492,6 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		return builder.toString();
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + Objects.hash(properties);
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!super.equals(obj)) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		JsonObject other = (JsonObject) obj;
-		return Objects.equals(properties, other.properties);
-	}
-	
 	public boolean retainAllByKey(Collection<String> keys) {
 		return retainOrRemoveAllByKey(keys, shouldBeRemoved -> !shouldBeRemoved);
 	}

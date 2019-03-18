@@ -33,7 +33,7 @@ public abstract class JsonPatchOperation {
 	private JsonPatchOperation nextOperation;
 	
 	public JsonPatchOperation(final JsonObject patchDefinition) {
-		Objects.requireNonNull(patchDefinition);
+		Objects.requireNonNull(patchDefinition, "Argument 'patchDefinition' must not be null");
 		
 		if (!patchDefinition.containsAllKeys(Arrays.asList("path"))) {
 			throw new IllegalArgumentException("Missing property 'path'");

@@ -69,6 +69,14 @@ public class JsonPatchApplier {
 		}
 	}
 	
+	JsonType getSource() {
+		return source;
+	}
+
+	JsonArray getPatchOperations() {
+		return patchOperations;
+	}
+
 	public String andReturnAsJson() throws JsonPatchException {
 		return createTarget().toJson();
 	}

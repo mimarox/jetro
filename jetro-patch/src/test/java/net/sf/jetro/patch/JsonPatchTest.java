@@ -20,7 +20,9 @@
 package net.sf.jetro.patch;
 
 import static net.sf.jetro.patch.JsonPatch.patch;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import java.util.ArrayList;
 import org.testng.annotations.Test;
 
 import net.sf.jetro.object.serializer.SerializationContext;
+import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonObject;
 
 @Test(groups = "individualTests")
@@ -37,37 +40,44 @@ public class JsonPatchTest {
 	
 	@Test
 	public void shouldPatchString() {
-		JsonSourceCollector collector = patch("{}");
+		JsonPatchOperationsCollector collector = patch("{}");
 		assertNotNull(collector);
+		assertEquals(collector.getSource(), new JsonObject());
 	}
 	
 	@Test
 	public void shouldPatchInputStream() throws IOException {
-		JsonSourceCollector collector = patch(new ByteArrayInputStream("{}".getBytes("UTF-8")));
+		JsonPatchOperationsCollector collector = patch(new ByteArrayInputStream("{}".getBytes("UTF-8")));
 		assertNotNull(collector);
+		assertEquals(collector.getSource(), new JsonObject());
 	}
 	
 	@Test
 	public void shouldPatchReader() {
-		JsonSourceCollector collector = patch(new StringReader("[]"));
+		JsonPatchOperationsCollector collector = patch(new StringReader("[]"));
 		assertNotNull(collector);
+		assertEquals(collector.getSource(), new JsonArray());
 	}
 	
 	@Test
 	public void shouldPatchJsonType() {
-		JsonSourceCollector collector = patch(new JsonObject());
+		JsonObject jsonObject = new JsonObject();
+		JsonPatchOperationsCollector collector = patch(jsonObject);
 		assertNotNull(collector);
+		assertTrue(collector.getSource() == jsonObject);
 	}
 	
 	@Test
 	public void shouldPatchObject() {
-		JsonSourceCollector collector = patch(new ArrayList<>());
+		JsonPatchOperationsCollector collector = patch(new ArrayList<>());
 		assertNotNull(collector);
+		assertEquals(collector.getSource(), new JsonArray());
 	}
 	
 	@Test
 	public void shouldPatchObjectWithContext() {
-		JsonSourceCollector collector = patch(new ArrayList<>(), new SerializationContext());
+		JsonPatchOperationsCollector collector = patch(new ArrayList<>(), new SerializationContext());
 		assertNotNull(collector);
+		assertEquals(collector.getSource(), new JsonArray());
 	}
 }

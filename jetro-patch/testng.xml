@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Jetro Patch Suite" parallel="methods">
+<suite name="Jetro Patch Suite" parallel="classes">
 	<listeners>
          <listener class-name="net.sf.testng.databinding.TestAnnotationTransformer"/>
      </listeners>

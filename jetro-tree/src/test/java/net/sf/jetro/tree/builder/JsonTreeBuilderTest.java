@@ -2,7 +2,7 @@
  * #%L
  * Jetro Tree
  * %%
- * Copyright (C) 2013 - 2016 The original author or authors.
+ * Copyright (C) 2013 - 2019 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,19 @@ package net.sf.jetro.tree.builder;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
+
 import org.testng.annotations.Test;
 
+import net.sf.jetro.stream.visitor.LazilyParsedNumber;
+import net.sf.jetro.tree.JsonArray;
+import net.sf.jetro.tree.JsonBoolean;
 import net.sf.jetro.tree.JsonElement;
+import net.sf.jetro.tree.JsonNull;
+import net.sf.jetro.tree.JsonNumber;
+import net.sf.jetro.tree.JsonObject;
+import net.sf.jetro.tree.JsonProperty;
+import net.sf.jetro.tree.JsonString;
 
 public class JsonTreeBuilderTest {
 
@@ -32,10 +42,15 @@ public class JsonTreeBuilderTest {
 		String json = "{\"foo\":null,\"bar\":[true,\"hello\",2]}";
 
 		JsonTreeBuilder builder = new JsonTreeBuilder();
-		JsonElement root = builder.build(json);
+		JsonElement actual = builder.build(json);
 
-		String actual = root.toJson();
-		assertEquals(actual, json);
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("foo", new JsonNull()));
+		expected.add(new JsonProperty("bar", new JsonArray(Arrays.asList(
+				new JsonBoolean(true), new JsonString("hello"),
+				new JsonNumber(new LazilyParsedNumber("2"))))));
+		
+		assertEquals(actual, expected);
 	}
 	
 	@Test
