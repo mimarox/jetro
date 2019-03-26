@@ -176,9 +176,9 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	private JsonObject(final Set<JsonProperty> properties, final boolean deepCopy) {
 		if (properties != null) {
 			if (deepCopy) {
-				properties.forEach(property -> this.properties.add(property.deepCopy()));
+				properties.forEach(property -> add(property.deepCopy()));
 			} else {
-				properties.forEach(property -> this.properties.add(property.shallowCopy()));
+				properties.forEach(property -> add(property.shallowCopy()));
 			}
 		}
 	}

@@ -33,9 +33,12 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.testng.annotations.Test;
 
@@ -1211,6 +1214,92 @@ public class JsonObjectTest {
 		expectedInnerObject.asMap().put("string", "string2");
 		expected.recalculateTreePaths();
 
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldAddNewKeyNewValue() {
+		JsonObject jsonObject = new JsonObject();
+		assertTrue(jsonObject.add(new JsonProperty("key1", "value1")));
+		assertTrue(jsonObject.add(new JsonProperty("key2", "value2")));
+	}
+	
+	@Test
+	public void shouldAddNewKeyExistingValue() {
+		JsonObject jsonObject = new JsonObject();
+		assertTrue(jsonObject.add(new JsonProperty("key1", "value")));
+		assertTrue(jsonObject.add(new JsonProperty("key2", "value")));
+	}
+	
+	@Test
+	public void shouldNotAddExistingKeyNewValue() {
+		JsonObject jsonObject = new JsonObject();
+		assertTrue(jsonObject.add(new JsonProperty("key", "value1")));
+		assertFalse(jsonObject.add(new JsonProperty("key", "value2")));
+	}
+	
+	@Test
+	public void shouldNotAddExistingKeyExistingValue() {
+		JsonObject jsonObject = new JsonObject();
+		assertTrue(jsonObject.add(new JsonProperty("key", "value")));
+		assertFalse(jsonObject.add(new JsonProperty("key", "value")));
+	}
+	
+	@Test
+	public void shouldConstructDifferentKeysDifferentValues() {
+		Set<JsonProperty> properties = new HashSet<>();
+		properties.add(new JsonProperty("key1", "value1"));
+		properties.add(new JsonProperty("key2", "value2"));
+		
+		JsonObject actual = new JsonObject(properties);
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("key1", "value1"));
+		expected.add(new JsonProperty("key2", "value2"));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldConstructDifferentKeysSameValues() {
+		Set<JsonProperty> properties = new HashSet<>();
+		properties.add(new JsonProperty("key1", "value"));
+		properties.add(new JsonProperty("key2", "value"));
+		
+		JsonObject actual = new JsonObject(properties);
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("key1", "value"));
+		expected.add(new JsonProperty("key2", "value"));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldPartiallyConstructSameKeysDifferentValues() {
+		Set<JsonProperty> properties = new LinkedHashSet<>();
+		properties.add(new JsonProperty("key", "value1"));
+		properties.add(new JsonProperty("key", "value2"));
+		
+		JsonObject actual = new JsonObject(properties);
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("key", "value1"));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldPartiallyConstructSameKeysSameValues() {
+		Set<JsonProperty> properties = new LinkedHashSet<>();
+		properties.add(new JsonProperty("key", "value"));
+		properties.add(new JsonProperty("key", "value"));
+		
+		JsonObject actual = new JsonObject(properties);
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("key", "value"));
+		
 		assertEquals(actual, expected);
 	}
 }
