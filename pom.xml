@@ -30,9 +30,9 @@
 	</licenses>
 	<inceptionYear>2013</inceptionYear>
 	<scm>
-		<connection>scm:git:https://github.com/unic/jetro.git</connection>
-		<developerConnection>scm:git:https://github.com/unic/jetro.git</developerConnection>
-		<url>https://github.com/unic/jetro</url>
+		<connection>scm:git:https://github.com/mimarox/jetro.git</connection>
+		<developerConnection>scm:git:https://github.com/mimarox/jetro.git</developerConnection>
+		<url>https://github.com/mimarox/jetro</url>
 	</scm>
 	<developers>
 		<developer>
