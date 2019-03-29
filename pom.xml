@@ -7,7 +7,7 @@
 	</parent>
 	<groupId>net.sf.jetro</groupId>
 	<artifactId>jetro</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.2</version>
 	<packaging>pom</packaging>
 	<name>Jetro Parent POM</name>
 	<description>Parent POM for the Jetro JSON transformation engine</description>
