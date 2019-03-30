@@ -137,7 +137,7 @@ public interface JsonCollection extends JsonType {
 	 * given path, <code>false</code> otherwise (especially if there was no element
 	 * at the given path that could have been removed)
 	 * @throws IndexOutOfBoundsException if the element should have been removed
-	 * from a {@link JsonArray} and the index was index < 0 || index >= size().
+	 * from a {@link JsonArray} and the index was index &lt; 0 || index &gt;= size().
 	 */
 	boolean removeElementAt(JsonPath path);
 	
