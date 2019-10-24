@@ -20,7 +20,9 @@
 package net.sf.jetro.patch.pointer;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.Test;
 
@@ -74,5 +76,76 @@ public class JsonPointerTest {
 			"since it doesn't start with a separator \\(/\\)")
 	public void shouldNotCompile() {
 		JsonPointer.compile("foo");
+	}
+	
+	@Test
+	public void shouldAppend() {
+		JsonPointer jsonPointer = JsonPointer.compile("/0");
+		JsonPointer actual = jsonPointer.append(new ArrayIndexPointerElement(0));
+		JsonPointer expected = JsonPointer.compile("/0/0");
+		
+		assertNotNull(actual);
+		assertNotNull(expected);
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldHavePropertyNameAt() {
+		JsonPointer jsonPointer = JsonPointer.compile("/0/foo");
+		assertTrue(jsonPointer.hasPropertyNameAt(2));
+	}
+	
+	
+	@Test
+	public void shouldNotHavePropertyNameAt() {
+		JsonPointer jsonPointer = JsonPointer.compile("/0/0");
+		assertFalse(jsonPointer.hasPropertyNameAt(2));
+	}
+	
+	@Test
+	public void shouldHaveArrayIndexAt() {
+		JsonPointer jsonPointer = JsonPointer.compile("/foo/0");
+		assertTrue(jsonPointer.hasArrayIndexAt(2));
+	}
+	
+	@Test
+	public void shouldNotHaveArrayIndexAt() {
+		JsonPointer jsonPointer = JsonPointer.compile("/foo/bar");
+		assertFalse(jsonPointer.hasArrayIndexAt(2));
+	}
+	
+	@Test
+	public void shouldGetPropertyNameAt() {
+		JsonPointer jsonPointer = JsonPointer.compile("/0/foo");
+		
+		String actual = jsonPointer.getPropertyNameAt(2);
+		String expected = "foo";
+		
+		assertEquals(actual, expected);
+	}
+
+	@Test(expectedExceptions = IllegalStateException.class)
+	public void shouldNotGetPropertyNameAt() {
+		JsonPointer.compile("/0").getPropertyNameAt(1);
+	}
+	
+	@Test
+	public void shouldGetArrayIndexAt() {
+		JsonPointer jsonPointer = JsonPointer.compile("/foo/5");
+		
+		int actual = jsonPointer.getArrayIndexAt(2);
+		int expected = 5;
+		
+		assertEquals(actual, expected);
+	}
+
+	@Test(expectedExceptions = IllegalStateException.class)
+	public void shouldNotGetArrayIndexAt() {
+		JsonPointer.compile("/foo").getArrayIndexAt(1);
+	}
+	
+	@Test(expectedExceptions = IllegalStateException.class)
+	public void shouldNotRemoveLastElementFromRootPointer() {
+		JsonPointer.compile("").removeLastElement();
 	}
 }

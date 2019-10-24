@@ -38,7 +38,7 @@ import net.sf.jetro.visitor.JsonVisitor;
 public class AddPatchOperationTest {
 	
 	@Test
-	public void shouldApplyPatch() throws JsonPatchException {
+	public void shouldApplyPatchOnObject() throws JsonPatchException {
 		JsonObject patchDefinition = new JsonObject();
 		patchDefinition.add(new JsonProperty("path", "/foo"));
 		patchDefinition.add(new JsonProperty("value", "bar"));
@@ -48,6 +48,39 @@ public class AddPatchOperationTest {
 		
 		JsonObject expected = new JsonObject();
 		expected.add(new JsonProperty("foo", "bar"));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldApplyPatchOnArray() throws JsonPatchException {
+		JsonObject patchDefinition = new JsonObject();
+		patchDefinition.add(new JsonProperty("path", "/0"));
+		patchDefinition.add(new JsonProperty("value", "bar"));
+		
+		AddPatchOperation operation = new AddPatchOperation(patchDefinition);
+		JsonType actual = operation.applyPatch(new JsonArray());
+		
+		JsonArray expected = new JsonArray();
+		expected.add(new JsonString("bar"));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldApplyPatchOnArrayLastElement() throws JsonPatchException {
+		JsonObject patchDefinition = new JsonObject();
+		patchDefinition.add(new JsonProperty("path", "/-"));
+		patchDefinition.add(new JsonProperty("value", "bar"));
+		
+		JsonArray jsonArray = new JsonArray();
+		jsonArray.add(new JsonString("foo"));
+		
+		AddPatchOperation operation = new AddPatchOperation(patchDefinition);
+		JsonType actual = operation.applyPatch(jsonArray);
+		
+		JsonArray expected = jsonArray.deepCopy();
+		expected.add(new JsonString("bar"));
 		
 		assertEquals(actual, expected);
 	}
@@ -140,7 +173,11 @@ public class AddPatchOperationTest {
 	}
 	
 	@SuppressWarnings("serial")
-	@Test(expectedExceptions = JsonPatchException.class)
+	@Test(expectedExceptions = JsonPatchException.class,
+			expectedExceptionsMessageRegExp = "Couldn't add JsonString \\[value=bar, "
+					+ "paths=\\[\\$]] to net\\.sf\\.jetro\\.patch\\.AddPatchOperationTest\\$1@"
+					+ "[0-9a-f]{8} at path \"/foo\"\\. The parent value at \"\" is neither "
+					+ "a JsonObject nor a JsonArray")
 	public void shouldNotApplyPatchWrongJsonCollection() throws JsonPatchException {
 		JsonObject patchDefinition = new JsonObject();
 		patchDefinition.add(new JsonProperty("path", "/foo"));
