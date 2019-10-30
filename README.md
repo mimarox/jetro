@@ -23,7 +23,7 @@ Add needed dependencies:
 There is also a ```jetro-all``` package if all modules are needed.
 
 Some code usage examples can be found in the Wiki: 
-https://github.com/unic/jetro/wiki/Usage-Examples
+https://github.com/mimarox/jetro/wiki/Usage-Examples
 
 ## Build
 
@@ -48,3 +48,6 @@ The release is done manually and locally. Publishing to Maven Central repository
 - Performe the release with: `mvn release:perform -P release -DreleaseProfiles=release`
 - Log into Sonatype Nexus and go to the staging repository
 - Close and promote the staging repository
+
+### Release Plugin Docs
+https://maven.apache.org/maven-release/maven-release-plugin/
