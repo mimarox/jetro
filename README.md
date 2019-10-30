@@ -43,5 +43,8 @@ The release is done manually and locally. Publishing to Maven Central repository
 
 ### Release steps
 
-- Execute on develop branch: `mvn jgitflow:release-start -DreleaseVersion=NEW_VERSION -DdevelopmentVersion=X.Y.Z-SNAPSHOT`
-- Finalize with: `mvn jgitflow:release-finish`
+- Merge any feature branches you want to include in the release into develop branch
+- To prepare the release, execute on develop branch: `mvn release:prepare -P release`
+- Performe the release with: `mvn release:perform -P release -DreleaseProfiles=release`
+- Log into Sonatype Nexus and go to the staging repository
+- Close and promote the staging repository
