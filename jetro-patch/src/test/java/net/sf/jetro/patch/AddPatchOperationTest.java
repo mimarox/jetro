@@ -176,7 +176,7 @@ public class AddPatchOperationTest {
 	@Test(expectedExceptions = JsonPatchException.class,
 			expectedExceptionsMessageRegExp = "Couldn't add JsonString \\[value=bar, "
 					+ "paths=\\[\\$]] to net\\.sf\\.jetro\\.patch\\.AddPatchOperationTest\\$1@"
-					+ "[0-9a-f]{8} at path \"/foo\"\\. The parent value at \"\" is neither "
+					+ "[0-9a-f]+ at path \"/foo\"\\. The parent value at \"\" is neither "
 					+ "a JsonObject nor a JsonArray")
 	public void shouldNotApplyPatchWrongJsonCollection() throws JsonPatchException {
 		JsonObject patchDefinition = new JsonObject();
