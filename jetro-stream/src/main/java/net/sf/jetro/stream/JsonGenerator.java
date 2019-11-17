@@ -386,7 +386,8 @@ public class JsonGenerator implements Closeable, Flushable {
 			throw new NullPointerException("name == null");
 		}
 		if (deferredName != null) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Property name can't be written."
+					+ " Another property name has already been set. Property name: " + deferredName);
 		}
 		if (stackSize == 0) {
 			throw new IllegalStateException("JsonWriter is closed.");
