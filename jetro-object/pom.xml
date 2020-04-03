@@ -40,6 +40,12 @@
 			<version>2.0</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.sf.jetro</groupId>
+			<artifactId>jetro-tree</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

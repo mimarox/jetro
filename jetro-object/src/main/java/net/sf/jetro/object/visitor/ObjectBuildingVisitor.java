@@ -20,7 +20,7 @@
 package net.sf.jetro.object.visitor;
 
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
@@ -155,7 +155,7 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		DeserializationElement top = elements.peek();
 
 		if (top.isProcessedProperty()) {
-			if (isList(top.getInstance())) {
+			if (isCollection(top.getInstance())) {
 				TypeToken<?> typeToken = getListMemberTypeToken(top.getTypeToken());
 				Object instance = context.createInstanceOf(typeToken);
 				DeserializationElement member = new DeserializationElement(typeToken, instance);
@@ -192,7 +192,7 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		DeserializationElement top = elements.peek();
 
 		if (top.isProcessedProperty()) {
-			if (isList(top.getInstance())) {
+			if (isCollection(top.getInstance())) {
 				TypeToken<?> typeToken = getListMemberTypeToken(top.getTypeToken());
 				Object instance = context.createInstanceOf(typeToken);
 				DeserializationElement member = new DeserializationElement(typeToken, instance);
@@ -222,7 +222,7 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 			DeserializationElement top = elements.pop();
 			
 			if (top.isProcessedProperty()) {
-				if (!isList(top.getInstance())) {
+				if (!isCollection(top.getInstance())) {
 					throw new MalformedJsonException(
 							"Array end out of scope. Expected List, but was " +
 									top.getTypeToken().getType());
@@ -238,7 +238,7 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		final DeserializationElement top = elements.peek();
 
 		if (top.isProcessedProperty()) {
-			if (!isList(top.getInstance())) {
+			if (!isCollection(top.getInstance())) {
 				if (isMap(top.getInstance())) {
 					TypeToken<?> typeToken = getMapValueTypeToken(top.getTypeToken());
 					elements.push(new DeserializationElement(typeToken, name));
@@ -270,7 +270,7 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		if (top.isProcessedProperty()) {
 			final DeserializationElement current;
 
-			if (isList(top.getInstance())) {
+			if (isCollection(top.getInstance())) {
 				final TypeToken<?> memberTypeToken = getListMemberTypeToken(top.getTypeToken());
 				final Object converted = convertString(memberTypeToken, value);
 				current = new DeserializationElement(memberTypeToken, converted);
@@ -294,7 +294,7 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		if (top.isProcessedProperty()) {
 			DeserializationElement current;
 
-			if (isList(top.getInstance())) {
+			if (isCollection(top.getInstance())) {
 				TypeToken<?> memberTypeToken = getListMemberTypeToken(top.getTypeToken());
 				current = new DeserializationElement(memberTypeToken,
 						context.getValueForType(memberTypeToken, value));
@@ -318,7 +318,7 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		if (top.isProcessedProperty()) {
 			DeserializationElement current;
 
-			if (isList(top.getInstance())) {
+			if (isCollection(top.getInstance())) {
 				current = new DeserializationElement(TypeToken.of(Boolean.class), value);
 			} else {
 				top.setInstance(value);
@@ -340,7 +340,7 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		if (top.isProcessedProperty()) {
 			DeserializationElement current;
 
-			if (isList(top.getInstance())) {
+			if (isCollection(top.getInstance())) {
 				current = new DeserializationElement(TypeToken.of(Object.class), (Object) null);
 			} else {
 				top.setInstance(null);
@@ -359,8 +359,8 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 	private void afterVisitValue(DeserializationElement value) {
 		final DeserializationElement top = elements.peek();
 
-		if (isList(top.getInstance())) {
-			((List) top.getInstance()).add(value.getInstance());
+		if (isCollection(top.getInstance())) {
+			((Collection) top.getInstance()).add(value.getInstance());
 		} else if (isMap(top.getInstance())) {
 			final TypeToken<?> keyTypeToken = getMapKeyTypeToken(top.getTypeToken());
 			final Object key = convertString(keyTypeToken, value.getParentField());
@@ -441,11 +441,11 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 	}
 
 	private boolean isObject(Object object) {
-		return !isList(object);
+		return !isCollection(object);
 	}
 
-	private boolean isList(Object object) {
-		return object instanceof List;
+	private boolean isCollection(Object object) {
+		return object instanceof Collection;
 	}
 
 	private boolean isMap(Object object) {
