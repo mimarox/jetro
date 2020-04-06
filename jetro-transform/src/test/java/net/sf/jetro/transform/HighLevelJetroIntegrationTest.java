@@ -85,6 +85,10 @@ public class HighLevelJetroIntegrationTest {
 				        at("$").addJsonProperty("users", new JsonArray());
 				        at("$.users[*]").addFromVariable("primaryUser");
 				        at("$.users[*]").addAllFromVariable("secondaryUsers");
+				        
+				        capture("$.users[0].role").andSaveAs("role");
+				        at("$.users[0]")
+				        	.addJsonPropertyFromVariable("secondRole", "role");
 					}
 				}).andReturnAsJson();
 		

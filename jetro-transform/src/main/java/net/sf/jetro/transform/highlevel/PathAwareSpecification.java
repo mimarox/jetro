@@ -38,14 +38,20 @@ public class PathAwareSpecification {
 	
 	public void addJsonProperty(final String key, final Object value,
 			final SerializationContext context) {
-		addJsonProperty(key, new ObjectVisitingReader(value, context));
+		addJsonProperty(key, val -> new ObjectVisitingReader(val, context), () -> value);
 	}
 	
 	public void addJsonProperty(final String key, final JsonType value) {
-		addJsonProperty(key, new JsonElementVisitingReader(value));
+		addJsonProperty(key, JsonElementVisitingReader::new, () -> value);
+	}
+
+	public void addJsonPropertyFromVariable(String key, String variableName) {
+		addJsonProperty(key, JsonElementVisitingReader::new,
+				() -> specification.getVariable(variableName));
 	}
 	
-	private void addJsonProperty(final String key, final VisitingReader reader) {
+	private <T> void addJsonProperty(final String key,
+			final Function<T, VisitingReader> readerProvider, Supplier<T> valueSupplier) {
 		specification.addChainedJsonVisitorSupplier(() -> {
 			return new PathAwareJsonVisitor<Void>() {
 				
@@ -54,8 +60,15 @@ public class PathAwareSpecification {
 					JsonVisitor<Void> visitor = getNextVisitor();
 					
 					if (visitor != null && currentPath().matches(path)) {
-						visitor.visitProperty(key);
-						reader.accept(visitor);
+						T value = valueSupplier.get();
+						
+						if (value != null) {
+							visitor.visitProperty(key);
+							readerProvider.apply(value).accept(visitor);							
+						} else if (specification.isRenderNullValues()) {
+							visitor.visitProperty(key);
+							visitor.visitNullValue();
+						}
 					}
 					
 					return true;
@@ -123,6 +136,23 @@ public class PathAwareSpecification {
 	
 	public void addAllJsonTypes(final Iterable<? extends JsonType> values) {
 		addJsonValues(JsonElementVisitingReader::new, () -> values);
+	}
+
+	public void addFromVariable(final String variableName) {
+		addJsonValues(JsonElementVisitingReader::new,
+				() -> Arrays.asList(specification.getVariable(variableName)));
+	}
+	
+	public void addAllFromVariable(final String variableName) {
+		addJsonValues(JsonElementVisitingReader::new, () -> {
+			JsonType value = specification.getVariable(variableName);
+			
+			if (value instanceof JsonArray) {
+				return (JsonArray) value;
+			} else {
+				return Arrays.asList(value);
+			}
+		});
 	}
 	
 	private <T> void addJsonValues(final Function<T, VisitingReader> readerProvider,
@@ -211,22 +241,5 @@ public class PathAwareSpecification {
 				}
 			}
 		};
-	}
-
-	public void addFromVariable(final String variableName) {
-		addJsonValues(JsonElementVisitingReader::new,
-				() -> Arrays.asList(specification.getVariable(variableName)));
-	}
-	
-	public void addAllFromVariable(final String variableName) {
-		addJsonValues(JsonElementVisitingReader::new, () -> {
-			JsonType value = specification.getVariable(variableName);
-			
-			if (value instanceof JsonArray) {
-				return (JsonArray) value;
-			} else {
-				return Arrays.asList(value);
-			}
-		});
 	}
 }

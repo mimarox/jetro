@@ -1,7 +1,8 @@
 {
 	"users": [{
 		"name": "Master",
-		"role": "primary"
+		"role": "primary",
+		"secondRole": "primary"
 	},{
 		"name": "Slave A",
 		"role": "secondary"
