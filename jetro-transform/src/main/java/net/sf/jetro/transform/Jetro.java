@@ -20,7 +20,7 @@ public class Jetro {
 	
 	public static TransformSourceCollector transform(final InputStream source) {
 		try {
-			return transform(new InputStreamReader(source, "UTF-8"));
+			return transform(source, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
@@ -49,8 +49,7 @@ public class Jetro {
 	}
 
 	public static TransformSourceCollector transform(final Object source) {
-		return new TransformSourceCollector(new ObjectVisitingReader(source,
-				new SerializationContext()));
+		return transform(source, new SerializationContext());
 	}
 	
 	public static TransformSourceCollector transform(final Object source,

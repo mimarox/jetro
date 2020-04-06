@@ -13,6 +13,8 @@ import net.sf.jetro.visitor.chained.ChainedJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
 public abstract class TransformationSpecification implements ChainedJsonVisitorSupplier {
+	static final JsonPath ROOT_PATH = JsonPath.compile("$");
+	
 	private static final ChainedJsonVisitor<Void> NOOP_VISITOR =
 			new ChainedJsonVisitor<Void>() {};
 	
@@ -139,6 +141,21 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 				}
 			};
 		});
+	}
+
+	protected RenameSpecification renameProperty(final String name) {
+		Objects.requireNonNull(name, "name must not be null");
+		return new RenameSpecification(name, this);
+	}
+
+	protected RenameSpecification renamePropertiesMatching(final String pattern) {
+		Objects.requireNonNull(pattern, "pattern must not be null");
+		return RenameSpecification.matching(pattern, this);
+	}
+
+	protected RenameSpecification renamePropertyIgnoreCase(final String name) {
+		Objects.requireNonNull(name, "name must not be null");
+		return RenameSpecification.ignoringCase(name, this);
 	}
 	
 	protected void setRenderNullValues(final boolean renderNullValues) {

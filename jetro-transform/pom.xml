@@ -46,6 +46,12 @@
 			<version>2.0</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.sf.testngdatabind</groupId>
+			<artifactId>testng-databinding-xml</artifactId>
+			<version>2.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

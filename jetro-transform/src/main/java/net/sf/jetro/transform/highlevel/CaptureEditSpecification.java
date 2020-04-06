@@ -1,5 +1,7 @@
 package net.sf.jetro.transform.highlevel;
 
+import static net.sf.jetro.transform.highlevel.TransformationSpecification.ROOT_PATH;
+
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -17,8 +19,6 @@ import net.sf.jetro.visitor.chained.MultiplexingJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
 public class CaptureEditSpecification<S extends JsonType, T extends JsonType> {
-	private static final JsonPath ROOT_PATH = JsonPath.compile("$");
-	
 	private final JsonPath path;
 	private final Function<S, T> editor;
 	private final TransformationSpecification specification;

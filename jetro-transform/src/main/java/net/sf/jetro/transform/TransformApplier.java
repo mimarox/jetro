@@ -34,7 +34,7 @@ public class TransformApplier<R> {
 
 	public void writingTo(final OutputStream target) {
 		try {
-			writingTo(new OutputStreamWriter(target, "UTF-8"));
+			writingTo(target, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}

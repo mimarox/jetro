@@ -1,0 +1,9 @@
+{
+	"desc": "A basic object",
+	"name": [],
+	"object": {
+		"descDesc": "A nested object",
+		"role": "object role"
+	},
+	"role": "basic"
+}

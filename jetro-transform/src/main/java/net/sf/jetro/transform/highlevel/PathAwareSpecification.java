@@ -161,7 +161,7 @@ public class PathAwareSpecification {
 			if (endsWithArrayWildcard(path)) {
 				return getWildcardJsonValueAdder(readerProvider, valuesSupplier);
 			} else {
-				return getIndexedJsonValueAdder(readerProvider, valuesSupplier);
+				return getIndexedJsonValueAdder(readerProvider, valuesSupplier, false);
 			}
 		});
 	}
@@ -199,8 +199,47 @@ public class PathAwareSpecification {
 
 	private <T> ChainedJsonVisitor<Void> getIndexedJsonValueAdder(
 			final Function<T, VisitingReader> readerProvider,
-			final Supplier<Iterable<T>> valuesSupplier) {
+			final Supplier<Iterable<T>> valuesSupplier,
+			final boolean replace) {
 		return new PathAwareJsonVisitor<Void>() {
+			
+			@Override
+			protected boolean doBeforeVisitObject() {
+				return passOn();
+			}
+			
+			@Override
+			protected boolean doBeforeVisitArray() {
+				return passOn();
+			}
+			
+			@Override
+			protected Boolean doBeforeVisitValue(final boolean value) {
+				return passOn() ? value : null;
+			}
+			
+			@Override
+			protected Number doBeforeVisitValue(final Number value) {
+				return passOn() ? value : null;
+			}
+			
+			@Override
+			protected String doBeforeVisitValue(final String value) {
+				return passOn() ? value : null;
+			}
+			
+			@Override
+			protected boolean doBeforeVisitNullValue() {
+				return passOn();
+			}
+			
+			private boolean passOn() {
+				if (replace && currentPath().matches(path)) {
+					return false;
+				} else {
+					return true;
+				}
+			}
 			
 			@Override
 			protected void afterVisitObjectEnd() {
@@ -234,12 +273,69 @@ public class PathAwareSpecification {
 					valuesSupplier.get().forEach(value -> {
 						if (value != null) {
 							readerProvider.apply(value).accept(visitor);							
-						} else if (specification.isRenderNullValues()) {
+						} else if (replace || specification.isRenderNullValues()) {
 							visitor.visitNullValue();
 						}
 					});
 				}
 			}
 		};
+	}
+
+	public void renamePropertyTo(final String newName) {
+		Objects.requireNonNull(newName, "newName must not be null");
+		
+		if (!canRenameAt(path)) {
+			throw new IllegalArgumentException("path must end in a property name to be renamed");
+		}
+		
+		specification.addChainedJsonVisitorSupplier(() -> {
+			return new PathAwareJsonVisitor<Void>() {
+				
+				@Override
+				protected String doBeforeVisitProperty(final String name) {
+					if (currentPath().matches(path)) {
+						return newName;
+					} else {
+						return name;
+					}
+				}
+			};
+		});
+	}
+
+	private boolean canRenameAt(final JsonPath path) {
+		return path.hasPropertyNameAt(path.getDepth() - 1);
+	}
+
+	public void replaceWith(final Object value) {
+		replaceWith(value, new SerializationContext());
+	}
+	
+	public void replaceWith(final Object value, final SerializationContext context) {
+		replaceWith(val -> new ObjectVisitingReader(value, context),
+				() -> Arrays.asList(value));
+	}
+	
+	public void replaceWith(final JsonType value) {
+		replaceWith(JsonElementVisitingReader::new, () -> Arrays.asList(value));
+	}
+	
+	public void replaceWith(final Boolean value) {
+		replaceWith(new JsonBoolean(value));
+	}
+	
+	public void replaceWith(final Number value) {
+		replaceWith(new JsonNumber(value));
+	}
+	
+	public void replaceWith(final String value) {
+		replaceWith(new JsonString(value));
+	}
+	
+	private <T> void replaceWith(final Function<T, VisitingReader> readerProvider,
+			final Supplier<Iterable<T>> valuesSupplier) {
+		specification.addChainedJsonVisitorSupplier(() ->
+		getIndexedJsonValueAdder(readerProvider, valuesSupplier, true));
 	}
 }

@@ -3,9 +3,15 @@ package net.sf.jetro.transform;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.testng.annotations.Test;
 
+import net.sf.jetro.context.RenderContext;
+import net.sf.jetro.object.deserializer.DeserializationContext;
+import net.sf.jetro.transform.beans.Persons;
+import net.sf.jetro.transform.beans.WrappingAndAddingSource;
+import net.sf.jetro.transform.beans.WrappingAndAddingTarget;
 import net.sf.jetro.transform.highlevel.TransformationSpecification;
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonElement;
@@ -93,6 +99,96 @@ public class HighLevelJetroIntegrationTest {
 				}).andReturnAsJson();
 		
 		assertEquals(actual, normalize(target));
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "renaming")
+	public void shouldTransformRenamingProperties(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "target") final String target) {
+		String actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						renameProperty("role").to("roles");
+						renamePropertiesMatching("([Dd]esc)+").to("text");
+						renamePropertyIgnoreCase("TEXT").to("description");
+						at("$.name").renamePropertyTo("names");
+					}
+				}).andReturnAsJson();
+		
+		assertEquals(actual, normalize(target));
+	}
+
+	@Test
+	@DataBinding(propertiesPrefix = "replacing")
+	public void shouldTransformReplacingValues(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "target") final String target) {
+		String actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						at("$.object").replaceWith(new JsonArray());
+						
+						capture("$.array").editAndReplace(array -> {
+							JsonArray arrays = new JsonArray();
+							
+							arrays.add(array.deepCopy());
+							arrays.add(array);
+							
+							return arrays;
+						});
+						
+						at("$.array").renamePropertyTo("arrays");
+						at("$.object").renamePropertyTo("array");
+					}
+				}).andReturnAsJson();
+		
+		assertEquals(actual, normalize(target));		
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "wrappingAndAdding")
+	public void shouldTransformObjectsWrappingAndAdding(
+			@TestInput WrappingAndAddingSource source,
+			@TestInput List<Persons> persons,
+			@TestOutput WrappingAndAddingTarget target) {
+		WrappingAndAddingTarget actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						capture("$.person").editAndReplace(person -> {
+							JsonArray persons = new JsonArray();
+							persons.add(person);
+							return persons;
+						});
+						
+						at("$.person[*]").addAllJsonValues(persons);
+						
+						at("$.person").renamePropertyTo("persons");
+					}
+				}).andReturnAsObject(WrappingAndAddingTarget.class,
+						DeserializationContext.getDefault());
+		
+		assertEquals(actual, target);
+	}
+
+	@Test
+	public void shouldTransformJsonObjectToJsonArray() {
+		String actual = Jetro.transform("{}").applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						capture("$").editAndReplace(root -> new JsonArray());
+					}
+				}).andReturnAsJson(new RenderContext());
+		
+		assertEquals(actual, "[]");
 	}
 	
 	private static String normalize(final String json) {
