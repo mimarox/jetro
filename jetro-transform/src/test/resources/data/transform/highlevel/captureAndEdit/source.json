@@ -1,0 +1,10 @@
+{
+	"primary_user": {
+		"name": "Master"
+	},
+	"secondary_users": [{
+		"name": "Slave A"
+	},{
+		"name": "Slave B"
+	}]
+}

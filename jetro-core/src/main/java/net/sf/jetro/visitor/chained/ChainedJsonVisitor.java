@@ -42,6 +42,7 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public final JsonObjectVisitor<R> visitObject() {
 		boolean passOn = beforeVisitObject();
 		return afterVisitObject(getNextVisitor() != null && passOn ? getNextVisitor().visitObject() : ChainedJsonObjectVisitor.NO_OP_VISITOR);
@@ -56,6 +57,7 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public final JsonArrayVisitor<R> visitArray() {
 		boolean passOn = beforeVisitArray();
 		return afterVisitArray(getNextVisitor() != null && passOn ? getNextVisitor().visitArray() : ChainedJsonArrayVisitor.NO_OP_VISITOR);
@@ -197,8 +199,8 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 	public void attachVisitor(JsonVisitor<R> visitor, boolean replace) {
 		if (nextVisitor == null) {
 			nextVisitor = visitor;
-		} else if (getNextVisitor() instanceof ChainedJsonVisitor) {
-			((ChainedJsonVisitor) nextVisitor).attachVisitor(visitor, replace);
+		} else if (nextVisitor instanceof ChainedJsonVisitor) {
+			((ChainedJsonVisitor<R>) nextVisitor).attachVisitor(visitor, replace);
 		} else if (replace) {
 			nextVisitor = visitor;
 		} else {
@@ -213,7 +215,7 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 		} else if (nextVisitor.equals(visitor)) {
 			nextVisitor = null;
 		} else if (nextVisitor instanceof ChainedJsonVisitor) {
-			((ChainedJsonVisitor) nextVisitor).detachVisitor(visitor);
+			((ChainedJsonVisitor<R>) nextVisitor).detachVisitor(visitor);
 		}
 	}
 }

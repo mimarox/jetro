@@ -15,6 +15,7 @@
 		<module>jetro-tree</module>
 		<module>jetro-object</module>
 		<module>jetro-patch</module>
+		<module>jetro-transform</module>
 		<module>jetro-all</module>
 	</modules>
 	<licenses>

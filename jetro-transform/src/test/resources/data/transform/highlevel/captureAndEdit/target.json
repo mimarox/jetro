@@ -1,0 +1,12 @@
+{
+	"users": [{
+		"name": "Master",
+		"role": "primary"
+	},{
+		"name": "Slave A",
+		"role": "secondary"
+	},{
+		"name": "Slave B",
+		"role": "secondary"
+	}]
+}
