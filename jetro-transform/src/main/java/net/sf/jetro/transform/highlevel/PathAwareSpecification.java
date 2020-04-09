@@ -1,6 +1,8 @@
 package net.sf.jetro.transform.highlevel;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -11,6 +13,7 @@ import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonBoolean;
 import net.sf.jetro.tree.JsonNumber;
+import net.sf.jetro.tree.JsonObject;
 import net.sf.jetro.tree.JsonString;
 import net.sf.jetro.tree.JsonType;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
@@ -38,20 +41,26 @@ public class PathAwareSpecification {
 	
 	public void addJsonProperty(final String key, final Object value,
 			final SerializationContext context) {
+		Objects.requireNonNull(key, "key must not be null");
+		Objects.requireNonNull(context, "context must not be null");
 		addJsonProperty(key, val -> new ObjectVisitingReader(val, context), () -> value);
 	}
 	
 	public void addJsonProperty(final String key, final JsonType value) {
+		Objects.requireNonNull(key, "key must not be null");
 		addJsonProperty(key, JsonElementVisitingReader::new, () -> value);
 	}
 
 	public void addJsonPropertyFromVariable(String key, String variableName) {
+		Objects.requireNonNull(key, "key must not be null");
+		Objects.requireNonNull(variableName, "variableName must not be null");
 		addJsonProperty(key, JsonElementVisitingReader::new,
 				() -> specification.getVariable(variableName));
 	}
 	
 	private <T> void addJsonProperty(final String key,
-			final Function<T, VisitingReader> readerProvider, Supplier<T> valueSupplier) {
+			final Function<T, VisitingReader> readerProvider,
+			final Supplier<T> valueSupplier) {
 		specification.addChainedJsonVisitorSupplier(() -> {
 			return new PathAwareJsonVisitor<Void>() {
 				
@@ -78,15 +87,81 @@ public class PathAwareSpecification {
 	}
 	
 	public void addJsonProperty(final String key, final Boolean value) {
-		addJsonProperty(key, new JsonBoolean(value));
+		addJsonProperty(key, value != null ? new JsonBoolean(value) : null);
 	}
 	
 	public void addJsonProperty(final String key, final Number value) {
-		addJsonProperty(key, new JsonNumber(value));
+		addJsonProperty(key, value != null ? new JsonNumber(value) : null);
 	}
 	
 	public void addJsonProperty(final String key, final String value) {
-		addJsonProperty(key, new JsonString(value));
+		addJsonProperty(key, value != null ? new JsonString(value) : null);
+	}
+
+	public void addAllJsonProperties(final JsonObject jsonObject) {
+		Objects.requireNonNull(jsonObject, "jsonObject must not be null");
+		addAllJsonProperties(JsonElementVisitingReader::new, () -> jsonObject.asMap());
+	}
+	
+	public <T> void addAllJsonProperties(final Map<String, T> properties) {
+		addAllJsonProperties(properties, new SerializationContext());
+	}
+	
+	public <T> void addAllJsonProperties(final Map<String, T> properties,
+			final SerializationContext context) {
+		Objects.requireNonNull(properties, "properties must not be null");
+		Objects.requireNonNull(context, "context must not be null");
+		
+		addAllJsonProperties(value -> new ObjectVisitingReader(value, context),
+				() -> properties);
+	}
+	
+	public void addAllJsonPropertiesFromVariable(final String variableName) {
+		Objects.requireNonNull(variableName, "variableName must not be null");
+		addAllJsonProperties(JsonElementVisitingReader::new, () -> {
+			JsonType value = specification.getVariable(variableName);
+			
+			if (value != null && value instanceof JsonObject) {
+				return ((JsonObject) value).asMap();
+			} else if (value == null) {
+				throw new NoSuchElementException("No value found for variable name " +
+						variableName + ".");
+			} else {
+				throw new ClassCastException("The variable value with name " +
+						variableName + " is not a JsonObject.");
+			}
+		});
+	}
+	
+	private <T> void addAllJsonProperties(
+			final Function<T, VisitingReader> readerProvider,
+			final Supplier<Map<String, T>> valueSupplier) {
+		specification.addChainedJsonVisitorSupplier(() -> {
+			return new PathAwareJsonVisitor<Void>() {
+				
+				@Override
+				protected boolean doBeforeVisitObjectEnd() {
+					JsonVisitor<Void> visitor = getNextVisitor();
+					
+					if (visitor != null && currentPath().matches(path)) {
+						valueSupplier.get().entrySet().forEach(entry -> {
+							String key = entry.getKey();
+							T value = entry.getValue();
+							
+							if (value != null) {
+								visitor.visitProperty(key);
+								readerProvider.apply(value).accept(visitor);							
+							} else if (specification.isRenderNullValues()) {
+								visitor.visitProperty(key);
+								visitor.visitNullValue();
+							}
+						});
+					}
+					
+					return true;
+				}
+			};
+		});
 	}
 
 	public void addJsonValue(final Object value) {
@@ -103,15 +178,15 @@ public class PathAwareSpecification {
 	}
 	
 	public void addJsonValue(final Boolean value) {
-		addJsonValue(new JsonBoolean(value));
+		addJsonValue(value != null ? new JsonBoolean(value) : null);
 	}
 	
 	public void addJsonValue(final Number value) {
-		addJsonValue(new JsonNumber(value));
+		addJsonValue(value != null ? new JsonNumber(value) : null);
 	}
 	
 	public void addJsonValue(final String value) {
-		addJsonValue(new JsonString(value));
+		addJsonValue(value != null ? new JsonString(value) : null);
 	}
 
 	public void addAllJsonValues(final Object... values) {
@@ -119,14 +194,19 @@ public class PathAwareSpecification {
 	}
 	
 	public void addAllJsonValues(final SerializationContext context, final Object... values) {
+		Objects.requireNonNull(context, "context must not be null");
 		addAllJsonValues(context, Arrays.asList(values));
 	}
 
 	public void addAllJsonValues(final Iterable<?> values) {
+		Objects.requireNonNull(values, "values must not be null");		
 		addAllJsonValues(new SerializationContext(), values);
 	}
 	
 	public void addAllJsonValues(final SerializationContext context, final Iterable<?> values) {
+		Objects.requireNonNull(context, "context must not be null");
+		Objects.requireNonNull(values, "values must not be null");
+
 		addJsonValues(val -> new ObjectVisitingReader(val, context), () -> values);
 	}
 	
@@ -135,15 +215,19 @@ public class PathAwareSpecification {
 	}
 	
 	public void addAllJsonTypes(final Iterable<? extends JsonType> values) {
+		Objects.requireNonNull(values, "values must not be null");
 		addJsonValues(JsonElementVisitingReader::new, () -> values);
 	}
 
 	public void addFromVariable(final String variableName) {
+		Objects.requireNonNull(variableName, "variableName must not be null");
 		addJsonValues(JsonElementVisitingReader::new,
 				() -> Arrays.asList(specification.getVariable(variableName)));
 	}
 	
 	public void addAllFromVariable(final String variableName) {
+		Objects.requireNonNull(variableName, "variableName must not be null");
+		
 		addJsonValues(JsonElementVisitingReader::new, () -> {
 			JsonType value = specification.getVariable(variableName);
 			
@@ -167,7 +251,7 @@ public class PathAwareSpecification {
 	}
 
 	private boolean endsWithArrayWildcard(final JsonPath path) {
-		return path.hasArrayIndexAt(path.getDepth() - 1) &&
+		return !path.isRootPath() && path.hasArrayIndexAt(path.getDepth() - 1) &&
 				path.hasWildcardAt(path.getDepth() - 1);
 	}
 	

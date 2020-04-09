@@ -1,7 +1,5 @@
 package net.sf.jetro.transform.highlevel;
 
-import static net.sf.jetro.transform.highlevel.TransformationSpecification.ROOT_PATH;
-
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -14,7 +12,6 @@ import net.sf.jetro.tree.JsonType;
 import net.sf.jetro.tree.visitor.JsonTreeBuildingVisitor;
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
-import net.sf.jetro.visitor.JsonVisitor;
 import net.sf.jetro.visitor.chained.MultiplexingJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
@@ -40,34 +37,34 @@ public class CaptureEditSpecification<S extends JsonType, T extends JsonType> {
 				private JsonTreeBuildingVisitor treeBuilder = new JsonTreeBuildingVisitor();
 				
 				@Override
+				protected boolean doBeforeVisitObject() {
+					return passOn();
+				}
+				
+				@Override
+				protected boolean doBeforeVisitArray() {
+					return passOn();
+				}
+				
+				private boolean passOn() {
+					if (currentPath().matches(path)) {
+						return false;
+					} else {
+						return true;
+					}					
+				}
+				
+				@Override
 				protected JsonObjectVisitor<Void> afterVisitObject(
 						final JsonObjectVisitor<Void> visitor) {
 					JsonObjectVisitor<Void> actualVisitor = visitor;
 					
 					if (currentPath().matches(path)) {
-						JsonVisitor<Void> wrappingVisitor = new PathAwareJsonVisitor<Void>(visitor) {
-							@Override
-							protected boolean doBeforeVisitObject() {
-								if (currentPath().matches(ROOT_PATH)) {
-									return false;
-								} else {
-									return true;
-								}
-							}
-						};
-						
-						MultiplexingJsonVisitor<Void> multiVisitor =
-								new MultiplexingJsonVisitor<Void>(wrappingVisitor, treeBuilder);
-						
-						actualVisitor = multiVisitor.visitObject();
+						actualVisitor = getMultiplexingJsonVisitor(
+								multiVisitor -> multiVisitor.visitObject());
 					}
 					
 					return super.afterVisitObject(actualVisitor);
-				}
-				
-				@Override
-				protected void afterVisitObjectEnd() {
-					handleAfterVisitEnd();
 				}
 				
 				@Override
@@ -76,24 +73,23 @@ public class CaptureEditSpecification<S extends JsonType, T extends JsonType> {
 					JsonArrayVisitor<Void> actualVisitor = visitor;
 					
 					if (currentPath().matches(path)) {
-						JsonVisitor<Void> wrappingVisitor = new PathAwareJsonVisitor<Void>(visitor) {
-							@Override
-							protected boolean doBeforeVisitArray() {
-								if (currentPath().matches(ROOT_PATH)) {
-									return false;
-								} else {
-									return true;
-								}
-							}
-						};
-						
-						MultiplexingJsonVisitor<Void> multiVisitor =
-								new MultiplexingJsonVisitor<Void>(wrappingVisitor, treeBuilder);
-						
-						actualVisitor = multiVisitor.visitArray();
+						actualVisitor = getMultiplexingJsonVisitor(
+								multiVisitor -> multiVisitor.visitArray());
 					}
 					
 					return super.afterVisitArray(actualVisitor);
+				}
+				
+				private <T> T getMultiplexingJsonVisitor(final Function<
+						MultiplexingJsonVisitor<Void>, T> actualVisitorProvider) {
+					MultiplexingJsonVisitor<Void> multiVisitor =
+							new MultiplexingJsonVisitor<Void>(getNextVisitor(), treeBuilder);
+					return actualVisitorProvider.apply(multiVisitor);
+				}
+				
+				@Override
+				protected void afterVisitObjectEnd() {
+					handleAfterVisitEnd();
 				}
 				
 				@Override

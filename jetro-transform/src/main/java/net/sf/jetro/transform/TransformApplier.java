@@ -33,6 +33,8 @@ public class TransformApplier<R> {
 	}
 
 	public void writingTo(final OutputStream target) {
+		Objects.requireNonNull(target, "target must not be null");
+		
 		try {
 			writingTo(target, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -42,15 +44,19 @@ public class TransformApplier<R> {
 	
 	public void writingTo(final OutputStream target, final String charsetName)
 			throws UnsupportedEncodingException {
-		writingTo(new OutputStreamWriter(target, charsetName));		
+		Objects.requireNonNull(target, "target must not be null");
+		Objects.requireNonNull(charsetName, "charsetName must not be null");
+		
+		writingTo(new OutputStreamWriter(target, charsetName));
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void writingTo(final Writer target) {
+		Objects.requireNonNull(target, "target must not be null");
+		
 		try (JsonWriter writer = new JsonWriter(target)) {
 			JsonWritingVisitor visitor = new JsonWritingVisitor(writer);
-			transformer.attachVisitor((JsonVisitor<R>) visitor);
-			
+			transformer.attachVisitor((JsonVisitor<R>) visitor);	
 			source.accept(transformer);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -66,24 +72,33 @@ public class TransformApplier<R> {
 	}
 	
 	public String andReturnAsJson(final RenderContext context) {
+		Objects.requireNonNull(context, "context must not be null");
 		return applyTransformation(new JsonReturningVisitor(context));
 	}
 	
 	public <T> T andReturnAsObject(final Class<T> clazz) {
+		Objects.requireNonNull(clazz, "clazz must not be null");
 		return andReturnAsObject(TypeToken.of(clazz));
 	}
 	
 	public <T> T andReturnAsObject(final Class<T> clazz,
 			final DeserializationContext context) {
+		Objects.requireNonNull(clazz, "clazz must not be null");
+		Objects.requireNonNull(context, "context must not be null");
+		
 		return andReturnAsObject(TypeToken.of(clazz), context);
 	}
 	
 	public <T> T andReturnAsObject(final TypeToken<T> typeToken) {
+		Objects.requireNonNull(typeToken, "typeToken must not be null");
 		return andReturnAsObject(typeToken, DeserializationContext.getDefault());
 	}
 	
 	public <T> T andReturnAsObject(final TypeToken<T> typeToken,
 			final DeserializationContext context) {
+		Objects.requireNonNull(typeToken, "typeToken must not be null");
+		Objects.requireNonNull(context, "context must not be null");
+		
 		return applyTransformation(new ObjectBuildingVisitor<T>(typeToken, context));
 	}
 	

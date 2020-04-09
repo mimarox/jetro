@@ -5,7 +5,12 @@
 		<listener class-name="net.sf.testng.databinding.TestAnnotationTransformer" />
 	</listeners>
 
-	<test name="All Tests" >
+	<test name="Negative Tests">
+		<groups>
+			<run>
+				<include name="negativeTests" />
+			</run>
+		</groups>
 		<packages>
 			<package name="net.sf.jetro.transform" />
 			<package name="net.sf.jetro.transform.highlevel" />

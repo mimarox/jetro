@@ -15,10 +15,12 @@ public class TransformSourceCollector {
 	}
 
 	public <R> TransformApplier<R> applying(final ChainedJsonVisitor<R> transformer) {
+		Objects.requireNonNull(transformer, "transformer must not be null");
 		return new TransformApplier<>(source, transformer);
 	}
 
 	public TransformApplier<?> applying(final TransformationSpecification specification) {
+		Objects.requireNonNull(specification, "specification must not be null");
 		return applying(specification.toChainedJsonVisitor());
 	}
 }
