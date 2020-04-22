@@ -11,7 +11,9 @@ import net.sf.jetro.tree.JsonObject;
 import net.sf.jetro.tree.JsonType;
 
 public class PathAwareSpecificationTest {
-	private static final JsonPath PATH = JsonPath.compile("$");
+	private static final JsonPath ROOT_PATH = JsonPath.compile("$");
+	private static final JsonPath ARRAY_WILDCARD_PATH = JsonPath.compile("$[*]");
+	
 	private static final TransformationSpecification SPECIFICATION =
 			new TransformationSpecification() {
 				
@@ -25,28 +27,31 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "key must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingJsonPropertyNullKeyBooleanValue() {
-		new PathAwareSpecification(PATH, SPECIFICATION).addJsonProperty(null, true);
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
+		.addJsonProperty(null, true);
 	}
 	
 	@Test(expectedExceptions = NullPointerException.class,
 			expectedExceptionsMessageRegExp = "key must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingJsonPropertyNullKeyNumberValue() {
-		new PathAwareSpecification(PATH, SPECIFICATION).addJsonProperty(null, 1);
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
+		.addJsonProperty(null, 1);
 	}
 	
 	@Test(expectedExceptions = NullPointerException.class,
 			expectedExceptionsMessageRegExp = "key must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingJsonPropertyNullKeyStringValue() {
-		new PathAwareSpecification(PATH, SPECIFICATION).addJsonProperty(null, "value");
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
+		.addJsonProperty(null, "value");
 	}
 	
 	@Test(expectedExceptions = NullPointerException.class,
 			expectedExceptionsMessageRegExp = "key must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingJsonPropertyNullKeyJsonTypeValue() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addJsonProperty(null, new JsonObject());
 	}
 	
@@ -54,7 +59,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "key must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingJsonPropertyNullKeyObjectValue() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addJsonProperty(null, new Object());
 	}
 	
@@ -62,7 +67,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "jsonObject must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllJsonPropertiesNullJsonObject() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonProperties((JsonObject) null);
 	}
 	
@@ -70,7 +75,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "properties must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllJsonPropertiesNullMap() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonProperties((Map<String, String>) null);
 	}
 	
@@ -78,7 +83,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "properties must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllJsonPropertiesNullMapNotNullContext() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonProperties((Map<String, String>) null,
 				new SerializationContext());
 	}
@@ -87,7 +92,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "context must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllJsonPropertiesNotNullMapNullContext() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonProperties(new HashMap<String, String>(), null);
 	}
 	
@@ -95,21 +100,21 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "variableName must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingFromNullVariableName() {
-		new PathAwareSpecification(PATH, SPECIFICATION).addFromVariable(null);
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION).addFromVariable(null);
 	}
 	
 	@Test(expectedExceptions = NullPointerException.class,
 			expectedExceptionsMessageRegExp = "variableName must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllFromNullVariableName() {
-		new PathAwareSpecification(PATH, SPECIFICATION).addAllFromVariable(null);
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION).addAllFromVariable(null);
 	}
 	
 	@Test(expectedExceptions = NullPointerException.class,
 			expectedExceptionsMessageRegExp = "key must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingJsonPropertyFromNullKeyVariableName() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addJsonPropertyFromVariable(null, "name");
 	}
 	
@@ -117,7 +122,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "variableName must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingJsonPropertyFromKeyNullVariableName() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addJsonPropertyFromVariable("key", null);
 	}
 	
@@ -125,7 +130,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "variableName must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllJsonPropertiesFromNullVariableName() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonPropertiesFromVariable(null);
 	}
 	
@@ -133,7 +138,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "values must not be null",
 			groups = "negativeTests")	
 	public void shouldThrowExceptionAddingAllJsonTypesNullIterable() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonTypes((Iterable<JsonType>) null);
 	}
 
@@ -141,7 +146,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "context must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllJsonValuesNullSerializationContextObject() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonValues(null, (Object) null);
 	}
 	
@@ -149,7 +154,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "context must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllJsonValuesNullSerializationContextIterable() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonValues(null, (Iterable<?>) null);
 	}
 	
@@ -157,7 +162,7 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "values must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllJsonValuesSerializationContextNullIterable() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonValues(new SerializationContext(), (Iterable<?>) null);
 	}
 	
@@ -165,7 +170,49 @@ public class PathAwareSpecificationTest {
 			expectedExceptionsMessageRegExp = "values must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionAddingAllJsonValuesNullIterable() {
-		new PathAwareSpecification(PATH, SPECIFICATION)
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.addAllJsonValues((Iterable<?>) null);
-	}	
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "context must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionAddingJsonValueObjectNullSerializationContext() {
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
+		.addJsonValue(null, null);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "newName must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionRenamingPropertyToNullNewName() {
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
+		.renamePropertyTo(null);
+	}
+	
+	@Test(expectedExceptions = IllegalArgumentException.class,
+			expectedExceptionsMessageRegExp =
+			"path must end in a property name to be renamed",
+			groups = "negativeTests")
+	public void shouldThrowExceptionRenamingPropertyToAtIllegalPathRootPath() {
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
+		.renamePropertyTo("name");
+	}
+	
+	@Test(expectedExceptions = IllegalArgumentException.class,
+			expectedExceptionsMessageRegExp =
+			"path must end in a property name to be renamed",
+			groups = "negativeTests")
+	public void shouldThrowExceptionRenamingPropertyToAtIllegalPathArrayPath() {
+		new PathAwareSpecification(ARRAY_WILDCARD_PATH, SPECIFICATION)
+		.renamePropertyTo("name");
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "context must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionReplacingWithObjectNullSerializationContext() {
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
+		.replaceWith(null, null);
+	}
 }

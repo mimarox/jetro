@@ -742,6 +742,54 @@ public class HighLevelJetroIntegrationTest {
 		assertEquals(actual, "[]");
 	}
 	
+	@Test(groups = "negativeTests")
+	@DataBinding(propertiesPrefix = "replacingWithNullValues")
+	public void shouldTransformReplacingWithNullValuesRenderingTrue(
+			@TestInput(name = "source") String source,
+			@TestOutput(name = "target") String target) {
+		JsonElement actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						setRenderNullValues(true);
+						
+						at("$.boolean").replaceWith((Boolean) null);
+						at("$.number").replaceWith((Number) null);
+						at("$.string").replaceWith((String) null);
+						at("$.jsonType").replaceWith((JsonType) null);
+						at("$.object").replaceWith((Object) null);
+						at("$.object2").replaceWith(null, new SerializationContext());
+					}
+				}).andReturnAsJsonElement();
+		
+		assertEquals(actual, BUILDER.build(target));
+	}
+	
+	@Test(groups = "negativeTests")
+	@DataBinding(propertiesPrefix = "replacingWithNullValues")
+	public void shouldTransformReplacingWithNullValuesRenderingFalse(
+			@TestInput(name = "source") String source,
+			@TestOutput(name = "target") String target) {
+		JsonElement actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						setRenderNullValues(false);
+						
+						at("$.boolean").replaceWith((Boolean) null);
+						at("$.number").replaceWith((Number) null);
+						at("$.string").replaceWith((String) null);
+						at("$.jsonType").replaceWith((JsonType) null);
+						at("$.object").replaceWith((Object) null);
+						at("$.object2").replaceWith(null, new SerializationContext());
+					}
+				}).andReturnAsJsonElement();
+		
+		assertEquals(actual, BUILDER.build(target));
+	}
+	
 	private static String normalize(final String json) {
 		return BUILDER.build(json).toJson();
 	}

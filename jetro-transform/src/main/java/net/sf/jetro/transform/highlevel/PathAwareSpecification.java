@@ -169,6 +169,7 @@ public class PathAwareSpecification {
 	}
 	
 	public void addJsonValue(final Object value, final SerializationContext context) {
+		Objects.requireNonNull(context, "context must not be null");
 		addJsonValues(val -> new ObjectVisitingReader(val, context),
 				() -> Arrays.asList(value));
 	}
@@ -370,7 +371,8 @@ public class PathAwareSpecification {
 		Objects.requireNonNull(newName, "newName must not be null");
 		
 		if (!canRenameAt(path)) {
-			throw new IllegalArgumentException("path must end in a property name to be renamed");
+			throw new IllegalArgumentException(
+					"path must end in a property name to be renamed");
 		}
 		
 		specification.addChainedJsonVisitorSupplier(() -> {
@@ -389,30 +391,93 @@ public class PathAwareSpecification {
 	}
 
 	private boolean canRenameAt(final JsonPath path) {
-		return path.hasPropertyNameAt(path.getDepth() - 1);
+		return !path.isRootPath() && path.hasPropertyNameAt(path.getDepth() - 1);
 	}
-
+	
+	/**
+	 * Replace the value at the given path with the given value.
+	 * <p>
+	 * Note: The given value may be <code>null</code>. In this case null is always
+	 * rendered to the resulting JSON.
+	 * {@link TransformationSpecification#isRenderNullValues()} is not considered by
+	 * this method.
+	 * 
+	 * @param value The value to replace with
+	 */
 	public void replaceWith(final Object value) {
 		replaceWith(value, new SerializationContext());
 	}
 	
+	/**
+	 * Replace the value at the given path with the given value using the given
+	 * {@link SerializationContext} to serialize the given value.
+	 * <p>
+	 * Note: The given value may be <code>null</code>. In this case null is always
+	 * rendered to the resulting JSON.
+	 * {@link TransformationSpecification#isRenderNullValues()} is not considered by
+	 * this method.
+	 * 
+	 * @param value The value to replace with
+	 * @param context The SerializationContext to use
+	 */
 	public void replaceWith(final Object value, final SerializationContext context) {
-		replaceWith(val -> new ObjectVisitingReader(value, context),
+		Objects.requireNonNull(context, "context must not be null");
+		replaceWith(val -> new ObjectVisitingReader(val, context),
 				() -> Arrays.asList(value));
 	}
 	
+	/**
+	 * Replace the value at the given path with the given value.
+	 * <p>
+	 * Note: The given value may be <code>null</code>. In this case null is always
+	 * rendered to the resulting JSON.
+	 * {@link TransformationSpecification#isRenderNullValues()} is not considered by
+	 * this method.
+	 * 
+	 * @param value The value to replace with
+	 */
 	public void replaceWith(final JsonType value) {
 		replaceWith(JsonElementVisitingReader::new, () -> Arrays.asList(value));
 	}
 	
+	/**
+	 * Replace the value at the given path with the given value.
+	 * <p>
+	 * Note: The given value may be <code>null</code>. In this case null is always
+	 * rendered to the resulting JSON.
+	 * {@link TransformationSpecification#isRenderNullValues()} is not considered by
+	 * this method.
+	 * 
+	 * @param value The value to replace with
+	 */
 	public void replaceWith(final Boolean value) {
 		replaceWith(new JsonBoolean(value));
 	}
 	
+	/**
+	 * Replace the value at the given path with the given value.
+	 * <p>
+	 * Note: The given value may be <code>null</code>. In this case null is always
+	 * rendered to the resulting JSON.
+	 * {@link TransformationSpecification#isRenderNullValues()} is not considered by
+	 * this method.
+	 * 
+	 * @param value The value to replace with
+	 */
 	public void replaceWith(final Number value) {
 		replaceWith(new JsonNumber(value));
 	}
 	
+	/**
+	 * Replace the value at the given path with the given value.
+	 * <p>
+	 * Note: The given value may be <code>null</code>. In this case null is always
+	 * rendered to the resulting JSON.
+	 * {@link TransformationSpecification#isRenderNullValues()} is not considered by
+	 * this method.
+	 * 
+	 * @param value The value to replace with
+	 */
 	public void replaceWith(final String value) {
 		replaceWith(new JsonString(value));
 	}

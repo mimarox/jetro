@@ -32,6 +32,8 @@ public class CaptureEditSpecification<S extends JsonType, T extends JsonType> {
 	}
 
 	public void andSaveAs(final String variableName) {
+		Objects.requireNonNull(variableName, "variableName must not be null");
+		
 		specification.addChainedJsonVisitorSupplier(() -> {
 			return new PathAwareJsonVisitor<Void>() {
 				private JsonTreeBuildingVisitor treeBuilder = new JsonTreeBuildingVisitor();
@@ -80,8 +82,8 @@ public class CaptureEditSpecification<S extends JsonType, T extends JsonType> {
 					return super.afterVisitArray(actualVisitor);
 				}
 				
-				private <T> T getMultiplexingJsonVisitor(final Function<
-						MultiplexingJsonVisitor<Void>, T> actualVisitorProvider) {
+				private <T2> T2 getMultiplexingJsonVisitor(final Function<
+						MultiplexingJsonVisitor<Void>, T2> actualVisitorProvider) {
 					MultiplexingJsonVisitor<Void> multiVisitor =
 							new MultiplexingJsonVisitor<Void>(getNextVisitor(), treeBuilder);
 					return actualVisitorProvider.apply(multiVisitor);

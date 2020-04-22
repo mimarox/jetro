@@ -17,6 +17,8 @@ import net.sf.jetro.visitor.chained.MultiplexingJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
 public class CaptureSpecification {
+	private static final String EDITOR_NOT_NULL = "editor must not be null";
+	
 	private final JsonPath path;
 	private final TransformationSpecification specification;
 	
@@ -31,14 +33,14 @@ public class CaptureSpecification {
 
 	public <S extends JsonType, T extends JsonType> CaptureEditSpecification<S, T>
 	edit(final Function<S, T> editor) {
-		Objects.requireNonNull(editor, "editor must not be null");
+		Objects.requireNonNull(editor, EDITOR_NOT_NULL);
 		return new CaptureEditSpecification<>(path, editor, specification);
 	}
 	
 	public <S extends JsonType, T extends JsonType>
 	CaptureEditSpecification<JsonArray, JsonArray>
 	editEach(final Function<S, T> editor) {
-		Objects.requireNonNull(editor, "editor must not be null");
+		Objects.requireNonNull(editor, EDITOR_NOT_NULL);
 		
 		@SuppressWarnings("unchecked")
 		Function<JsonArray, JsonArray> eachEditor = array -> {
@@ -51,12 +53,16 @@ public class CaptureSpecification {
 	}
 	
 	public void andSaveAs(final String variableName) {
+		Objects.requireNonNull(variableName, "variableName must not be null");
+		
 		new CaptureEditSpecification<>(path, Function.identity(), specification)
 		.andSaveAs(variableName);
 	}
 
 	public <S extends JsonType, T extends JsonType> void
 	editAndReplace(final Function<S, T> editor) {
+		Objects.requireNonNull(editor, EDITOR_NOT_NULL);
+		
 		specification.addChainedJsonVisitorSupplier(() -> {
 			return new PathAwareJsonVisitor<Void>() {
 				private JsonTreeBuildingVisitor treeBuilder = new JsonTreeBuildingVisitor();
