@@ -1,5 +1,6 @@
 package net.sf.jetro.transform.highlevel;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -14,6 +15,7 @@ import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonBoolean;
 import net.sf.jetro.tree.JsonNumber;
 import net.sf.jetro.tree.JsonObject;
+import net.sf.jetro.tree.JsonPrimitive;
 import net.sf.jetro.tree.JsonString;
 import net.sf.jetro.tree.JsonType;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
@@ -22,6 +24,13 @@ import net.sf.jetro.visitor.VisitingReader;
 import net.sf.jetro.visitor.chained.ChainedJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
+/**
+ * This class is part of the {@link TransformationSpecification} fluent API.
+ * <p>
+ * It provides methods operating at a given {@link JsonPath}.
+ * 
+ * @author Matthias Rothe
+ */
 public class PathAwareSpecification {
 	private final JsonPath path;
 	private final TransformationSpecification specification;
@@ -35,10 +44,39 @@ public class PathAwareSpecification {
 		this.specification = specification;
 	}
 
+	/**
+	 * Use this method to add a JSON property with the given key and value
+	 * to a JSON object.
+	 * <p>
+	 * The value should be a Java Bean, but doesn't have to be {@link Serializable}.
+	 * It will be serialized to JSON using the default {@link SerializationContext}.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the property is omitted.
+	 * 
+	 * @param key the key or name of the new property
+	 * @param value the value of the new property
+	 */
 	public void addJsonProperty(final String key, final Object value) {
 		addJsonProperty(key, value, new SerializationContext());
 	}
 	
+	/**
+	 * Use this method to add a JSON property with the given key and value
+	 * to a JSON object.
+	 * <p>
+	 * The value should be a Java Bean, but doesn't have to be {@link Serializable}.
+	 * It will be serialized to JSON using the given {@link SerializationContext}.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the property is omitted.
+	 * 
+	 * @param key the key or name of the new property
+	 * @param value the value of the new property
+	 * @param context the context to be used for serialization of the value
+	 */
 	public void addJsonProperty(final String key, final Object value,
 			final SerializationContext context) {
 		Objects.requireNonNull(key, "key must not be null");
@@ -46,12 +84,39 @@ public class PathAwareSpecification {
 		addJsonProperty(key, val -> new ObjectVisitingReader(val, context), () -> value);
 	}
 	
+	/**
+	 * Use this method to add a JSON property with the given key and value
+	 * to a JSON object.
+	 * <p>
+	 * The value must be a {@link JsonType}, either a {@link JsonObject}, a
+	 * {@link JsonArray} or any one of the {@link JsonPrimitive}s.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the property is omitted.
+	 * 
+	 * @param key the key or name of the new property
+	 * @param value the value of the new property
+	 */
 	public void addJsonProperty(final String key, final JsonType value) {
 		Objects.requireNonNull(key, "key must not be null");
 		addJsonProperty(key, JsonElementVisitingReader::new, () -> value);
 	}
 
-	public void addJsonPropertyFromVariable(String key, String variableName) {
+	/**
+	 * Use this method to add a JSON property with the given key and the value
+	 * saved with the given variable name to a JSON object.
+	 * <p>
+	 * If a value of <code>null</code> is retrieved for the given variable name,
+	 * it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the property is omitted.
+	 * 
+	 * @param key the key or name of the new property
+	 * @param variableName the variable name of the value of the new property
+	 */
+	public void addJsonPropertyFromVariable(final String key,
+			final String variableName) {
 		Objects.requireNonNull(key, "key must not be null");
 		Objects.requireNonNull(variableName, "variableName must not be null");
 		addJsonProperty(key, JsonElementVisitingReader::new,
@@ -86,27 +151,97 @@ public class PathAwareSpecification {
 		});
 	}
 	
+	/**
+	 * Use this method to add a JSON property with the given key and value
+	 * to a JSON object.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the property is omitted.
+	 * 
+	 * @param key the key or name of the new property
+	 * @param value the value of the new property
+	 */
 	public void addJsonProperty(final String key, final Boolean value) {
 		addJsonProperty(key, value != null ? new JsonBoolean(value) : null);
 	}
 	
+	/**
+	 * Use this method to add a JSON property with the given key and value
+	 * to a JSON object.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the property is omitted.
+	 * 
+	 * @param key the key or name of the new property
+	 * @param value the value of the new property
+	 */
 	public void addJsonProperty(final String key, final Number value) {
 		addJsonProperty(key, value != null ? new JsonNumber(value) : null);
 	}
 	
+	/**
+	 * Use this method to add a JSON property with the given key and value
+	 * to a JSON object.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the property is omitted.
+	 *  
+	 * @param key the key or name of the new property
+	 * @param value the value of the new property
+	 */
 	public void addJsonProperty(final String key, final String value) {
 		addJsonProperty(key, value != null ? new JsonString(value) : null);
 	}
 
+	/**
+	 * Use this method to add all JSON properties set on the given
+	 * {@link JsonObject} to a JSON object.
+	 * <p>
+	 * If a value of a property is <code>null</code> it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>, otherwise it is omitted.
+	 * 
+	 * @param jsonObject the JsonObject to add the properties of
+	 */
 	public void addAllJsonProperties(final JsonObject jsonObject) {
 		Objects.requireNonNull(jsonObject, "jsonObject must not be null");
 		addAllJsonProperties(JsonElementVisitingReader::new, () -> jsonObject.asMap());
 	}
 	
+	/**
+	 * Use this method to add all keys and values of the given map of properties
+	 * as JSON properties to a JSON object.
+	 * <p>
+	 * The values should be Java Beans, but don't have to be {@link Serializable}.
+	 * They will be serialized to JSON using the default {@link SerializationContext}.
+	 * <p>
+	 * If a value of a key value pair is <code>null</code> it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise it is omitted.
+	 * 
+	 * @param properties the map of key value pairs to be added as properties
+	 */
 	public <T> void addAllJsonProperties(final Map<String, T> properties) {
 		addAllJsonProperties(properties, new SerializationContext());
 	}
 	
+	/**
+	 * Use this method to add all keys and values of the given map of properties
+	 * as JSON properties to a JSON object.
+	 * <p>
+	 * The values should be Java Beans, but don't have to be {@link Serializable}.
+	 * They will be serialized to JSON using the given {@link SerializationContext}.
+	 * <p>
+	 * If a value of a key value pair is <code>null</code> it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise it is omitted.
+	 * 
+	 * @param properties the map of key value pairs to be added as properties
+	 * @param context the context to be used for serialization of the value
+	 */
 	public <T> void addAllJsonProperties(final Map<String, T> properties,
 			final SerializationContext context) {
 		Objects.requireNonNull(properties, "properties must not be null");
@@ -116,6 +251,21 @@ public class PathAwareSpecification {
 				() -> properties);
 	}
 	
+	/**
+	 * Use this method to add all JSON properties of the {@link JsonObject}
+	 * saved with the given variable name to a JSON object.
+	 * <p>
+	 * If a value of <code>null</code> is retrieved as the value of a property of
+	 * the JsonObject, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the property is omitted.
+	 * 
+	 * @param variableName the variable name of the JsonObject to add the properties of
+	 * @throws NoSuchElementException if no value could be found for the given
+	 * variable name
+	 * @throws ClassCastException if the value found for the given variable name is
+	 * not a {@link JsonObject}
+	 */
 	public void addAllJsonPropertiesFromVariable(final String variableName) {
 		Objects.requireNonNull(variableName, "variableName must not be null");
 		addAllJsonProperties(JsonElementVisitingReader::new, () -> {
@@ -164,46 +314,158 @@ public class PathAwareSpecification {
 		});
 	}
 
+	/**
+	 * Use this method to add the given value to a JSON array.
+	 * <p>
+	 * The value should be a Java Bean, but doesn't have to be {@link Serializable}.
+	 * It will be serialized to JSON using the default {@link SerializationContext}.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the value is omitted.
+	 * 
+	 * @param value the value to add
+	 */
 	public void addJsonValue(final Object value) {
 		addJsonValue(value, new SerializationContext());
 	}
 	
+	/**
+	 * Use this method to add the given value to a JSON array.
+	 * <p>
+	 * The value should be a Java Bean, but doesn't have to be {@link Serializable}.
+	 * It will be serialized to JSON using the given {@link SerializationContext}.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the value is omitted.
+	 * 
+	 * @param value the value to add
+	 */
 	public void addJsonValue(final Object value, final SerializationContext context) {
 		Objects.requireNonNull(context, "context must not be null");
 		addJsonValues(val -> new ObjectVisitingReader(val, context),
 				() -> Arrays.asList(value));
 	}
 	
+	/**
+	 * Use this method to add the given value to a JSON array.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the value is omitted.
+	 * 
+	 * @param value the value to add
+	 */
 	public void addJsonValue(final JsonType value) {
 		addJsonValues(JsonElementVisitingReader::new, () -> Arrays.asList(value));
 	}
 	
+	/**
+	 * Use this method to add the given value to a JSON array.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the value is omitted.
+	 * 
+	 * @param value the value to add
+	 */
 	public void addJsonValue(final Boolean value) {
 		addJsonValue(value != null ? new JsonBoolean(value) : null);
 	}
 	
+	/**
+	 * Use this method to add the given value to a JSON array.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the value is omitted.
+	 * 
+	 * @param value the value to add
+	 */
 	public void addJsonValue(final Number value) {
 		addJsonValue(value != null ? new JsonNumber(value) : null);
 	}
 	
+	/**
+	 * Use this method to add the given value to a JSON array.
+	 * <p>
+	 * If a value of <code>null</code> is given, it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the value is omitted.
+	 * 
+	 * @param value the value to add
+	 */
 	public void addJsonValue(final String value) {
 		addJsonValue(value != null ? new JsonString(value) : null);
 	}
 
+	/**
+	 * Use this method to add all of the given values to a JSON array.
+	 * <p>
+	 * Each value should be a Java Bean, but doesn't have to be {@link Serializable}.
+	 * It will be serialized to JSON using the default {@link SerializationContext}.
+	 * <p>
+	 * If <code>null</code> values are given, they are rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise they are omitted.
+	 * 
+	 * @param values the values to add
+	 */
 	public void addAllJsonValues(final Object... values) {
 		addAllJsonValues(new SerializationContext(), values);
 	}
 	
+	/**
+	 * Use this method to add all of the given values to a JSON array.
+	 * <p>
+	 * Each value should be a Java Bean, but doesn't have to be {@link Serializable}.
+	 * It will be serialized to JSON using the given {@link SerializationContext}.
+	 * <p>
+	 * If <code>null</code> values are given, they are rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise they are omitted.
+	 * 
+	 * @param values the values to add
+	 * @param context the context to be used for serialization of the values
+	 */
 	public void addAllJsonValues(final SerializationContext context, final Object... values) {
 		Objects.requireNonNull(context, "context must not be null");
 		addAllJsonValues(context, Arrays.asList(values));
 	}
 
+	/**
+	 * Use this method to add all of the given values to a JSON array.
+	 * <p>
+	 * Each element of values should be a Java Bean, but doesn't have to be
+	 * {@link Serializable}. It will be serialized to JSON using the default
+	 * {@link SerializationContext}.
+	 * <p>
+	 * If the values iterable contains <code>null</code> values, they are rendered
+	 * if {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise they are omitted.
+	 * 
+	 * @param values the values to add
+	 */
 	public void addAllJsonValues(final Iterable<?> values) {
 		Objects.requireNonNull(values, "values must not be null");		
 		addAllJsonValues(new SerializationContext(), values);
 	}
 	
+	/**
+	 * Use this method to add all of the given values to a JSON array.
+	 * <p>
+	 * Each element of values should be a Java Bean, but doesn't have to be
+	 * {@link Serializable}. It will be serialized to JSON using the given
+	 * {@link SerializationContext}.
+	 * <p>
+	 * If the values iterable contains <code>null</code> values, they are rendered
+	 * if {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise they are omitted.
+	 * 
+	 * @param values the values to add
+	 * @param context the context to be used for serialization of the values
+	 */
 	public void addAllJsonValues(final SerializationContext context, final Iterable<?> values) {
 		Objects.requireNonNull(context, "context must not be null");
 		Objects.requireNonNull(values, "values must not be null");
@@ -211,21 +473,61 @@ public class PathAwareSpecification {
 		addJsonValues(val -> new ObjectVisitingReader(val, context), () -> values);
 	}
 	
+	/**
+	 * Use this method to add all of the given values to a JSON array.
+	 * <p>
+	 * If <code>null</code> values are given, they are rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise they are omitted.
+	 * 
+	 * @param values the values to add
+	 */
 	public void addAllJsonTypes(final JsonType... values) {
 		addAllJsonTypes(Arrays.asList(values));
 	}
 	
+	/**
+	 * Use this method to add all of the given values to a JSON array.
+	 * <p>
+	 * If the values iterable contains <code>null</code> values, they are rendered
+	 * if {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise they are omitted.
+	 * 
+	 * @param values the values to add
+	 */
 	public void addAllJsonTypes(final Iterable<? extends JsonType> values) {
 		Objects.requireNonNull(values, "values must not be null");
 		addJsonValues(JsonElementVisitingReader::new, () -> values);
 	}
 
+	/**
+	 * Use this method to add the value saved with the given variable name
+	 * to a JSON array.
+	 * <p>
+	 * If a value of <code>null</code> is retrieved for the given variable name,
+	 * it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the value is omitted.
+	 *
+	 * @param variableName the variable name of the value
+	 */
 	public void addFromVariable(final String variableName) {
 		Objects.requireNonNull(variableName, "variableName must not be null");
 		addJsonValues(JsonElementVisitingReader::new,
 				() -> Arrays.asList(specification.getVariable(variableName)));
 	}
 	
+	/**
+	 * Use this method to add all the values of the {@link JsonArray} or a single
+	 * other value saved with the given variable name to a JSON array.
+	 * <p>
+	 * If a value of <code>null</code> is retrieved for the given variable name,
+	 * it is rendered if
+	 * {@link TransformationSpecification#setRenderNullValues(boolean)}
+	 * is set to <code>true</code>. Otherwise the value is omitted.
+	 *
+	 * @param variableName the variable name of the value
+	 */
 	public void addAllFromVariable(final String variableName) {
 		Objects.requireNonNull(variableName, "variableName must not be null");
 		
@@ -367,6 +669,14 @@ public class PathAwareSpecification {
 		};
 	}
 
+	/**
+	 * Use this method to rename a property of a JSON object to new name.
+	 * 
+	 * @param newName the new name of the property
+	 * @throws NullPointerException if newName is <code>null</code>
+	 * @throws IllegalArgumentException if the {@link #path} doesn't end
+	 * in a property name
+	 */
 	public void renamePropertyTo(final String newName) {
 		Objects.requireNonNull(newName, "newName must not be null");
 		

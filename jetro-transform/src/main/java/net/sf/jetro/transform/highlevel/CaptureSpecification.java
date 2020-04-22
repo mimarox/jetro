@@ -16,6 +16,14 @@ import net.sf.jetro.visitor.JsonVisitor;
 import net.sf.jetro.visitor.chained.MultiplexingJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
+/**
+ * This class is part of the {@link TransformationSpecification} fluent API.
+ * <p>
+ * It provides three methods related to editing and one method
+ * named {@link #andSaveAs(String)}.
+ * 
+ * @author Matthias Rothe
+ */
 public class CaptureSpecification {
 	private static final String EDITOR_NOT_NULL = "editor must not be null";
 	
@@ -31,12 +39,32 @@ public class CaptureSpecification {
 		this.specification = specification;
 	}
 
+	/**
+	 * Use this method to specify an editor to edit the captured JSON with.
+	 * <p>
+	 * The editor is a {@link Function} taking any instance of {@link JsonType}
+	 * as input and converting that to any JsonType as output.
+	 * 
+	 * @param editor The editor to use
+	 * @return an instance of {@link CaptureEditSpecification}
+	 */
 	public <S extends JsonType, T extends JsonType> CaptureEditSpecification<S, T>
 	edit(final Function<S, T> editor) {
 		Objects.requireNonNull(editor, EDITOR_NOT_NULL);
 		return new CaptureEditSpecification<>(path, editor, specification);
 	}
 	
+	/**
+	 * Use this method to specify an editor to edit each element of a captured
+	 * JSON array with. Using this function with a captured JSON object or
+	 * primitive will result in a runtime exception.
+	 * <p>
+	 * The editor is a {@link Function} taking any instance of {@link JsonType}
+	 * as input and converting that to any JsonType as output.
+	 * 
+	 * @param editor The editor to use for each element
+	 * @return an instance of {@link CaptureEditSpecification}
+	 */
 	public <S extends JsonType, T extends JsonType>
 	CaptureEditSpecification<JsonArray, JsonArray>
 	editEach(final Function<S, T> editor) {
@@ -52,6 +80,12 @@ public class CaptureSpecification {
 		return new CaptureEditSpecification<>(path, eachEditor, specification);
 	}
 	
+	/**
+	 * Use this method to save some captured JSON as a variable named
+	 * by the given variableName.
+	 * 
+	 * @param variableName The name of the variable to save as
+	 */
 	public void andSaveAs(final String variableName) {
 		Objects.requireNonNull(variableName, "variableName must not be null");
 		
@@ -59,6 +93,15 @@ public class CaptureSpecification {
 		.andSaveAs(variableName);
 	}
 
+	/**
+	 * Use this method to specify an editor to edit the captured JSON with. The
+	 * captured JSON will be replaced by the output of the editor.
+	 * <p>
+	 * The editor is a {@link Function} taking any instance of {@link JsonType}
+	 * as input and converting that to any JsonType as output.
+	 * 
+	 * @param editor The editor to use
+	 */
 	public <S extends JsonType, T extends JsonType> void
 	editAndReplace(final Function<S, T> editor) {
 		Objects.requireNonNull(editor, EDITOR_NOT_NULL);

@@ -15,6 +15,16 @@ import net.sf.jetro.visitor.JsonObjectVisitor;
 import net.sf.jetro.visitor.chained.MultiplexingJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
+/**
+ * This class is part of the {@link TransformationSpecification} fluent API.
+ * <p>
+ * It provides one method named {@link #andSaveAs(String)}.
+ * 
+ * @author Matthias Rothe
+ *
+ * @param <S> The source type
+ * @param <T> The target type
+ */
 public class CaptureEditSpecification<S extends JsonType, T extends JsonType> {
 	private final JsonPath path;
 	private final Function<S, T> editor;
@@ -31,6 +41,12 @@ public class CaptureEditSpecification<S extends JsonType, T extends JsonType> {
 		this.specification = specification;
 	}
 
+	/**
+	 * Use this method to save some captured and edited JSON as a variable named
+	 * by the given variableName.
+	 * 
+	 * @param variableName The name of the variable to save as
+	 */
 	public void andSaveAs(final String variableName) {
 		Objects.requireNonNull(variableName, "variableName must not be null");
 		
