@@ -23,6 +23,21 @@ public class PathAwareSpecificationTest {
 				}
 			};
 	
+			
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "path must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionNewInstanceNullJsonPath() {
+		new PathAwareSpecification(null, SPECIFICATION);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "specification must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionNewInstanceNullSpecification() {
+		new PathAwareSpecification(ROOT_PATH, null);
+	}
+	
 	@Test(expectedExceptions = NullPointerException.class,
 			expectedExceptionsMessageRegExp = "key must not be null",
 			groups = "negativeTests")
@@ -214,5 +229,13 @@ public class PathAwareSpecificationTest {
 	public void shouldThrowExceptionReplacingWithObjectNullSerializationContext() {
 		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
 		.replaceWith(null, null);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "predicate must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionReplacingIfNullPredicate() {
+		new PathAwareSpecification(ROOT_PATH, SPECIFICATION)
+		.replaceIf(null);
 	}
 }

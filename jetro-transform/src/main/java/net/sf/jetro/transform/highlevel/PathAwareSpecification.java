@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import net.sf.jetro.object.serializer.SerializationContext;
@@ -705,7 +706,7 @@ public class PathAwareSpecification {
 	}
 	
 	/**
-	 * Replace the value at the given path with the given value.
+	 * Use this method to replace the value at the given path with the given value.
 	 * <p>
 	 * Note: The given value may be <code>null</code>. In this case null is always
 	 * rendered to the resulting JSON.
@@ -719,8 +720,8 @@ public class PathAwareSpecification {
 	}
 	
 	/**
-	 * Replace the value at the given path with the given value using the given
-	 * {@link SerializationContext} to serialize the given value.
+	 * Use this method to replace the value at the given path with the given value
+	 * using the given {@link SerializationContext} to serialize the given value.
 	 * <p>
 	 * Note: The given value may be <code>null</code>. In this case null is always
 	 * rendered to the resulting JSON.
@@ -737,7 +738,7 @@ public class PathAwareSpecification {
 	}
 	
 	/**
-	 * Replace the value at the given path with the given value.
+	 * Use this method to replace the value at the given path with the given value.
 	 * <p>
 	 * Note: The given value may be <code>null</code>. In this case null is always
 	 * rendered to the resulting JSON.
@@ -751,7 +752,7 @@ public class PathAwareSpecification {
 	}
 	
 	/**
-	 * Replace the value at the given path with the given value.
+	 * Use this method to replace the value at the given path with the given value.
 	 * <p>
 	 * Note: The given value may be <code>null</code>. In this case null is always
 	 * rendered to the resulting JSON.
@@ -765,7 +766,7 @@ public class PathAwareSpecification {
 	}
 	
 	/**
-	 * Replace the value at the given path with the given value.
+	 * Use this method to replace the value at the given path with the given value.
 	 * <p>
 	 * Note: The given value may be <code>null</code>. In this case null is always
 	 * rendered to the resulting JSON.
@@ -779,7 +780,7 @@ public class PathAwareSpecification {
 	}
 	
 	/**
-	 * Replace the value at the given path with the given value.
+	 * Use this method to replace the value at the given path with the given value.
 	 * <p>
 	 * Note: The given value may be <code>null</code>. In this case null is always
 	 * rendered to the resulting JSON.
@@ -791,10 +792,42 @@ public class PathAwareSpecification {
 	public void replaceWith(final String value) {
 		replaceWith(new JsonString(value));
 	}
+
+	/**
+	 * Use this method to replace the value at the given path with the value
+	 * referenced by the given variable name.
+	 * <p>
+	 * Note: The value referenced by the variable name may be <code>null</code>.
+	 * In this case null is always rendered to the resulting JSON.
+	 * {@link TransformationSpecification#isRenderNullValues()} is not considered by
+	 * this method.
+	 * 
+	 * @param value The value to replace with
+	 */
+	public void replaceWithFromVariable(final String variableName) {
+		Objects.requireNonNull(variableName, "variableName must not be null");
+		
+		replaceWith(JsonElementVisitingReader::new, () -> {
+			return Arrays.asList(specification.getVariable(variableName));
+		});
+	}
 	
 	private <T> void replaceWith(final Function<T, VisitingReader> readerProvider,
 			final Supplier<Iterable<T>> valuesSupplier) {
 		specification.addChainedJsonVisitorSupplier(() ->
 		getIndexedJsonValueAdder(readerProvider, valuesSupplier, true));
+	}
+
+	/**
+	 * Use this method to replace the value at the given path, if and only if
+	 * the given predicate evaluates to <code>true</code>. This method can be
+	 * used to replace values only if the current values satisfy certain criteria.
+	 * 
+	 * @param predicate the predicate to evaluate
+	 * @return an instance of {@link ReplaceIfSpecification}
+	 */
+	public ReplaceIfSpecification replaceIf(final Predicate<JsonType> predicate) {
+		Objects.requireNonNull(predicate, "predicate must not be null");
+		return new ReplaceIfSpecification(path, predicate, specification);
 	}
 }

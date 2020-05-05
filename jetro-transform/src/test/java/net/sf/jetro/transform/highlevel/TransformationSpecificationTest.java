@@ -45,6 +45,20 @@ public class TransformationSpecificationTest {
 	@Test(expectedExceptions = NullPointerException.class,
 			expectedExceptionsMessageRegExp = "path must not be null",
 			groups = "negativeTests")
+	public void shouldThrowExceptionKeepNullJsonPathString() {
+		SPECIFICATION.keep((String) null);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "path must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionKeepNullJsonPath() {
+		SPECIFICATION.keep((JsonPath) null);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "path must not be null",
+			groups = "negativeTests")
 	public void shouldThrowExceptionRemoveNullJsonPathString() {
 		SPECIFICATION.remove((String) null);
 	}
@@ -60,7 +74,7 @@ public class TransformationSpecificationTest {
 			expectedExceptionsMessageRegExp = "name must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionRenamePropertyNullName() {
-		SPECIFICATION.renameProperty(null);
+		SPECIFICATION.renameProperties(null);
 	}
 	
 	@Test(expectedExceptions = NullPointerException.class,
@@ -74,6 +88,20 @@ public class TransformationSpecificationTest {
 			expectedExceptionsMessageRegExp = "name must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionRenamePropertyIgnoreCaseNullName() {
-		SPECIFICATION.renamePropertyIgnoreCase(null);
+		SPECIFICATION.renamePropertiesIgnoringCase(null);
 	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "visitor must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionApplyingCustomNullVisitor() {
+		SPECIFICATION.applyCustomVisitor(null);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "specification must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionApplyingNullSpecification() {
+		SPECIFICATION.applySpecification(null);
+	}	
 }

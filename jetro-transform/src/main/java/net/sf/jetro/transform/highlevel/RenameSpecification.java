@@ -4,6 +4,13 @@ import java.util.Objects;
 
 import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
 
+/**
+ * This class is part of the {@link TransformationSpecification} fluent API.
+ * <p>
+ * It provides the method {@link #to(String)}.
+ * 
+ * @author Matthias Rothe
+ */
 public class RenameSpecification {
 	private final String name;
 	private final TransformationSpecification specification;
@@ -23,6 +30,11 @@ public class RenameSpecification {
 		this.specification = specification;
 	}
 
+	/**
+	 * Use this method to rename a property to the given new name.
+	 * 
+	 * @param newName The new name to rename to
+	 */
 	public void to(final String newName) {
 		Objects.requireNonNull(newName, "newName must not be null");
 		

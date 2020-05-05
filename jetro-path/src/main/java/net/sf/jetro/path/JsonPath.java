@@ -177,6 +177,14 @@ public class JsonPath implements Cloneable, Serializable {
 	}
 
 	public boolean isParentPathOf(final JsonPath path) {
+		if (path == null) {
+			return isRootPath(); // as null is interpreted as the root path
+		}
+		
+		if (size > path.size) {
+			return false;
+		}
+		
 		boolean parentPath = true;
 
 		for (int i = 0; i < size; i++) {

@@ -1,0 +1,15 @@
+{
+	"anotherObject": {
+		"absent": "you bet",
+		"another": "value"
+	},
+	"array": [1, 2, 3],
+	"boolean": true,
+	"null": null,
+	"number": 2,
+	"objectToBeReplaced": {
+		"present": "absolutely",
+		"a": "value"
+	},
+	"string": "value"
+}

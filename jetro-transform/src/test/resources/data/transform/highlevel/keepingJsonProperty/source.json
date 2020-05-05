@@ -1,0 +1,16 @@
+{
+	"foo0": {
+		"bar0": {
+			"some": "value",
+			"another": true
+		},
+		"bar1": {
+			"baz0": {
+				"array": [0],
+				"boolean": false
+			},
+			"baz1": "yet another value"
+		}
+	},
+	"foo1": [1, 2, 3]
+}

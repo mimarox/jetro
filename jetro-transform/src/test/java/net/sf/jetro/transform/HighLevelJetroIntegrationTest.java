@@ -17,6 +17,7 @@ import net.sf.jetro.object.serializer.SerializationContext;
 import net.sf.jetro.object.serializer.TypeSerializer;
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.transform.beans.Persons;
+import net.sf.jetro.transform.beans.SourceObject;
 import net.sf.jetro.transform.beans.WrappingAndAddingSource;
 import net.sf.jetro.transform.beans.WrappingAndAddingTarget;
 import net.sf.jetro.transform.highlevel.TransformationSpecification;
@@ -31,6 +32,7 @@ import net.sf.jetro.tree.JsonString;
 import net.sf.jetro.tree.JsonType;
 import net.sf.jetro.tree.builder.JsonTreeBuilder;
 import net.sf.jetro.visitor.JsonVisitor;
+import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
 import net.sf.testng.databinding.DataBinding;
 import net.sf.testng.databinding.TestInput;
 import net.sf.testng.databinding.TestOutput;
@@ -110,9 +112,9 @@ public class HighLevelJetroIntegrationTest {
 
 			@Override
 			protected void specify() {
-				renameProperty("role").to("roles");
+				renameProperties("role").to("roles");
 				renamePropertiesMatching("([Dd]esc)+").to("text");
-				renamePropertyIgnoreCase("TEXT").to("description");
+				renamePropertiesIgnoringCase("TEXT").to("description");
 				at("$.name").renamePropertyTo("names");
 			}
 		}).andReturnAsJson();
@@ -788,6 +790,267 @@ public class HighLevelJetroIntegrationTest {
 				}).andReturnAsJsonElement();
 		
 		assertEquals(actual, BUILDER.build(target));
+	}
+	
+	@Test
+	public void shouldTransformKeepingJsonValue() {
+		JsonArray source = new JsonArray(Arrays.asList(
+				new JsonNumber(1), new JsonNumber(2), new JsonNumber(3)));
+		
+		JsonArray actual = (JsonArray) Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						keep("$[1]");
+					}
+				}).andReturnAsJsonElement();
+		
+		JsonArray expected = new JsonArray(Arrays.asList(new JsonNumber(2)));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "keepingJsonProperty")
+	public void shouldTransformKeepingJsonProperty(
+			@TestInput(name = "source") String source,
+			@TestOutput(name = "target") String target) {
+		String actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						keep("$.foo0.bar1.baz0:");
+					}
+				}).andReturnAsJson();
+		
+		assertEquals(actual, normalize(target));
+	}
+	
+	@Test
+	public void shouldTransformApplyingCustomVisitor() {
+		JsonObject source = new JsonObject();
+		source.add(new JsonProperty("a", false));
+		
+		JsonObject actual = (JsonObject) Jetro.transform(source).applying(
+				new TransformationSpecification() {
+			
+			@Override
+			protected void specify() {
+				renameProperties("a").to("b");
+				
+				applyCustomVisitor(new UniformChainedJsonVisitor<Void>() {
+					
+					@Override
+					protected String beforeVisitProperty(final String name) {
+						if ("b".equals(name)) {
+							return "c";
+						} else {
+							return name;
+						}
+					}
+					
+					@Override
+					protected Boolean beforeVisitValue(final boolean value) {
+						visitValue("" + value);
+						return null;
+					}
+				});
+				
+				at("$.c").replaceWith(true);
+			}
+		}).andReturnAsJsonElement();
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("c", true));
+		
+		assertEquals(actual, expected);
+	}
+
+	@Test
+	@DataBinding(propertiesPrefix = "captureAndEdit")
+	public void shouldTransformApplyingSpecifications(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "target") final String target) {
+		String actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+
+			@Override
+			protected void specify() {
+				setRenderNullValues(true);
+
+				applySpecification(new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						capture("$.primary_user").edit(primaryUser -> {
+							if (primaryUser instanceof JsonObject) {
+								((JsonObject) primaryUser).add(new JsonProperty("role", "primary"));
+							}
+							return primaryUser;
+						}).andSaveAs("primaryUser");
+
+						remove("$.primary_user");
+					}
+				});
+
+				applySpecification(new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						capture("$.secondary_users").editEach(secondaryUser -> {
+							if (secondaryUser instanceof JsonObject) {
+								((JsonObject) secondaryUser).add(new JsonProperty("role", "secondary"));
+							}
+							return secondaryUser;
+						}).andSaveAs("secondaryUsers");
+
+						remove("$.secondary_users");
+					}
+				});
+
+				at("$").addJsonProperty("users", new JsonArray());
+				at("$.users[*]").addFromVariable("primaryUser");
+				at("$.users[*]").addAllFromVariable("secondaryUsers");
+
+				capture("$.users[0].role").andSaveAs("role");
+				at("$.users[0]").addJsonPropertyFromVariable("secondRole", "role");
+			}
+		}).andReturnAsJson();
+
+		assertEquals(actual, normalize(target));
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "replacingIfWithObject")
+	public void shouldTransformReplacingIfWithObject(
+			@TestInput(name = "source") String source,
+			@TestOutput(name = "target") String target) {
+		SourceObject replacement = new SourceObject();
+		
+		String actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						at("$.*").replaceIf(this::determineReplacement).with(replacement);
+						at("$.objectToBeReplaced").renamePropertyTo("replacedObject");
+					}
+					
+					private boolean determineReplacement(final JsonType value) {
+						if (value instanceof JsonObject) {
+							return ((JsonObject) value).getElementAt(
+									JsonPath.compile("$.present")).isPresent();
+						} else {
+							return false;
+						}
+					}
+				}).andReturnAsJson();
+		
+		assertEquals(actual, normalize(target));
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "replacingIfWithObject")
+	public void shouldTransformReplacingIfWithJsonObject(
+			@TestInput(name = "source") String source,
+			@TestOutput(name = "target") String target) {
+		JsonObject replacement = new JsonObject();
+		replacement.add(new JsonProperty("foo", "bar"));
+		
+		String actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+					@Override
+					protected void specify() {
+						at("$.*").replaceIf(this::determineReplacement).with(replacement);
+						at("$.objectToBeReplaced").renamePropertyTo("replacedObject");
+					}
+					
+					private boolean determineReplacement(final JsonType value) {
+						if (value instanceof JsonObject) {
+							return ((JsonObject) value).getElementAt(
+									JsonPath.compile("$.present")).isPresent();
+						} else {
+							return false;
+						}
+					}
+				}).andReturnAsJson();
+		
+		assertEquals(actual, normalize(target));
+	}
+	
+	@Test
+	public void shouldTransformReplacingIfWithBoolean() {
+		JsonArray source = new JsonArray(Arrays.asList(
+				new JsonBoolean(true), new JsonBoolean(false)));
+		
+		JsonArray actual = (JsonArray) Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+			@Override
+			protected void specify() {
+				at("$[*]").replaceIf(value -> {
+					return value instanceof JsonBoolean &&
+							((JsonBoolean) value).getValue();
+				}).with(false);
+			}
+		}).andReturnAsJsonElement();
+		
+		JsonArray expected = source.deepCopy();
+		expected.recalculateTreePaths();
+		expected.replaceElementAt(JsonPath.compile("$[0]"), false);
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldTransformReplacingIfWithNumber() {
+		JsonArray source = new JsonArray(Arrays.asList(
+				new JsonBoolean(true), new JsonBoolean(false)));
+		
+		JsonArray actual = (JsonArray) Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+			@Override
+			protected void specify() {
+				at("$[*]").replaceIf(value -> {
+					return value instanceof JsonBoolean &&
+							((JsonBoolean) value).getValue();
+				}).with(1);
+			}
+		}).andReturnAsJsonElement();
+		
+		JsonArray expected = source.deepCopy();
+		expected.recalculateTreePaths();
+		expected.replaceElementAt(JsonPath.compile("$[0]"), 1);
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldTransformReplacingIfWithString() {
+		JsonArray source = new JsonArray(Arrays.asList(
+				new JsonBoolean(true), new JsonBoolean(false)));
+		
+		JsonArray actual = (JsonArray) Jetro.transform(source).applying(
+				new TransformationSpecification() {
+					
+			@Override
+			protected void specify() {
+				at("$[*]").replaceIf(value -> {
+					return value instanceof JsonBoolean &&
+							((JsonBoolean) value).getValue();
+				}).with("gotcha");
+			}
+		}).andReturnAsJsonElement();
+		
+		JsonArray expected = source.deepCopy();
+		expected.recalculateTreePaths();
+		expected.replaceElementAt(JsonPath.compile("$[0]"), "gotcha");
+		
+		assertEquals(actual, expected);
 	}
 	
 	private static String normalize(final String json) {
