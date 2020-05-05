@@ -19,47 +19,43 @@
  */
 package net.sf.jetro.object;
 
+import java.util.Objects;
+
 import net.sf.jetro.object.serializer.SerializationContext;
 import net.sf.jetro.object.visitor.ObjectVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
 /**
+ * Class with the fluent API method {@link #into(JsonVisitor)}. To use it call
+ * {@link ObjectMapper#merge(Object)} or {@link ObjectMapper#merge(Object, SerializationContext)}.
+ * 
  * @author matthias.rothe
  * @since 26.02.14.
- * @deprecated Use {@link ObjectMapper#toJson(Object)} and
- * {@link ObjectMapper#toJson(Object, SerializationContext)} directly.
  */
-@Deprecated
 public class ObjectMerger {
 	private SerializationContext context;
 	private Object toMerge;
 
-	public ObjectMerger(Object toMerge) {
+	ObjectMerger(final Object toMerge) {
 		this(toMerge, new SerializationContext());
 	}
 
-	/**
-	 * @deprecated Use {@link #ObjectMerger(Object,SerializationContext)} instead
-	 */
-	@Deprecated
-	public ObjectMerger(SerializationContext context, Object toMerge) {
-		this(toMerge, context);
-	}
-
-	public ObjectMerger(Object toMerge, SerializationContext context) {
-		this.context = context;
+	ObjectMerger(final Object toMerge, final SerializationContext context) {
+		Objects.requireNonNull(toMerge);
+		Objects.requireNonNull(context);
+		
 		this.toMerge = toMerge;
+		this.context = context;
 	}
 
 	/**
-	 * @deprecated Use {@link #mergeInto(JsonVisitor<?>)} instead
+	 * Merges an object into the given {@link JsonVisitor}.
+	 * 
+	 * @param visitor The visitor to merge into
 	 */
-	@Deprecated
-	public void into(JsonVisitor<?> visitor) {
-		mergeInto(visitor);
-	}
-
-	public void mergeInto(JsonVisitor<?> visitor) {
+	public void into(final JsonVisitor<?> visitor) {
+		Objects.requireNonNull(visitor);
+		
 		ObjectVisitingReader reader = new ObjectVisitingReader(toMerge, context);
 		reader.accept(visitor);
 	}

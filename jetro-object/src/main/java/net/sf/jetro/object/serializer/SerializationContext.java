@@ -60,13 +60,6 @@ public class SerializationContext extends RenderContext {
 		stringSerializers.put(TypeToken.of(String.class), object -> object.toString());
 	}
 
-	/**
-	 * @deprecated Use {@link #addTypeSerializer(TypeSerializer<?>)} instead
-	 */
-	public SerializationContext addSerializer(TypeSerializer<?> serializer) {
-		return addTypeSerializer(serializer);
-	}
-
 	public SerializationContext addTypeSerializer(TypeSerializer<?> serializer) {
 		if (serializer != null) {
 			// Add after primitive but before generic complex serializers
@@ -88,14 +81,6 @@ public class SerializationContext extends RenderContext {
 	public SerializationContext setThrowNoSerializerException(boolean throwNoSerializerException) {
 		this.throwNoSerializerException = throwNoSerializerException;
 		return this;
-	}
-
-	/**
-	 * @deprecated Use {@link #getTypeSerializer(Object)} instead
-	 */
-	@Deprecated
-	public TypeSerializer<Object> getSerializer(Object toSerialize) {
-		return getTypeSerializer(toSerialize);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

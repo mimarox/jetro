@@ -32,9 +32,14 @@ import net.sf.jetro.object.visitor.ObjectVisitingReader;
 import net.sf.jetro.stream.JsonReader;
 import net.sf.jetro.stream.visitor.JsonReturningVisitor;
 import net.sf.jetro.stream.visitor.StreamVisitingReader;
+import net.sf.jetro.visitor.JsonVisitor;
 import net.sf.jetro.visitor.VisitingReader;
 
 /**
+ * The entry point for Jetro JSON Binding. It contains methods converting Java objects
+ * to and from JSON {@link String}s. Additionally it allows reading JSON data directly from
+ * {@link InputStream}s.
+ * 
  * @author matthias.rothe
  * @since 26.02.14.
  */
@@ -59,29 +64,54 @@ public class ObjectMapper {
 	}
 
 	/**
-	 * @deprecated Use {@link #toJson(Object)} directly.
+	 * Entry method for merging an object into a {@link JsonVisitor}. Call
+	 * {@link #merge(Object)}.{@link ObjectMerger#into(JsonVisitor) into(JsonVisitor)}
+	 * to perform the merger.
+	 * <p>
+	 * See {@link SerializationContext} for detailed information about what kinds of
+	 * objects can be merged.
+	 * 
+	 * @param toMerge The object to merge
+	 * @return An instance of {@link ObjectMerger}
+	 * @see SerializationContext
 	 */
-	@Deprecated
-	public ObjectMerger merge(Object toMerge) {
+	public ObjectMerger merge(final Object toMerge) {
 		return new ObjectMerger(toMerge);
 	}
 	
-	public String toJson(Object object) {
+	/**
+	 * Entry method for merging an object into a {@link JsonVisitor}. Call
+	 * {@link #merge(Object, SerializationContext)}.{@link ObjectMerger#into(JsonVisitor)
+	 * into(JsonVisitor)} to perform the merger.
+	 * <p>
+	 * See {@link SerializationContext} for detailed information about what kinds of
+	 * objects can be merged and how the SerializationContext can be customized.
+	 * 
+	 * @param toMerge The object to merge
+	 * @param context The serialization context
+	 * @return An instance of {@link ObjectMerger}
+	 * @see SerializationContext
+	 */
+	public ObjectMerger merge(final Object toMerge, final SerializationContext context) {
+		return new ObjectMerger(toMerge, context);
+	}
+	
+	public String toJson(final Object object) {
 		return toJson(object, getSerializationContext());
 	}
 
-	public String toJson(Object object, SerializationContext context) {
+	public String toJson(final Object object, final SerializationContext context) {
 		JsonReturningVisitor receiver = new JsonReturningVisitor();
 		ObjectVisitingReader reader = new ObjectVisitingReader(object, context);
 		reader.accept(receiver);
 		return receiver.getVisitingResult();
 	}
 	
-	public <T> T fromJson(String json, Class<T> targetClass) {
+	public <T> T fromJson(final String json, final Class<T> targetClass) {
 		return fromJson(json, TypeToken.of(targetClass));
 	}
 	
-	public <T> T fromJson(String json, TypeToken<T> targetTypeToken) {
+	public <T> T fromJson(final String json, final TypeToken<T> targetTypeToken) {
 		try (StreamVisitingReader reader = new StreamVisitingReader(new JsonReader(new StringReader(json)))) {
 			return fromJson(reader, targetTypeToken, getDeserializationContext());
 		} catch (IOException e) {
@@ -89,11 +119,13 @@ public class ObjectMapper {
 		}
 	}
 	
-	public <T> T fromJson(String json, Class<T> targetClass, DeserializationContext context) {
+	public <T> T fromJson(final String json, final Class<T> targetClass,
+			final DeserializationContext context) {
 		return fromJson(json, TypeToken.of(targetClass), context);
 	}
 	
-	public <T> T fromJson(String json, TypeToken<T> targetTypeToken, DeserializationContext context) {
+	public <T> T fromJson(final String json, final TypeToken<T> targetTypeToken,
+			final DeserializationContext context) {
 		try (StreamVisitingReader reader = new StreamVisitingReader(new JsonReader(new StringReader(json)))) {
 			return fromJson(reader, targetTypeToken, context);
 		} catch (IOException e) {
@@ -101,11 +133,11 @@ public class ObjectMapper {
 		}
 	}
 
-	public <T> T fromJson(InputStream in, Class<T> targetClass) {
+	public <T> T fromJson(final InputStream in, final Class<T> targetClass) {
 		return fromJson(in, TypeToken.of(targetClass));
 	}
 	
-	public <T> T fromJson(InputStream in, TypeToken<T> targetTypeToken) {
+	public <T> T fromJson(final InputStream in, final TypeToken<T> targetTypeToken) {
 		try (StreamVisitingReader reader = new StreamVisitingReader(new JsonReader(
 				new InputStreamReader(in, "UTF-8")))) {
 			return fromJson(reader, targetTypeToken, getDeserializationContext());
@@ -114,11 +146,13 @@ public class ObjectMapper {
 		}
 	}
 
-	public <T> T fromJson(InputStream in, Class<T> targetClass, DeserializationContext context) {
+	public <T> T fromJson(final InputStream in, final Class<T> targetClass,
+			final DeserializationContext context) {
 		return fromJson(in, TypeToken.of(targetClass), context);
 	}
 	
-	public <T> T fromJson(InputStream in, TypeToken<T> targetTypeToken, DeserializationContext context) {
+	public <T> T fromJson(final InputStream in, final TypeToken<T> targetTypeToken,
+			final DeserializationContext context) {
 		try (StreamVisitingReader reader = new StreamVisitingReader(new JsonReader(
 				new InputStreamReader(in, "UTF-8")))) {
 			return fromJson(reader, targetTypeToken, context);
@@ -127,8 +161,8 @@ public class ObjectMapper {
 		}
 	}
 	
-	private <T> T fromJson(VisitingReader reader, TypeToken<T> targetTypeToken,
-			DeserializationContext context) {
+	private <T> T fromJson(final VisitingReader reader, final TypeToken<T> targetTypeToken,
+			final DeserializationContext context) {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		ObjectBuildingVisitor visitor = new ObjectBuildingVisitor(targetTypeToken,
 				context);

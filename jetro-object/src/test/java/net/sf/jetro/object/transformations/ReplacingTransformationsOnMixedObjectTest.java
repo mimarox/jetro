@@ -28,6 +28,7 @@ import net.sf.jetro.visitor.chained.ChainedJsonVisitor;
 import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.io.StringReader;
 
 /**
@@ -37,7 +38,8 @@ import java.io.StringReader;
 public class ReplacingTransformationsOnMixedObjectTest {
 
 	public static void main(String[] args) {
-		ReplacingTransformationsOnMixedObjectTest test = new ReplacingTransformationsOnMixedObjectTest();
+		ReplacingTransformationsOnMixedObjectTest test =
+				new ReplacingTransformationsOnMixedObjectTest();
 
 		for (int i = 0; i < 10; i++) {
 			test.runPerformanceTest();
@@ -83,21 +85,27 @@ public class ReplacingTransformationsOnMixedObjectTest {
 
 		JsonReturningVisitor writer = new JsonReturningVisitor();
 
-		ChainedJsonVisitor transformer = new UniformChainedJsonVisitor(writer) {
+		ChainedJsonVisitor<String> transformer = new UniformChainedJsonVisitor<String>(writer) {
 			@Override
 			protected String beforeVisitValue(String value) {
 				Favorite favorite = new Favorite();
 				favorite.setPage(value);
 				favorite.setTitle("Title for: " + value);
 
-				mapper.merge(favorite).mergeInto(getNextVisitor());
+				mapper.merge(favorite).into(getNextVisitor());
 
 				return null;
 			}
 		};
 
-		reader.accept(transformer);
-
-		return writer.getVisitingResult();
+		try {
+			reader.accept(transformer);
+			return writer.getVisitingResult();
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException e) {
+			}
+		}
 	}
 }
