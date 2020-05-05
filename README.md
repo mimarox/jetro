@@ -47,7 +47,7 @@ The release is done manually and locally. Publishing to Maven Central repository
 - To prepare the release, execute on develop branch: `mvn release:prepare -P release`
 - Performe the release with: `mvn release:perform -P release -DreleaseProfiles=release`
 - Log into Sonatype Nexus and go to the staging repository
-- Close and promote the staging repository
+- Close and release the staging repository
 
 ### Release Plugin Docs
 https://maven.apache.org/maven-release/maven-release-plugin/
