@@ -7,6 +7,7 @@ import java.io.Writer;
 
 import org.testng.annotations.Test;
 
+import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.object.deserializer.DeserializationContext;
 import net.sf.jetro.object.reflect.TypeToken;
 import net.sf.jetro.visitor.JsonVisitor;
@@ -122,5 +123,48 @@ public class TransformApplierTest {
 			groups = "negativeTests")
 	public void shouldThrowExceptionNullWriter() {
 		new TransformApplier<>(SOURCE, TRANSFORMER).writingTo((Writer) null);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "context must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionReturnAsInputStreamNullContext() {
+		new TransformApplier<>(SOURCE, TRANSFORMER)
+		.andReturnAsInputStream((RenderContext) null);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "charsetName must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionReturnAsInputStreamNullCharsetName()
+			throws UnsupportedEncodingException {
+		new TransformApplier<>(SOURCE, TRANSFORMER)
+		.andReturnAsInputStream((String) null);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "context must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionReturnAsInputStreamNullContextAndCharsetName()
+			throws UnsupportedEncodingException {
+		new TransformApplier<>(SOURCE, TRANSFORMER)
+		.andReturnAsInputStream((RenderContext) null, "UTF-8");
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "charsetName must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionReturnAsInputStreamContextAndNullCharsetName()
+			throws UnsupportedEncodingException {
+		new TransformApplier<>(SOURCE, TRANSFORMER)
+		.andReturnAsInputStream(new RenderContext(), null);
+	}
+	
+	@Test(expectedExceptions = NullPointerException.class,
+			expectedExceptionsMessageRegExp = "context must not be null",
+			groups = "negativeTests")
+	public void shouldThrowExceptionReturnAsReaderNullContext()
+			throws UnsupportedEncodingException {
+		new TransformApplier<>(SOURCE, TRANSFORMER).andReturnAsReader(null);
 	}
 }

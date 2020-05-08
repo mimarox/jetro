@@ -1,16 +1,22 @@
 package net.sf.jetro.transform;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
 
+import org.apache.commons.io.IOUtils;
 import org.testng.annotations.Test;
 
+import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.path.JsonPath;
-import net.sf.jetro.transform.Jetro;
 import net.sf.jetro.transform.beans.ExpectedObject;
 import net.sf.jetro.transform.beans.SourceObject;
 import net.sf.jetro.tree.JsonArray;
@@ -96,5 +102,91 @@ public class MidLevelJetroIntegrationTest {
 		expected.setA(Arrays.asList("b"));
 		
 		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldTransformApplyingNoneStringToString() {
+		String expected = "[1,2,3]";
+		
+		String actual = Jetro.transform(expected).applyingNone().andReturnAsJson();
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldTransformApplyingNoneStringToInputStream()
+			throws IOException {
+		String source = "[1,2,3]";
+		
+		InputStream actual =
+				Jetro.transform(source).applyingNone().andReturnAsInputStream();
+		
+		InputStream expected = new ByteArrayInputStream(source.getBytes("UTF-8"));
+		
+		assertTrue(IOUtils.contentEquals(actual, expected));
+	}
+	
+	@Test
+	public void shouldTransformApplyingNoneStringToInputStreamWithContext()
+			throws IOException {
+		String source = "[1,2,3]";
+		
+		InputStream actual = Jetro.transform(source).applyingNone()
+				.andReturnAsInputStream(new RenderContext());
+		
+		InputStream expected = new ByteArrayInputStream(source.getBytes("UTF-8"));
+		
+		assertTrue(IOUtils.contentEquals(actual, expected));
+	}
+	
+	@Test
+	public void shouldTransformApplyingNoneStringToInputStreamWithCharsetName()
+			throws IOException {
+		String source = "[1,2,3]";
+		
+		InputStream actual = Jetro.transform(source).applyingNone()
+				.andReturnAsInputStream("UTF-8");
+		
+		InputStream expected = new ByteArrayInputStream(source.getBytes("UTF-8"));
+		
+		assertTrue(IOUtils.contentEquals(actual, expected));
+	}
+	
+	@Test
+	public void shouldTransformApplyingNoneStringToInputStreamWithContextAndCharsetName()
+			throws IOException {
+		String source = "[1,2,3]";
+		
+		InputStream actual = Jetro.transform(source).applyingNone()
+				.andReturnAsInputStream(new RenderContext(), "UTF-8");
+		
+		InputStream expected = new ByteArrayInputStream(source.getBytes("UTF-8"));
+		
+		assertTrue(IOUtils.contentEquals(actual, expected));
+	}
+	
+	@Test
+	public void shouldTransformApplyingNoneStringToReader() throws IOException {
+		String source = "[1,2,3]";
+		
+		Reader actual =
+				Jetro.transform(source).applyingNone().andReturnAsReader();
+		
+		Reader expected = new StringReader(source);
+		
+		assertTrue(IOUtils.contentEquals(actual, expected));
+	}
+	
+	@Test
+	public void shouldTransformApplyingNoneStringToReaderWithContext()
+			throws IOException {
+		String source = "[1,2,3]";
+		
+		Reader actual =	Jetro.transform(source).applyingNone()
+				.andReturnAsReader(new RenderContext());
+		
+		Reader expected = new StringReader(source);
+		
+		assertTrue(IOUtils.contentEquals(actual, expected));
 	}
 }

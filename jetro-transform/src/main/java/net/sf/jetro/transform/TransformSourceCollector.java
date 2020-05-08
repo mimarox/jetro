@@ -15,9 +15,6 @@ import net.sf.jetro.visitor.chained.ChainedJsonVisitor;
  * @see Jetro
  */
 public class TransformSourceCollector {
-	private static final ChainedJsonVisitor<Void> NO_OP_TRANSFORMER =
-			new ChainedJsonVisitor<Void>() {};
-	
 	private final VisitingReader source;
 	
 	TransformSourceCollector(final VisitingReader source) {
@@ -70,6 +67,6 @@ public class TransformSourceCollector {
 	 * @return an instance of {@link TransformApplier}
 	 */
 	public TransformApplier<?> applyingNone() {
-		return applying(NO_OP_TRANSFORMER);
+		return applying(new ChainedJsonVisitor<Void>() {});
 	}
 }
