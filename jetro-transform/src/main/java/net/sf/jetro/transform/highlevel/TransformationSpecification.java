@@ -75,8 +75,9 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 * <p>
 	 * The path must be a valid {@link JsonPath} and may contain wildcards.
 	 * For specifying the end of a JSON array use a wildcard like so: $[*].
-	 * This denotes the end of the root JSON array. Such a path may only be used to
-	 * add one or several values to the end of that array.
+	 * To denote the end of a JSON array use the end-of-array specifier: [-].
+	 * Such a path may only be used to add one or several values to the end of
+	 * that array.
 	 * <p>
 	 * Please make sure that the given path fits the intended operation to be
 	 * performed at that path. Adding a property for example will only be possible
@@ -85,7 +86,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 * <p>
 	 * Any method adding to a JSON array will add the new value either after the
 	 * index given in the path or at the end of the array, if the given index is
-	 * the wildcard.
+	 * the end-of-array specifier.
 	 * 
 	 * @param path The JSON path at which to perform a transformation.
 	 * @return an instance of PathAwareSpecification
@@ -99,9 +100,9 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 * Entry point to generic path related operations.
 	 * <p>
 	 * The path may contain wildcards. For specifying the end of a JSON array
-	 * use a wildcard like so: $[*]. This denotes the end of the root JSON array.
-	 * Such a path may only be used to add one or several values to the end of
-	 * that array.
+	 * use the end-of-array specifier like so: $[-]. This denotes the end of the
+	 * root JSON array. Such a path may only be used to add one or several values
+	 * to the end of that array.
 	 * <p>
 	 * Please make sure that the given path fits the intended operation to be
 	 * performed at that path. Adding a property for example will only be possible
@@ -110,7 +111,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 * <p>
 	 * Any method adding to a JSON array will add the new value either after the
 	 * index given in the path or at the end of the array, if the given index is
-	 * the wildcard.
+	 * the end-of-array specifier.
 	 * 
 	 * @param path The JSON path at which to perform a transformation.
 	 * @return an instance of PathAwareSpecification

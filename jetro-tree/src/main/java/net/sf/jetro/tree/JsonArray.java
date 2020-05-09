@@ -180,11 +180,16 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		
 		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
 			if (parentElement.get() instanceof JsonArray &&
-					path.hasArrayIndexAt(path.getDepth() - 1)) {
+					(path.hasArrayIndexAt(path.getDepth() - 1) ||
+							path.hasEndOfArrayAt(path.getDepth() - 1))) {
 				JsonArray parent = prepareJsonArrayForChildManipulation(parentElement, path);
 				
 				try {
-					parent.add(path.getArrayIndexAt(path.getDepth() - 1), element);
+					if (path.hasEndOfArrayAt(path.getDepth() - 1)) {
+						parent.add(element);
+					} else {
+						parent.add(path.getArrayIndexAt(path.getDepth() - 1), element);						
+					}
 					success = true;
 				} catch (IndexOutOfBoundsException e) {
 					success = false;

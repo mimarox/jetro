@@ -23,8 +23,10 @@ import java.util.Arrays;
 
 public class JsonPathCompiler {
 	private enum JsonPathToken {
-		START_PATH("$"), START_NAME("."), NAME(null), START_INDEX("["), INDEX(null), END_INDEX("]"), CHARACTER(null), WILDCARD(
-				JsonPath.WILDCARD), MATCHES_ALL_FURTHER(":"), END_PATH(""), OPTIONAL(JsonPath.OPTIONAL);
+		START_PATH("$"), START_NAME("."), NAME(null), START_INDEX("["), INDEX(null),
+		END_INDEX("]"), CHARACTER(null), WILDCARD(JsonPath.WILDCARD),
+		MATCHES_ALL_FURTHER(":"), END_PATH(""), OPTIONAL(JsonPath.OPTIONAL),
+		END_OF_ARRAY(JsonPath.END_OF_ARRAY);
 
 		private String sequence;
 
@@ -38,7 +40,8 @@ public class JsonPathCompiler {
 
 		static JsonPathToken forChar(final char character) {
 			for (JsonPathToken token : values()) {
-				if (token.sequence != null && !"".equals(token.sequence) && token.sequence.charAt(0) == character) {
+				if (token.sequence != null && !"".equals(token.sequence)
+						&& token.sequence.charAt(0) == character) {
 					return token;
 				}
 			}
@@ -64,8 +67,9 @@ public class JsonPathCompiler {
 		}
 	};
 
-	private static final JsonPathToken[] START_TOKENS = new JsonPathToken[] { JsonPathToken.START_NAME,
-			JsonPathToken.START_INDEX, JsonPathToken.MATCHES_ALL_FURTHER };
+	private static final JsonPathToken[] START_TOKENS = new JsonPathToken[] { 
+			JsonPathToken.START_NAME, JsonPathToken.START_INDEX,
+			JsonPathToken.MATCHES_ALL_FURTHER };
 
 	public JsonPath compile(final String jsonPath) {
 		if (jsonPath == null || "".equals(jsonPath)) {
@@ -113,6 +117,8 @@ public class JsonPathCompiler {
 			case START_INDEX:
 				consume(context, expect(context, JsonPathToken.INDEX));
 				break;
+			default:
+				break;
 			}
 		}
 
@@ -135,11 +141,16 @@ public class JsonPathCompiler {
 			}
 		}
 
-		JsonPathToken currentToken = JsonPathToken.forChar(context.jsonPath[context.currPos]);
+		JsonPathToken currentToken = JsonPathToken.forChar(
+				context.jsonPath[context.currPos]);
 		boolean found = false;
 
 		for (JsonPathToken expectedToken : expectedTokens) {
-			if (((expectedToken == JsonPathToken.NAME || expectedToken == JsonPathToken.INDEX) && (currentToken == JsonPathToken.CHARACTER || currentToken == JsonPathToken.WILDCARD))
+			if (((expectedToken == JsonPathToken.NAME || 
+					expectedToken == JsonPathToken.INDEX) &&
+					(currentToken == JsonPathToken.CHARACTER ||
+					currentToken == JsonPathToken.WILDCARD ||
+					currentToken == JsonPathToken.END_OF_ARRAY))
 					|| currentToken == expectedToken) {
 				context.currentToken = currentToken;
 				currentToken = expectedToken;
@@ -199,6 +210,7 @@ public class JsonPathCompiler {
 				JsonPathToken currentToken = JsonPathToken.forChar(context.jsonPath[context.currPos]);
 
 				switch (currentToken) {
+				case END_OF_ARRAY:
 				case CHARACTER:
 					break;
 				case OPTIONAL:
@@ -236,6 +248,7 @@ public class JsonPathCompiler {
 	private void consumeIndex(final CompilerContext context) {
 		boolean wildcard = false;
 		boolean optional = false;
+		boolean nextToLast = false;
 		Integer index = -1;
 
 		// WILDCARD
@@ -243,6 +256,11 @@ public class JsonPathCompiler {
 			context.currPos += context.currentToken.getSequence().length();
 			wildcard = true;
 
+		// NEXT TO LAST
+		} else if (context.currentToken == JsonPathToken.END_OF_ARRAY) {
+			context.currPos += context.currentToken.getSequence().length();
+			nextToLast = true;
+			
 		// INDEX
 		} else {
 			context.offset = context.currPos;
@@ -281,19 +299,30 @@ public class JsonPathCompiler {
 		// END INDEX
 		consume(context, expect(context, JsonPathToken.END_INDEX));
 
-		// OPTIONAL
-		JsonPathToken currentToken = expect(context, JsonPathToken.OPTIONAL);
+		if (nextToLast) {
+			context.builder.append(new ArrayIndexPathElement());
 
-		if (currentToken != null) {
-			consume(context, currentToken);
-			optional = true;
-		}
-
-		// Create PathElement
-		if (wildcard) {
-			context.builder.append(new ArrayIndexPathElement(true, optional));
+			if (context.currPos < context.jsonPath.length) {
+				JsonPathToken actualToken = JsonPathToken.forChar(
+						context.jsonPath[context.currPos]);
+				throwExpectedToken(context, JsonPathToken.END_PATH, actualToken,
+						context.currPos + 1);
+			}
 		} else {
-			context.builder.append(new ArrayIndexPathElement(index, optional));
+			// OPTIONAL
+			JsonPathToken currentToken = expect(context, JsonPathToken.OPTIONAL);
+
+			if (currentToken != null) {
+				consume(context, currentToken);
+				optional = true;
+			}
+
+			// Create PathElement
+			if (wildcard) {
+				context.builder.append(new ArrayIndexPathElement(true, optional));
+			} else {
+				context.builder.append(new ArrayIndexPathElement(index, optional));
+			}			
 		}
 	}
 

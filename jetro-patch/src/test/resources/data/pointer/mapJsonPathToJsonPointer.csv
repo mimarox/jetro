@@ -5,4 +5,6 @@ $[1];/1
 $.foo[1];/foo/1
 $[1].foo;/1/foo
 $[0][1];/0/1
-$.foo.bar;/foo/bar
+$.foo.bar;/foo/bar$[-];/-
+$.foo[-];/foo/-
+$[1][-];/1/-

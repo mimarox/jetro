@@ -68,7 +68,7 @@ public class AddPatchOperationTest {
 	}
 	
 	@Test
-	public void shouldApplyPatchOnArrayLastElement() throws JsonPatchException {
+	public void shouldApplyPatchOnEndOfArray() throws JsonPatchException {
 		JsonObject patchDefinition = new JsonObject();
 		patchDefinition.add(new JsonProperty("path", "/-"));
 		patchDefinition.add(new JsonProperty("value", "bar"));
@@ -150,7 +150,8 @@ public class AddPatchOperationTest {
 	}
 	
 	@Test(expectedExceptions = JsonPatchException.class,
-			expectedExceptionsMessageRegExp = "Expected JsonArray at \"\"")
+			expectedExceptionsMessageRegExp = "Couldn't add JsonString \\[value=bar, paths=\\["
+					+ "\\$]] to JsonObject \\[properties=\\[], paths=\\[\\$]] at path \"/-\"")
 	public void shouldNotApplyPatchNextToLastArrayPathOnObject() throws JsonPatchException {
 		JsonObject patchDefinition = new JsonObject();
 		patchDefinition.add(new JsonProperty("path", "/-"));

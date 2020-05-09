@@ -2,7 +2,7 @@
  * #%L
  * Jetro JsonPath
  * %%
- * Copyright (C) 2013 - 2016 The original author or authors.
+ * Copyright (C) 2013 - 2020 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,18 @@
  */
 package net.sf.jetro.path;
 
+import java.util.Objects;
+
 public class ArrayIndexPathElement extends JsonPathElement {
 	private static final long serialVersionUID = -4814966817683544359L;
 	private int index;
-
+	private final boolean endOfArray;
+	
+	public ArrayIndexPathElement() {
+		super(false, false);
+		this.endOfArray = true;
+	}
+	
 	public ArrayIndexPathElement(final int index) {
 		this(index, false);
 	}
@@ -35,22 +43,30 @@ public class ArrayIndexPathElement extends JsonPathElement {
 		}
 
 		this.index = index;
+		this.endOfArray = false;
 	}
 
 	ArrayIndexPathElement(final boolean wildcard, final boolean optional) {
 		super(wildcard, optional);
+		this.endOfArray = false;
 	}
 
 	public int getIndex() {
 		return index;
 	}
 
+	public boolean isEndOfArray() {
+		return endOfArray;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder("[");
 
 		if (isWildcard()) {
 			builder.append(JsonPath.WILDCARD);
+		} else if (isEndOfArray()) {
+			builder.append(JsonPath.END_OF_ARRAY);
 		} else {
 			builder.append(index);
 		}
@@ -68,7 +84,7 @@ public class ArrayIndexPathElement extends JsonPathElement {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + index;
+		result = prime * result + Objects.hash(index, endOfArray);
 		return result;
 	}
 
@@ -86,7 +102,7 @@ public class ArrayIndexPathElement extends JsonPathElement {
 		if (getClass() != other.getClass())
 			return false;
 		ArrayIndexPathElement that = (ArrayIndexPathElement) other;
-		if (index != that.index)
+		if (index != that.index || endOfArray != that.endOfArray)
 			return false;
 		return super.equalsIgnoreOptional(other);
 	}

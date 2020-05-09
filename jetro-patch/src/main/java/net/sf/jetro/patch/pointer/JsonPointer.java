@@ -30,6 +30,8 @@ import net.sf.jetro.path.PropertyNamePathElement;
 public class JsonPointer implements Cloneable, Serializable {
 	private static final long serialVersionUID = 2433043640914648968L;
 
+	static final String END_OF_ARRAY = "-";
+
 	private JsonPointerElement<?>[] pointerElements; 
 	private int size;
 	
@@ -63,13 +65,12 @@ public class JsonPointer implements Cloneable, Serializable {
 		
 		for (int i = 0; i < size; i++) {
 			if (pointerElements[i] instanceof ArrayIndexPointerElement) {
-				if (((ArrayIndexPointerElement) pointerElements[i]).isNextToLast()) {
-					throw new JsonPointerException("JsonPointers with nextToLast elements "
-							+ "cannot be converted to JsonPaths");
+				if (((ArrayIndexPointerElement) pointerElements[i]).isEndOfArray()) {
+					path = path.append(new ArrayIndexPathElement());
+				} else {
+					path = path.append(new ArrayIndexPathElement(
+							((ArrayIndexPointerElement) pointerElements[i]).getValue()));
 				}
-				
-				path = path.append(new ArrayIndexPathElement(
-						((ArrayIndexPointerElement) pointerElements[i]).getValue()));
 			} else if (pointerElements[i] instanceof PropertyNamePointerElement) {
 				path = path.append(new PropertyNamePathElement(
 						((PropertyNamePointerElement) pointerElements[i]).getValue()));
@@ -114,19 +115,19 @@ public class JsonPointer implements Cloneable, Serializable {
 	}
 
 	public boolean hasArrayIndexAt(final int depth) {
-		return hasArrayIndexElementAt(depth) && !isNextToLastAt(depth);
+		return hasArrayIndexElementAt(depth) && !isEndOfArrayAt(depth);
 	}
 	
-	public boolean hasNextToLastArrayIndexAt(final int depth) {
-		return hasArrayIndexElementAt(depth) && isNextToLastAt(depth);
+	public boolean hasEndOfArrayArrayIndexAt(final int depth) {
+		return hasArrayIndexElementAt(depth) && isEndOfArrayAt(depth);
 	}
 	
 	public boolean hasArrayIndexElementAt(final int depth) {
 		return pointerElements[depth - 1] instanceof ArrayIndexPointerElement;
 	}
 	
-	private boolean isNextToLastAt(final int depth) {
-		return ((ArrayIndexPointerElement) pointerElements[depth - 1]).isNextToLast();
+	private boolean isEndOfArrayAt(final int depth) {
+		return ((ArrayIndexPointerElement) pointerElements[depth - 1]).isEndOfArray();
 	}
 	
 	public int getArrayIndexAt(final int depth) {
@@ -211,6 +212,8 @@ public class JsonPointer implements Cloneable, Serializable {
 			if (path.hasWildcardAt(i)) {
 				throw new JsonPointerException("JsonPaths with wildcard elements cannot be "
 						+ "converted into JsonPointers");
+			} else if (path.hasEndOfArrayAt(i)) {
+				pointerElements[i] = new ArrayIndexPointerElement();
 			} else if (path.hasArrayIndexAt(i)) {
 				pointerElements[i] = new ArrayIndexPointerElement(path.getArrayIndexAt(i));
 			} else if (path.hasPropertyNameAt(i)) {
@@ -244,7 +247,7 @@ public class JsonPointer implements Cloneable, Serializable {
 		JsonPointerElement<?>[] pointerElements = new JsonPointerElement<?>[parts.length - 1];
 		
 		for (int i = 1; i < parts.length; i++) {
-			if (parts[i].equals("-")) {
+			if (parts[i].equals(END_OF_ARRAY)) {
 				pointerElements[i - 1] = new ArrayIndexPointerElement();
 			} else if (isArrayIndex(parts[i])) {
 				pointerElements[i - 1] = new ArrayIndexPointerElement(

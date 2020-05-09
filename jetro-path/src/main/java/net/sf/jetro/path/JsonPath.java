@@ -30,6 +30,7 @@ public class JsonPath implements Cloneable, Serializable {
 
 	static final String WILDCARD = "*";
 	static final String OPTIONAL = "?";
+	static final String END_OF_ARRAY = "-";
 
 	private static JsonPathCompiler compiler;
 
@@ -220,7 +221,8 @@ public class JsonPath implements Cloneable, Serializable {
 	}
 
 	public boolean hasArrayIndexAt(final int depth) {
-		return pathElements[depth] instanceof ArrayIndexPathElement;
+		return pathElements[depth] instanceof ArrayIndexPathElement &&
+				!((ArrayIndexPathElement) pathElements[depth]).isEndOfArray();
 	}
 
 	public int getArrayIndexAt(final int depth) {
@@ -238,6 +240,14 @@ public class JsonPath implements Cloneable, Serializable {
 
 	public boolean hasOptionalAt(final int depth) {
 		return pathElements[depth].isOptional();
+	}
+
+	public boolean hasEndOfArrayAt(final int depth) {
+		if (pathElements[depth] instanceof ArrayIndexPathElement) {
+			return ((ArrayIndexPathElement) pathElements[depth]).isEndOfArray();			
+		} else {
+			return false;
+		}
 	}
 	
 	public boolean containsOptionals() {

@@ -2,7 +2,7 @@
  * #%L
  * Jetro Patch
  * %%
- * Copyright (C) 2013 - 2019 The original author or authors.
+ * Copyright (C) 2013 - 2020 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,28 +22,28 @@ package net.sf.jetro.patch.pointer;
 public class ArrayIndexPointerElement extends JsonPointerElement<Integer> {
 	private static final long serialVersionUID = 7455005293018033992L;
 	
-	private final boolean nextToLast;
+	private final boolean endOfArray;
 	
 	public ArrayIndexPointerElement() {
 		super(null);
-		this.nextToLast = true;
+		this.endOfArray = true;
 	}
 	
 	public ArrayIndexPointerElement(final Integer value) {
 		super(value);
-		nextToLast = false;
+		endOfArray = false;
 	}
 	
-	public boolean isNextToLast() {
-		return nextToLast;
+	public boolean isEndOfArray() {
+		return endOfArray;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder("/");
 		
-		if (nextToLast) {
-			builder.append("-");
+		if (endOfArray) {
+			builder.append(JsonPointer.END_OF_ARRAY);
 		} else {
 			builder.append(getValue());
 		}

@@ -2,7 +2,7 @@
  * #%L
  * Jetro Patch
  * %%
- * Copyright (C) 2013 - 2019 The original author or authors.
+ * Copyright (C) 2013 - 2020 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import net.sf.jetro.patch.pointer.JsonPointer;
-import net.sf.jetro.path.ArrayIndexPathElement;
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonCollection;
@@ -46,12 +45,8 @@ public class AddPatchOperation extends ValueBasedPatchOperation {
 		final JsonCollection target = (JsonCollection) source.deepCopy();
 		target.recalculateTreePaths();
 		
-		if (path.hasNextToLastArrayIndexAt(path.getDepth())) {
-			addNextToLastOnArray(target);
-		} else {
-			addOrReplace(target);
-		}
-		
+		addOrReplace(target);
+	
 		return handleTarget(target);
 	}
 
@@ -63,25 +58,7 @@ public class AddPatchOperation extends ValueBasedPatchOperation {
 					+ "a JsonArray or a JsonObject"));
 		}
 	}
-
-	private void addNextToLastOnArray(final JsonCollection target) throws JsonPatchException {
-		final JsonPath parentPath = path.removeLastElement().toJsonPath();
-		final Optional<JsonType> optional = target.getElementAt(parentPath);
-		
-		if (optional.isPresent() && optional.get() instanceof JsonArray) {
-			final JsonPath targetPath = parentPath.append(new ArrayIndexPathElement(
-					((JsonArray) optional.get()).size()));
-			
-			if (!target.addElementAt(targetPath, value)) {
-				throw new JsonPatchException("Couldn't add " + value + " to " + target + " at "
-						+ "path \"" + JsonPointer.fromJsonPath(targetPath) + "\"");
-			}
-		} else {
-			throw new JsonPatchException("Expected JsonArray at \"" +
-					JsonPointer.fromJsonPath(parentPath) + "\"");
-		}
-	}
-
+	
 	private void addOrReplace(final JsonCollection target) throws JsonPatchException {
 		final JsonPath targetPath = path.toJsonPath();
 		final JsonPath parentPath = targetPath.removeLastElement();

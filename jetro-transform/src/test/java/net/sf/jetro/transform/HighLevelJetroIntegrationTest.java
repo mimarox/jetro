@@ -49,10 +49,10 @@ public class HighLevelJetroIntegrationTest {
 			protected void specify() {
 				at("$").addJsonProperty("a", new String[] { "b" });
 				at("$.a[0]").addJsonValue("c");
-				at("$.a[*]").addJsonValue(2);
+				at("$.a[-]").addJsonValue(2);
 				at("$.a[1]").addJsonValue(1);
 				at("$.a[1]").addAllJsonValues("d", "e", "f", "g");
-				at("$.a[*]").addAllJsonValues(3, 4, 5, 6);
+				at("$.a[-]").addAllJsonValues(3, 4, 5, 6);
 			}
 		}).andReturnAsJsonElement();
 
@@ -93,8 +93,8 @@ public class HighLevelJetroIntegrationTest {
 				remove("$.secondary_users");
 
 				at("$").addJsonProperty("users", new JsonArray());
-				at("$.users[*]").addFromVariable("primaryUser");
-				at("$.users[*]").addAllFromVariable("secondaryUsers");
+				at("$.users[-]").addFromVariable("primaryUser");
+				at("$.users[-]").addAllFromVariable("secondaryUsers");
 
 				capture("$.users[0].role").andSaveAs("role");
 				at("$.users[0]").addJsonPropertyFromVariable("secondRole", "role");
@@ -193,7 +193,7 @@ public class HighLevelJetroIntegrationTest {
 			
 					@Override
 					protected void specify() {
-						at("$[*]").addJsonValue(true);
+						at("$[-]").addJsonValue(true);
 					}
 		}).andReturnAsJson();
 		
@@ -207,7 +207,7 @@ public class HighLevelJetroIntegrationTest {
 			
 					@Override
 					protected void specify() {
-						at("$[*]").addJsonValue(Long.MAX_VALUE);
+						at("$[-]").addJsonValue(Long.MAX_VALUE);
 					}
 		}).andReturnAsJson();
 		
@@ -221,7 +221,7 @@ public class HighLevelJetroIntegrationTest {
 			
 					@Override
 					protected void specify() {
-						at("$[*]").addJsonValue("value");
+						at("$[-]").addJsonValue("value");
 					}
 		}).andReturnAsJson();
 		
@@ -235,7 +235,7 @@ public class HighLevelJetroIntegrationTest {
 			
 					@Override
 					protected void specify() {
-						at("$[*]").addJsonValue(Arrays.asList("value", 1, false));
+						at("$[-]").addJsonValue(Arrays.asList("value", 1, false));
 					}
 		}).andReturnAsJson();
 		
@@ -265,7 +265,7 @@ public class HighLevelJetroIntegrationTest {
 			
 					@Override
 					protected void specify() {
-						at("$[*]").addJsonValue(dateTime, context);
+						at("$[-]").addJsonValue(dateTime, context);
 					}
 		}).andReturnAsJson();
 		
@@ -279,7 +279,7 @@ public class HighLevelJetroIntegrationTest {
 					
 					@Override
 					protected void specify() {
-						at("$[*]").addAllJsonTypes(new JsonString("value"),
+						at("$[-]").addAllJsonTypes(new JsonString("value"),
 								new JsonNumber(1), new JsonBoolean(false));
 					}
 				}).andReturnAsJson();
@@ -294,7 +294,7 @@ public class HighLevelJetroIntegrationTest {
 					
 					@Override
 					protected void specify() {
-						at("$[*]").addAllJsonTypes(new JsonArray(Arrays.asList(
+						at("$[-]").addAllJsonTypes(new JsonArray(Arrays.asList(
 								new JsonString("value"), new JsonNumber(1),
 								new JsonBoolean(false))));
 					}
@@ -560,11 +560,11 @@ public class HighLevelJetroIntegrationTest {
 					protected void specify() {
 						setRenderNullValues(true);
 						
-						at("$[*]").addJsonValue((Boolean) null);
-						at("$[*]").addJsonValue((Number) null);
-						at("$[*]").addJsonValue((String) null);
-						at("$[*]").addJsonValue((JsonType) null);
-						at("$[*]").addJsonValue((Object) null);
+						at("$[-]").addJsonValue((Boolean) null);
+						at("$[-]").addJsonValue((Number) null);
+						at("$[-]").addJsonValue((String) null);
+						at("$[-]").addJsonValue((JsonType) null);
+						at("$[-]").addJsonValue((Object) null);
 					}
 				}).andReturnAsJsonElement();
 		
@@ -603,8 +603,8 @@ public class HighLevelJetroIntegrationTest {
 					protected void specify() {
 						setRenderNullValues(true);
 						
-						at("$[*]").addAllJsonValues((Object) null, null, null);
-						at("$[*]").addAllJsonTypes((JsonType) null, null);
+						at("$[-]").addAllJsonValues((Object) null, null, null);
+						at("$[-]").addAllJsonTypes((JsonType) null, null);
 					}
 				}).andReturnAsJsonElement();
 		
@@ -686,7 +686,7 @@ public class HighLevelJetroIntegrationTest {
 					@Override
 					protected void specify() {
 						setRenderNullValues(true);
-						at("$[*]").addAllJsonTypes(null, null);
+						at("$[-]").addAllJsonTypes(null, null);
 					}
 				}).andReturnAsJsonElement();
 		
@@ -719,7 +719,7 @@ public class HighLevelJetroIntegrationTest {
 					@Override
 					protected void specify() {
 						setRenderNullValues(true);
-						at("$[*]").addAllJsonValues((Object) null, null, null);
+						at("$[-]").addAllJsonValues((Object) null, null, null);
 					}
 				}).andReturnAsJsonElement();
 		
@@ -911,8 +911,8 @@ public class HighLevelJetroIntegrationTest {
 				});
 
 				at("$").addJsonProperty("users", new JsonArray());
-				at("$.users[*]").addFromVariable("primaryUser");
-				at("$.users[*]").addAllFromVariable("secondaryUsers");
+				at("$.users[-]").addFromVariable("primaryUser");
+				at("$.users[-]").addAllFromVariable("secondaryUsers");
 
 				capture("$.users[0].role").andSaveAs("role");
 				at("$.users[0]").addJsonPropertyFromVariable("secondRole", "role");
@@ -1049,6 +1049,24 @@ public class HighLevelJetroIntegrationTest {
 		JsonArray expected = source.deepCopy();
 		expected.recalculateTreePaths();
 		expected.replaceElementAt(JsonPath.compile("$[0]"), "gotcha");
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldTransformAddingToEachArrayIndex() {
+		String source = "[1,2,3]";
+		
+		String actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+			
+			@Override
+			protected void specify() {
+				at("$[*]").addJsonValue("a");
+			}
+		}).andReturnAsJson();
+		
+		String expected = "[1,\"a\",2,\"a\",3,\"a\"]";
 		
 		assertEquals(actual, expected);
 	}

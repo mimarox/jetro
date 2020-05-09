@@ -546,20 +546,19 @@ public class PathAwareSpecification {
 	private <T> void addJsonValues(final Function<T, VisitingReader> readerProvider,
 			final Supplier<Iterable<T>> valuesSupplier) {
 		specification.addChainedJsonVisitorSupplier(() -> {
-			if (endsWithArrayWildcard(path)) {
-				return getWildcardJsonValueAdder(readerProvider, valuesSupplier);
+			if (endsWithEndOfArray(path)) {
+				return getEndOfArrayJsonValueAdder(readerProvider, valuesSupplier);
 			} else {
 				return getIndexedJsonValueAdder(readerProvider, valuesSupplier, false);
 			}
 		});
 	}
 
-	private boolean endsWithArrayWildcard(final JsonPath path) {
-		return !path.isRootPath() && path.hasArrayIndexAt(path.getDepth() - 1) &&
-				path.hasWildcardAt(path.getDepth() - 1);
+	private boolean endsWithEndOfArray(final JsonPath path) {
+		return !path.isRootPath() && path.hasEndOfArrayAt(path.getDepth() - 1);
 	}
 	
-	private <T> ChainedJsonVisitor<Void> getWildcardJsonValueAdder(
+	private <T> ChainedJsonVisitor<Void> getEndOfArrayJsonValueAdder(
 			final Function<T, VisitingReader> readerProvider,
 			final Supplier<Iterable<T>> valuesSupplier) {
 		JsonPath actualPath = path.removeLastElement();
