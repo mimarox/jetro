@@ -25,6 +25,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * The JsonPath is a way to make each value of a JSON document addressable and
+ * accessible. Each value of a JSON document is addressable and accessible by a
+ * concrete JsonPath containing neither wildcards, optionals nor an end-of-array
+ * specifier. All these might however be part of JsonPath patterns. The syntax and
+ * examples of both concrete paths and path patterns are given in the JavaDoc for
+ * the method {@link #compile(String)}.
+ * <p>
+ * JsonPaths are immutable, each seemingly mutating method first clones this object
+ * and performs the mutation on the clone returning it afterwards.
+ * 
+ * @author Matthias Rothe
+ * @see #compile(String)
+ */
 public class JsonPath implements Cloneable, Serializable {
 	private static final long serialVersionUID = -7011229423184378717L;
 
@@ -39,6 +53,9 @@ public class JsonPath implements Cloneable, Serializable {
 	private int size;
 	private String string;
 
+	/**
+	 * Create a new root JsonPath.
+	 */
 	public JsonPath() {
 		this(new JsonPathElement[] {}, false);
 	}
@@ -53,6 +70,11 @@ public class JsonPath implements Cloneable, Serializable {
 		this.size = pathElements.length;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#clone()
+	 */
+	@Override
 	protected JsonPath clone() {
 		try {
 			JsonPath clone = (JsonPath) super.clone();
@@ -66,6 +88,13 @@ public class JsonPath implements Cloneable, Serializable {
 		}
 	}
 
+	/**
+	 * Append a {@link JsonPathElement} to a JsonPath cloned from this one
+	 * and return it.
+	 * 
+	 * @param newElement the element to append
+	 * @return the cloned JsonPath with the new element appended
+	 */
 	public JsonPath append(final JsonPathElement newElement) {
 		return clone().appendInternal(newElement);
 	}
@@ -75,6 +104,13 @@ public class JsonPath implements Cloneable, Serializable {
 		return this;
 	}
 
+	/**
+	 * Replace the last element of a JsonPath cloned from this one with the
+	 * given {@link JsonPathElement} and return the cloned JsonPath.
+	 * 
+	 * @param newElement the element to replace with
+	 * @return the cloned JsonPath with the replaced last element
+	 */
 	public JsonPath replaceLastElementWith(final JsonPathElement newElement) {
 		return clone().replaceWithInternal(newElement);
 	}
@@ -96,6 +132,12 @@ public class JsonPath implements Cloneable, Serializable {
 		}
 	}
 
+	/**
+	 * Remove the last element of a clone of this JsonPath and return that clone.
+	 * 
+	 * @return the clone of this JsonPath after having the last element removed
+	 * @throws IllegalStateException if this method is called on a root JsonPath
+	 */
 	public JsonPath removeLastElement() {
 		if (isRootPath()) {
 			throw new IllegalStateException("Cannot remove last element from root path.");
@@ -109,10 +151,23 @@ public class JsonPath implements Cloneable, Serializable {
 		return this;
 	}
 	
+	/**
+	 * Returns whether this JsonPath is a root path.
+	 * 
+	 * @return <code>true</code> if and only if this JsonPath is a root path,
+	 * <code>false</code> otherwise.
+	 */
 	public boolean isRootPath() {
 		return size == 0;
 	}
 
+	/**
+	 * Tells whether or not this JsonPath matches the given pattern.
+	 * 
+	 * @param jsonPathPattern the pattern to match
+	 * @return <code>true</code> if and only if this JsonPath matches the given
+	 * pattern, <code>false</code> otherwise.
+	 */
 	public boolean matches(final JsonPath jsonPathPattern) {
 		if (size == 0 && jsonPathPattern.size == 0) {
 			return true;
@@ -122,30 +177,14 @@ public class JsonPath implements Cloneable, Serializable {
 
 		JsonPath applicablePattern = jsonPathPattern.removeSkippableOptionals(this);
 
-		if (applicablePattern.pathElements[applicablePattern.size - 1] instanceof MatchesAllFurtherPathElement) {
-			if (size < applicablePattern.size - 1) {
-				return false;
-			}
-		} else if (size != applicablePattern.size) {
+		if (sizeMatches(applicablePattern)) {
+			return elementsMatch(applicablePattern);			
+		} else {
 			return false;
 		}
-
-		for (int i = 0; i < applicablePattern.size; i++) {
-			if (applicablePattern.pathElements[i] instanceof MatchesAllFurtherPathElement) {
-				return true;
-			} else if (pathElements[i].getClass() != applicablePattern.pathElements[i].getClass()) {
-				return false;
-			} else if (applicablePattern.pathElements[i].isWildcard()) {
-				continue;
-			} else if (!pathElements[i].equalsIgnoreOptional(applicablePattern.pathElements[i])) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
-	private JsonPath removeSkippableOptionals(JsonPath jsonPath) {
+	private JsonPath removeSkippableOptionals(final JsonPath jsonPath) {
 		if (containsOptionals) {
 			List<JsonPathElement> elements = new ArrayList<JsonPathElement>();
 
@@ -161,7 +200,8 @@ public class JsonPath implements Cloneable, Serializable {
 		}
 	}
 
-	private boolean isSkippableOptional(JsonPathElement candidate, JsonPathElement comparative) {
+	private boolean isSkippableOptional(final JsonPathElement candidate,
+			final JsonPathElement comparative) {
 		if (candidate.isOptional()) {
 			if (comparative == null) {
 				return true;
@@ -173,6 +213,45 @@ public class JsonPath implements Cloneable, Serializable {
 		}
 	}
 
+	private boolean sizeMatches(final JsonPath applicablePattern) {
+		if (applicablePattern.pathElements[applicablePattern.size - 1] instanceof MatchesAllFurtherPathElement) {
+			if (size < applicablePattern.size - 1) {
+				return false;
+			}
+		} else if (size != applicablePattern.size) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	private boolean elementsMatch(final JsonPath applicablePattern) {
+		for (int i = 0; i < applicablePattern.size; i++) {
+			if (applicablePattern.pathElements[i] instanceof MatchesAllFurtherPathElement) {
+				return true;
+			} else if (pathElements[i].getClass() != applicablePattern.pathElements[i].getClass()) {
+				return false;
+			} else if (applicablePattern.pathElements[i].isWildcard()) {
+				continue;
+			} else if (!pathElements[i].equalsIgnoreOptional(applicablePattern.pathElements[i])) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Returns the depth of this JsonPath.
+	 * <p>
+	 * For root paths 0 is returned, elements are then counted starting with 1.
+	 * The other methods in this class expect 0-based indices. Therefore for
+	 * example the call to find out whether the last element of this JsonPath is
+	 * a property name element is
+	 * <code>jsonPath.hasPropertyNameAt(jsonPath.getDepth() - 1);</code>.
+	 * 
+	 * @return the depth of this JsonPath
+	 */
 	public int getDepth() {
 		return size;
 	}

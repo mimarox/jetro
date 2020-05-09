@@ -73,7 +73,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	/**
 	 * Entry point to generic path related operations.
 	 * <p>
-	 * The path must be a valid {@link JsonPath} and may contain wildcards.
+	 * The path must be a valid concrete {@link JsonPath} or a valid JsonPath pattern.
 	 * To specify the end of a JSON array use the end-of-array specifier 
 	 * like so: $[-]. This denotes the end of the root JSON array.
 	 * Such a path may only be used to add one or several values to the end of
@@ -99,10 +99,10 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	/**
 	 * Entry point to generic path related operations.
 	 * <p>
-	 * The path may contain wildcards. To specify the end of a JSON array
-	 * use the end-of-array specifier like so: $[-]. This denotes the end of the
-	 * root JSON array. Such a path may only be used to add one or several values
-	 * to the end of that array.
+	 * The path may either be a concrete path or a path pattern. To specify the
+	 * end of a JSON array use the end-of-array specifier like so: $[-]. This denotes
+	 * the end of the root JSON array. Such a path may only be used to add one or
+	 * several values to the end of that array.
 	 * <p>
 	 * Please make sure that the given path fits the intended operation to be
 	 * performed at that path. Adding a property for example will only be possible
@@ -128,7 +128,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 * variable this is stored in the outermost specification and available
 	 * for all specifications on all nesting levels.
 	 * <p>
-	 * The path must be a valid {@link JsonPath} and must not contain any wildcards.
+	 * The path must be a valid concrete {@link JsonPath}.
 	 * 
 	 * @param path The JSON path to capture the value from.
 	 * @return an instance of CaptureSpecification
@@ -145,7 +145,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 * variable this is stored in the outermost specification and available
 	 * for all specifications on all nesting levels.
 	 * <p>
-	 * The {@link JsonPath path} must not contain any wildcards.
+	 * The {@link JsonPath path} must be a concrete JsonPath.
 	 * 
 	 * @param path The JsonPath to capture the value from.
 	 * @return an instance of CaptureSpecification
@@ -168,7 +168,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 * To keep the child structure of the kept value or property, use the
 	 * matching all further JsonPath specifier &quot;:&quot; like so: $.key:.
 	 * <p>
-	 * The path must be a valid {@link JsonPath} and may contain wildcards.
+	 * The path must be a valid concrete {@link JsonPath} or a JsonPath pattern.
 	 * 
 	 * @param path The path to keep
 	 */
@@ -185,7 +185,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 * To keep the child structure of the kept value or property, use the
 	 * matching all further JsonPath specifier &quot;:&quot; like so: $.key:.
 	 * <p>
-	 * The path may contain wildcards.
+	 * The path may either be a concrete {@link JsonPath} or a JsonPath pattern.
 	 * 
 	 * @param path The path to keep
 	 */
@@ -198,7 +198,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	/**
 	 * Use this method to remove the value or property at the given path.
 	 * <p>
-	 * The path must be a valid {@link JsonPath} and may contain wildcards.
+	 * The path must be a valid concrete {@link JsonPath} or a JsonPath pattern.
 	 * 
 	 * @param path The path at which to remove
 	 */
@@ -210,7 +210,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	/**
 	 * Use this method to remove the value or property at the given path.
 	 * <p>
-	 * The path may contain wildcards.
+	 * The path may either be a concrete {@link JsonPath} or a JsonPath pattern.
 	 * 
 	 * @param path The path at which to remove
 	 */

@@ -25,6 +25,7 @@ import java.io.IOException;
  * @author matthias.rothe
  * @since 27.02.14.
  */
+@Deprecated
 public class FastAppendable implements Appendable {
 
 	private char[] buffer;
@@ -86,6 +87,8 @@ public class FastAppendable implements Appendable {
 	public String toString() {
 		char[] result = new char[bufferSize];
 		System.arraycopy(buffer, 0, result, 0, bufferSize);
+		//CHECKSTYLE:OFF
 		return new String(result);
+		//CHECKSTYLE:ON
 	}
 }
