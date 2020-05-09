@@ -74,8 +74,8 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 * Entry point to generic path related operations.
 	 * <p>
 	 * The path must be a valid {@link JsonPath} and may contain wildcards.
-	 * For specifying the end of a JSON array use a wildcard like so: $[*].
-	 * To denote the end of a JSON array use the end-of-array specifier: [-].
+	 * To specify the end of a JSON array use the end-of-array specifier 
+	 * like so: $[-]. This denotes the end of the root JSON array.
 	 * Such a path may only be used to add one or several values to the end of
 	 * that array.
 	 * <p>
@@ -99,7 +99,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	/**
 	 * Entry point to generic path related operations.
 	 * <p>
-	 * The path may contain wildcards. For specifying the end of a JSON array
+	 * The path may contain wildcards. To specify the end of a JSON array
 	 * use the end-of-array specifier like so: $[-]. This denotes the end of the
 	 * root JSON array. Such a path may only be used to add one or several values
 	 * to the end of that array.
