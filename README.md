@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/mimarox/jetro.svg?branch=develop)](https://travis-ci.org/mimarox/jetro)
+[![Build Status](https://travis-ci.org/mimarox/jetro.svg?branch=develop)](https://travis-ci.org/mimarox/jetro) [![javadoc](https://javadoc.io/badge2/net.sf.jetro/jetro-transform/javadoc.svg)](https://javadoc.io/doc/net.sf.jetro/jetro-transform)
 
 # Jetro - JSON transformations - powerful, yet quick and easy
 
