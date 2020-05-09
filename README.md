@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mimarox/jetro.svg?branch=develop)](https://travis-ci.org/mimarox/jetro)
+
 # Jetro - JSON transformations - powerful, yet quick and easy
 
 Jetro provides a JSON transformation engine and a comprehensive JSON tree API. It allows transforming any JSON source representation into any JSON target representation applying arbitrary changes while doing so. Additionally it implements the RFC6901 (JSON Pointer) and RFC6902 (JSON Patch) specifications in the jetro-patch module.
