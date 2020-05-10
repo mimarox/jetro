@@ -48,6 +48,6 @@ public final class JsonNumber extends JsonPrimitive<Number> {
 
 	@Override
 	public JsonNumber deepCopy() {
-		return new JsonNumber(paths, getValue());
+		return new JsonNumber(getPaths(), getValue());
 	}
 }

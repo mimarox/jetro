@@ -27,19 +27,19 @@ public final class JsonNull extends JsonPrimitive<Null> {
 	private static final long serialVersionUID = 7408732762751496156L;
 
 	public JsonNull() {
-		super(Null.instance);
+		super(Null.INSTANCE);
 	}
 
 	public JsonNull(JsonPath path) {
-		super(path, Null.instance);
+		super(path, Null.INSTANCE);
 	}
 	
 	private JsonNull(Set<JsonPath> paths) {
-		super(paths, Null.instance);
+		super(paths, Null.INSTANCE);
 	}
 
 	@Override
 	public JsonNull deepCopy() {
-		return new JsonNull(paths);
+		return new JsonNull(getPaths());
 	}
 }

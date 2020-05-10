@@ -47,6 +47,6 @@ public final class JsonString extends JsonPrimitive<String> {
 
 	@Override
 	public JsonString deepCopy() {
-		return new JsonString(paths, getValue());
+		return new JsonString(getPaths(), getValue());
 	}
 }

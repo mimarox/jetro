@@ -31,6 +31,162 @@ import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
  * @author Matthias Rothe
  */
 public class ReplaceIfSpecification {
+	private final class ReplaceTransformer<T> extends PathAwareJsonVisitor<Void> {
+		private final Function<T, VisitingReader> readerProvider;
+		private final Supplier<T> valueSupplier;
+		private JsonTreeBuildingVisitor treeBuilder = new JsonTreeBuildingVisitor();
+		private JsonPrimitive<?> primitive;
+
+		private ReplaceTransformer(Function<T, VisitingReader> readerProvider, Supplier<T> valueSupplier) {
+			this.readerProvider = readerProvider;
+			this.valueSupplier = valueSupplier;
+		}
+
+		@Override
+		protected boolean doBeforeVisitObject() {
+			return passOn();
+		}
+
+		@Override
+		protected boolean doBeforeVisitArray() {
+			return passOn();
+		}
+
+		@Override
+		protected Boolean doBeforeVisitValue(final boolean value) {
+			if (passOn()) {
+				return value;
+			} else {
+				primitive = new JsonBoolean(value);
+				return null;
+			}
+		}
+
+		@Override
+		protected Number doBeforeVisitValue(final Number value) {
+			if (passOn()) {
+				return value;
+			} else {
+				primitive = new JsonNumber(value);
+				return null;
+			}
+		}
+
+		@Override
+		protected String doBeforeVisitValue(final String value) {
+			if (passOn()) {
+				return value;
+			} else {
+				primitive = new JsonString(value);
+				return null;
+			}
+		}
+
+		@Override
+		protected boolean doBeforeVisitNullValue() {
+			if (passOn()) {
+				return true;
+			} else {
+				primitive = new JsonNull();
+				return false;
+			}
+		}
+
+		private boolean passOn() {
+			if (currentPath().matches(path)) {
+				return false;
+			} else {
+				return true;
+			}					
+		}
+
+		@Override
+		@SuppressWarnings({ "unchecked" })
+		protected JsonObjectVisitor<Void> afterVisitObject(
+				final JsonObjectVisitor<Void> visitor) {
+			JsonObjectVisitor<Void> actualVisitor = visitor;
+			
+			if (currentPath().matches(path)) {
+				actualVisitor = (JsonObjectVisitor)
+						treeBuilder.visitObject();
+			}
+			
+			return super.afterVisitObject(actualVisitor);
+		}
+
+		@Override
+		@SuppressWarnings({ "unchecked" })
+		protected JsonArrayVisitor<Void> afterVisitArray(
+				final JsonArrayVisitor<Void> visitor) {
+			JsonArrayVisitor<Void> actualVisitor = visitor;
+			
+			if (currentPath().matches(path)) {
+				actualVisitor = (JsonArrayVisitor) treeBuilder.visitArray();
+			}
+			
+			return super.afterVisitArray(actualVisitor);
+		}
+
+		@Override
+		protected void afterVisitObjectEnd() {
+			applyTransformation(false);
+		}
+
+		@Override
+		protected void afterVisitArrayEnd() {
+			applyTransformation(false);
+		}
+
+		@Override
+		protected void afterVisitValue(final Boolean value) {
+			applyTransformation(true);
+		}
+
+		@Override
+		protected void afterVisitValue(final Number value) {
+			applyTransformation(true);
+		}
+
+		@Override
+		protected void afterVisitValue(final String value) {
+			applyTransformation(true);
+		}
+
+		@Override
+		protected void afterVisitNullValue() {
+			applyTransformation(true);
+		}
+
+		private void applyTransformation(final boolean fromPrimitive) {
+			JsonVisitor<Void> visitor = getNextVisitor();
+			
+			if (visitor != null && currentPath().matches(path)) {
+				JsonType capturedValue = getCapturedValue(fromPrimitive);
+				
+				if (predicate.test(capturedValue)) {
+					T value = valueSupplier.get();
+					
+					if (value != null) {
+						readerProvider.apply(value).accept(visitor);
+					} else {
+						visitor.visitNullValue();
+					}
+				} else {
+					capturedValue.mergeInto(visitor);
+				}
+			}
+		}
+
+		private JsonType getCapturedValue(boolean fromPrimitive) {
+			if (fromPrimitive) {
+				return primitive;
+			} else {
+				treeBuilder.visitEnd();
+				return (JsonType) treeBuilder.getVisitingResult();
+			}
+		}
+	}
+
 	private final JsonPath path;
 	private final Predicate<JsonType> predicate;
 	private final TransformationSpecification specification;
@@ -149,7 +305,7 @@ public class ReplaceIfSpecification {
 	 * {@link TransformationSpecification#isRenderNullValues()} is not considered by
 	 * this method.
 	 * 
-	 * @param value The value to replace with
+	 * @param variableName the name of the variable to replace with
 	 */
 	public void withFromVariable(final String variableName) {
 		Objects.requireNonNull(variableName, "variableName must not be null");
@@ -162,153 +318,6 @@ public class ReplaceIfSpecification {
 	private <T> void replace(final Function<T, VisitingReader> readerProvider,
 			final Supplier<T> valueSupplier) {
 		specification.addChainedJsonVisitorSupplier(() ->
-				new PathAwareJsonVisitor<Void>() {
-					private JsonTreeBuildingVisitor treeBuilder = new JsonTreeBuildingVisitor();
-					private JsonPrimitive<?> primitive;
-					
-					@Override
-					protected boolean doBeforeVisitObject() {
-						return passOn();
-					}
-					
-					@Override
-					protected boolean doBeforeVisitArray() {
-						return passOn();
-					}
-					
-					@Override
-					protected Boolean doBeforeVisitValue(final boolean value) {
-						if (passOn()) {
-							return value;
-						} else {
-							primitive = new JsonBoolean(value);
-							return null;
-						}
-					}
-					
-					@Override
-					protected Number doBeforeVisitValue(final Number value) {
-						if (passOn()) {
-							return value;
-						} else {
-							primitive = new JsonNumber(value);
-							return null;
-						}
-					}
-					
-					@Override
-					protected String doBeforeVisitValue(final String value) {
-						if (passOn()) {
-							return value;
-						} else {
-							primitive = new JsonString(value);
-							return null;
-						}
-					}
-					
-					@Override
-					protected boolean doBeforeVisitNullValue() {
-						if (passOn()) {
-							return true;
-						} else {
-							primitive = new JsonNull();
-							return false;
-						}
-					}
-					
-					private boolean passOn() {
-						if (currentPath().matches(path)) {
-							return false;
-						} else {
-							return true;
-						}					
-					}
-					
-					@Override
-					@SuppressWarnings({ "unchecked" })
-					protected JsonObjectVisitor<Void> afterVisitObject(
-							final JsonObjectVisitor<Void> visitor) {
-						JsonObjectVisitor<Void> actualVisitor = visitor;
-						
-						if (currentPath().matches(path)) {
-							actualVisitor = (JsonObjectVisitor)
-									treeBuilder.visitObject();
-						}
-						
-						return super.afterVisitObject(actualVisitor);
-					}
-					
-					@Override
-					@SuppressWarnings({ "unchecked" })
-					protected JsonArrayVisitor<Void> afterVisitArray(
-							final JsonArrayVisitor<Void> visitor) {
-						JsonArrayVisitor<Void> actualVisitor = visitor;
-						
-						if (currentPath().matches(path)) {
-							actualVisitor = (JsonArrayVisitor) treeBuilder.visitArray();
-						}
-						
-						return super.afterVisitArray(actualVisitor);
-					}
-					
-					@Override
-					protected void afterVisitObjectEnd() {
-						applyTransformation(false);
-					}
-					
-					@Override
-					protected void afterVisitArrayEnd() {
-						applyTransformation(false);
-					}
-					
-					@Override
-					protected void afterVisitValue(final Boolean value) {
-						applyTransformation(true);
-					}
-					
-					@Override
-					protected void afterVisitValue(final Number value) {
-						applyTransformation(true);
-					}
-					
-					@Override
-					protected void afterVisitValue(final String value) {
-						applyTransformation(true);
-					}
-					
-					@Override
-					protected void afterVisitNullValue() {
-						applyTransformation(true);
-					}
-					
-					private void applyTransformation(final boolean fromPrimitive) {
-						JsonVisitor<Void> visitor = getNextVisitor();
-						
-						if (visitor != null && currentPath().matches(path)) {
-							JsonType capturedValue = getCapturedValue(fromPrimitive);
-							
-							if (predicate.test(capturedValue)) {
-								T value = valueSupplier.get();
-								
-								if (value != null) {
-									readerProvider.apply(value).accept(visitor);							
-								} else {
-									visitor.visitNullValue();
-								}
-							} else {
-								capturedValue.mergeInto(visitor);
-							}
-						}
-					}
-
-					private JsonType getCapturedValue(boolean fromPrimitive) {
-						if (fromPrimitive) {
-							return primitive;
-						} else {
-							treeBuilder.visitEnd();
-							return (JsonType) treeBuilder.getVisitingResult();
-						}
-					}
-				});
+				new ReplaceTransformer<T>(readerProvider, valueSupplier));
 	}
 }

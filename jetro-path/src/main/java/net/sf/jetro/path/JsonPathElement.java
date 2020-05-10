@@ -39,21 +39,44 @@ abstract class JsonPathElement implements Serializable {
 		return optional;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 
 		JsonPathElement that = (JsonPathElement) o;
-		if (optional != that.optional) return false;
+		if (optional != that.optional) {
+			return false;
+		}
 
 		return equalsIgnoreOptional(that);
 	}
 
+	/**
+	 * Tells whether this JsonPathElement and the given JsonPathElement are equal
+	 * ignoring the optional setting.
+	 * 
+	 * @param other the JsonPathElement to check for equality
+	 * @return <code>true</code> if and only if this JsonPathElement is equal to the
+	 * given one ignoring the optional setting
+	 */
 	public boolean equalsIgnoreOptional(JsonPathElement other) {
 		return other != null && wildcard == other.wildcard;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		int result = (wildcard ? 1 : 0);
@@ -61,5 +84,10 @@ abstract class JsonPathElement implements Serializable {
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
 	public abstract String toString();
 }

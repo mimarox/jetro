@@ -19,14 +19,14 @@
  */
 package net.sf.jetro.object.serializer;
 
+import java.lang.reflect.Array;
+
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonVisitor;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
-
 /**
- * Created by matthias.rothe on 26.02.14.
+ * @author Matthias Rothe
+ * @since 26.02.14
  */
 public class ArraySerializer implements TypeSerializer<Object> {
 	private SerializationContext context;

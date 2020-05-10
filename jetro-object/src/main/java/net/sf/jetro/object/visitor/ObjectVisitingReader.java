@@ -34,7 +34,10 @@ public class ObjectVisitingReader implements VisitingReader {
 
 	/**
 	 * @deprecated Use {@link #ObjectVisitingReader(Object,SerializationContext)} instead
+	 * @param context the context
+	 * @param toSerialize the object to serialize
 	 */
+	@Deprecated
 	public ObjectVisitingReader(SerializationContext context, Object toSerialize) {
 		this(toSerialize, context);
 	}

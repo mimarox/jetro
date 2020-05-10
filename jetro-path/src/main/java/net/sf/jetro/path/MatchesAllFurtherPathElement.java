@@ -2,7 +2,7 @@
  * #%L
  * Jetro JsonPath
  * %%
- * Copyright (C) 2013 - 2016 The original author or authors.
+ * Copyright (C) 2013 - 2020 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,10 @@ class MatchesAllFurtherPathElement extends JsonPathElement {
 		super(false, false);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see net.sf.jetro.path.JsonPathElement#toString()
+	 */
 	@Override
 	public String toString() {
 		return ":";

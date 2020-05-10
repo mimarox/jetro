@@ -34,6 +34,7 @@ import net.sf.jetro.util.Stack;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
 /**
+ * @param <R> the return type of {@link #getVisitingResult()}
  * @author matthias.rothe
  * @since 27.02.14.
  */
@@ -52,19 +53,19 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		private Object instance;
 		private ElementType elementType;
 		
-		public DeserializationElement(TypeToken<?> typeToken) {
+		DeserializationElement(TypeToken<?> typeToken) {
 			this(typeToken, null, null);
 		}
 		
-		public DeserializationElement(TypeToken<?> typeToken, Object instance) {
+		DeserializationElement(TypeToken<?> typeToken, Object instance) {
 			this(typeToken, instance, null);
 		}
 		
-		public DeserializationElement(TypeToken<?> typeToken, String parentField) {
+		DeserializationElement(TypeToken<?> typeToken, String parentField) {
 			this(typeToken, null, parentField);
 		}
 		
-		public DeserializationElement(TypeToken<?> typeToken, Object instance, String parentField) {
+		DeserializationElement(TypeToken<?> typeToken, Object instance, String parentField) {
 			Objects.requireNonNull(typeToken, "Argument typeToken must not be null.");
 			
 			this.typeToken = typeToken;
@@ -176,10 +177,11 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		if (elements.size() > 1) {
 			DeserializationElement top = elements.pop();
 
-			if(top.isProcessedProperty()) {
+			if (top.isProcessedProperty()) {
 				if (!isObject(top.getInstance())) {
 					throw new MalformedJsonException(
-							"Object end out of scope. Expected Java Bean, but was " + top.getTypeToken().getType());
+							"Object end out of scope. Expected Java Bean, but was " +
+									top.getTypeToken().getType());
 				}
 	
 				afterVisitValue(top);
@@ -252,7 +254,8 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 						elements.push(DeserializationElement.skippedProperty(currentPath()));
 					} catch (SecurityException e) {
 						throw new DeserializationException(
-								"Could not access field \"" + name + "\" of type " + top.getTypeToken().getRawType(), e);
+								"Could not access field \"" + name + "\" of type " +
+										top.getTypeToken().getRawType(), e);
 					}
 				}
 			} else {

@@ -43,10 +43,10 @@ public class ReplacePatchOperation extends ValueBasedPatchOperation {
 		final JsonCollection target = (JsonCollection) source.deepCopy();
 		target.recalculateTreePaths();
 		
-		final JsonPath jsonPath = path.toJsonPath();
+		final JsonPath jsonPath = getPath().toJsonPath();
 		
 		if (target.hasElementAt(jsonPath)) {
-			target.replaceElementAt(jsonPath, value);
+			target.replaceElementAt(jsonPath, getValue());
 			return handleTarget(target);
 		} else {
 			throw new JsonPatchException("Cannot replace a non-existent value");

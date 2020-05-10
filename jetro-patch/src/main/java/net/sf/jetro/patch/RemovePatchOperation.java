@@ -37,8 +37,8 @@ public class RemovePatchOperation extends JsonPatchOperation {
 		final JsonCollection target = (JsonCollection) source.deepCopy();
 		target.recalculateTreePaths();
 		
-		if (!target.removeElementAt(path.toJsonPath())) {
-			throw new JsonPatchException("Couldn't remove element at path " + path +
+		if (!target.removeElementAt(getPath().toJsonPath())) {
+			throw new JsonPatchException("Couldn't remove element at path " + getPath() +
 					" from " + target);
 		}
 		

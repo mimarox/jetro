@@ -39,7 +39,7 @@ import java.util.Objects;
  * @author Matthias Rothe
  * @see #compile(String)
  */
-public class JsonPath implements Cloneable, Serializable {
+public final class JsonPath implements Cloneable, Serializable {
 	private static final long serialVersionUID = -7011229423184378717L;
 
 	static final String WILDCARD = "*";
@@ -256,6 +256,13 @@ public class JsonPath implements Cloneable, Serializable {
 		return size;
 	}
 
+	/**
+	 * Tells whether or not this JsonPath is a parent of the given JsonPath.
+	 * 
+	 * @param path the potential child path
+	 * @return <code>true</code> if and only if this JsonPath is a parent of
+	 * the given JsonPath, <code>false</code> otherwise
+	 */
 	public boolean isParentPathOf(final JsonPath path) {
 		if (path == null) {
 			return isRootPath(); // as null is interpreted as the root path
@@ -278,6 +285,13 @@ public class JsonPath implements Cloneable, Serializable {
 		return parentPath;
 	}
 
+	/**
+	 * Tells whether or not this JsonPath is a child of the given JsonPath.
+	 * 
+	 * @param path the potential parent path
+	 * @return <code>true</code> if and only if this JsonPath is a child of
+	 * the given JsonPath, <code>false</code> otherwise
+	 */
 	public boolean isChildPathOf(final JsonPath path) {
 		if (path == null) {
 			return true; // as null is interpreted as the root path
@@ -286,41 +300,131 @@ public class JsonPath implements Cloneable, Serializable {
 		return path.isParentPathOf(this);
 	}
 
+	/**
+	 * Tells whether or not this JsonPath has a property name element at the given
+	 * depth (index).
+	 * <p>
+	 * Please note that this method uses 0-based indices.
+	 * 
+	 * @param depth the depth at which to check for property name
+	 * @return <code>true</code> if and only if this JsonPath has a property name
+	 * element at the given depth, <code>false</code> otherwise 
+	 * @throws ArrayIndexOutOfBoundsException if the depth is either negative or
+	 * greater than or equal to the depth of this JsonPath
+	 * @see #getDepth()
+	 */
 	public boolean hasPropertyNameAt(final int depth) {
 		return pathElements[depth] instanceof PropertyNamePathElement;
 	}
 
+	/**
+	 * Returns the property name at the given depth (index).
+	 * <p>
+	 * Please note that this method uses 0-based indices.
+	 * 
+	 * @param depth the depth at which to return the property name
+	 * @return the property name at the given depth
+	 * @throws ArrayIndexOutOfBoundsException if the depth is either negative or
+	 * greater than or equal to the depth of this JsonPath
+	 * @throws IllegalStateException if {{@link #hasPropertyNameAt(int)} returns
+	 * <code>false</code> for the given depth
+	 * @see #getDepth()
+	 */
 	public String getPropertyNameAt(final int depth) {
 		if (hasPropertyNameAt(depth)) {
 			return ((PropertyNamePathElement) pathElements[depth]).getName();
 		} else {
-			throw new IllegalStateException("The path element at depth " + depth + " in path " + this
-					+ " is not a property name");
+			throw new IllegalStateException("The path element at depth " + depth +
+					" in path " + this + " is not a property name");
 		}
 	}
 
+	/**
+	 * Tells whether or not this JsonPath has an array index element at the given
+	 * depth (index) and this array index element is not an end-of-array element.
+	 * <p>
+	 * Please note that this method uses 0-based indices.
+	 * 
+	 * @param depth the depth at which to check for array index
+	 * @return <code>true</code> if and only if this JsonPath has an array index
+	 * element which is not an end-of-array element at the given depth,
+	 * <code>false</code> otherwise 
+	 * @throws ArrayIndexOutOfBoundsException if the depth is either negative or
+	 * greater than or equal to the depth of this JsonPath
+	 * @see #getDepth()
+	 */
 	public boolean hasArrayIndexAt(final int depth) {
 		return pathElements[depth] instanceof ArrayIndexPathElement &&
 				!((ArrayIndexPathElement) pathElements[depth]).isEndOfArray();
 	}
 
+	/**
+	 * Returns the array index at the given depth (index).
+	 * <p>
+	 * Please note that this method uses 0-based indices.
+	 * 
+	 * @param depth the depth at which to return the array index
+	 * @return the array index at the given depth
+	 * @throws ArrayIndexOutOfBoundsException if the depth is either negative or
+	 * greater than or equal to the depth of this JsonPath
+	 * @throws IllegalStateException if {@link #hasArrayIndexAt(int)} returns
+	 * <code>false</code> for the given depth
+	 * @see #getDepth()
+	 */
 	public int getArrayIndexAt(final int depth) {
 		if (hasArrayIndexAt(depth)) {
 			return ((ArrayIndexPathElement) pathElements[depth]).getIndex();
 		} else {
-			throw new IllegalStateException("The path element at depth " + depth + " in path " + this
-					+ " is not an array index");
+			throw new IllegalStateException("The path element at depth " + depth +
+					" in path " + this + " is not an array index");
 		}
 	}
 
+	/**
+	 * Tells whether or not this JsonPath has a wildcard at the given depth (index).
+	 * <p>
+	 * Please note that this method uses 0-based indices.
+	 * 
+	 * @param depth the depth at which to check for wildcard
+	 * @return <code>true</code> if and only if this JsonPath has a wildcard at the
+	 * given depth, <code>false</code> otherwise
+	 * @throws ArrayIndexOutOfBoundsException if the depth is either negative or
+	 * greater than or equal to the depth of this JsonPath
+	 * @see #getDepth()
+	 */
 	public boolean hasWildcardAt(final int depth) {
 		return pathElements[depth].isWildcard();
 	}
 
+	/**
+	 * Tells whether or not this JsonPath has an optional at the given depth (index).
+	 * <p>
+	 * Please note that this method uses 0-based indices.
+	 * 
+	 * @param depth the depth at which to check for optional
+	 * @return <code>true</code> if and only if this JsonPath has an optional at the
+	 * given depth, <code>false</code> otherwise
+	 * @throws ArrayIndexOutOfBoundsException if the depth is either negative or
+	 * greater than or equal to the depth of this JsonPath
+	 * @see #getDepth()
+	 */
 	public boolean hasOptionalAt(final int depth) {
 		return pathElements[depth].isOptional();
 	}
 
+	/**
+	 * Tells whether or not this JsonPath has an end-of-array element at the given
+	 * depth (index).
+	 * <p>
+	 * Please note that this method uses 0-based indices.
+	 * 
+	 * @param depth the depth at which to check for end-of-array
+	 * @return <code>true</code> if and only if this JsonPath has an end-of-array
+	 * element at the given depth, <code>false</code> otherwise
+	 * @throws ArrayIndexOutOfBoundsException if the depth is either negative or
+	 * greater than or equal to the depth of this JsonPath
+	 * @see #getDepth()
+	 */	
 	public boolean hasEndOfArrayAt(final int depth) {
 		if (pathElements[depth] instanceof ArrayIndexPathElement) {
 			return ((ArrayIndexPathElement) pathElements[depth]).isEndOfArray();			
@@ -329,15 +433,29 @@ public class JsonPath implements Cloneable, Serializable {
 		}
 	}
 	
+	/**
+	 * Tells whether or not this JsonPath contains optional elements.
+	 * 
+	 * @return <code>true</code> if and only if this JsonPath contains optional
+	 * elements, <code>false</code> otherwise
+	 */
 	public boolean containsOptionals() {
 		return containsOptionals;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(toString());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -356,6 +474,11 @@ public class JsonPath implements Cloneable, Serializable {
 		return true;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
 	public String toString() {
 		if (string == null) {
 			StringBuilder builder = new StringBuilder("$");
@@ -370,9 +493,96 @@ public class JsonPath implements Cloneable, Serializable {
 		return string;
 	}
 
+	/**
+	 * Compiles the given jsonPath String to a JsonPath object and returns it.
+	 * <p>
+	 * A valid JsonPath must start with a root specifier. This is the dollar sign
+	 * ($). It may be followed by zero or more path elements. These path elements
+	 * may either be property name, array index or a matching-all-further 
+	 * element.
+	 * <h2>Reserved characters</h2>
+	 * These reserved characters are used in JsonPath:
+	 * <ul>
+	 * 	<li>$ specifies the document root
+	 * 	<li>. specifies the start of a property name
+	 * 	<li>[ specifies the start of an array index
+	 * 	<li>] specifies the end of an array index
+	 * 	<li>: specifies the matching all further element
+	 * 	<li>* specifies a wildcard
+	 * 	<li>? specifies an optional
+	 * 	<li>- specifies the end of an array
+	 * </ul>
+	 * <h2>Non-reserved characters</h2>
+	 * Any UTF-8 characters other than the ones given in the section
+	 * &quot;Reserved characters&quot; are non-reserved characters.
+	 * <h2>Property name elements</h2>
+	 * Property name elements start with a dot (.) followed by a name consisting
+	 * of at least one or more non-reserved characters as defined in the section
+	 * &quot;Non-reserved characters&quot;. There is one exception to this rule:
+	 * minus (-) characters may also be used in a property name. Property names
+	 * may also consist of a single asterisk (*) which is used as a wildcard.
+	 * Partial wildcards are not supported. Furthermore property name elements may
+	 * be followed by a question mark (?) which specifies the property name element
+	 * so annotated as optional.
+	 * <h2>Array index elements</h2>
+	 * Array index elements start with an opening square bracket ([) followed by
+	 * either a non-negative base-10 integer without leading zeroes which is used
+	 * as an array index, a single asterisk (*) which is used as a wildcard or the
+	 * end-of-array specifier (-) followed by a closing square bracket (]). Please
+	 * note that if used the end-of-array element must be the last element of the
+	 * given JsonPath. Furthermore array index elements may be followed by a question
+	 * mark (?) which specifies the array index element so annotated as optional.
+	 * <h2>Matching-all-further elements</h2>
+	 * Matching-all-further elements are specified by a colon (:) and must be the last
+	 * element of any given JsonPath if they are used. They allow a parent path to
+	 * match any child path.
+	 * <h2>Examples</h2>
+	 * Given the following JSON document:
+	 * <pre>
+	 * {
+	 * 	"foo": {
+	 * 		"foo-a": "value foo-a",
+	 * 		"foo-b": {
+	 * 			"foo-b-a": "value foo-b-a"
+	 * 		},
+	 * 		"foo-c": [1,2,[3]]
+	 * 	},
+	 * 	"bar": [{
+	 * 			"bar-a": "value bar-a"
+	 * 		},{
+	 * 			"bar-b": "value bar-b"
+	 * 	}],
+	 * 	"bar-a": "value root bar-a"
+	 * }
+	 * </pre>
+	 * Then:
+	 * <pre>
+	 * $                  addresses the entire document
+	 * $.foo              addresses the object assigned to the property named foo
+	 * $.foo.foo-a        addresses the string assigned to the property named foo-a ("value foo-a")
+	 * $.foo.foo-c[0]     addresses the 0th element of the array assigned to the property named foo-c (1)
+	 * $.foo.foo-c[2][0]  addresses the value 3
+	 * $.foo.*            addresses all the values assigned to any of the properties of the object assigned to the property named foo
+	 * $.foo.foo-c[2]?[0] addresses values 1 and 3
+	 * $.bar[0].bar-a     addresses the string assigned to the property named bar-a ("value bar-a")
+	 * $.bar[*]           addresses all the elements of the array assigned to the property named bar
+	 * $.bar?[0]?.bar-a   addresses both values assigned to properties named bar-a ("value bar-a" and "value root bar-a")
+	 * $.bar[-]           addresses the end of the array assigned to the property named bar
+	 * $.bar[*]:          addresses all the elements of the array assigned to the property named bar and all their children recursively
+	 * </pre>
+	 * <p>
+	 * This method is Thread-safe.
+	 * 
+	 * @param jsonPath the String to compile
+	 * @return the compiled JsonPath
+	 * @throws JsonPathCompilerException if the given jsonPath cannot be compiled
+	 * @throws IllegalArgumentException if the given jsonPath is null or empty
+	 */
 	public static JsonPath compile(final String jsonPath) {
-		if (compiler == null) {
-			compiler = new JsonPathCompiler();
+		synchronized (JsonPath.class) {
+			if (compiler == null) {
+				compiler = new JsonPathCompiler();
+			}
 		}
 
 		return compiler.compile(jsonPath);

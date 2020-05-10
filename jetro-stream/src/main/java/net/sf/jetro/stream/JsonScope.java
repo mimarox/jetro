@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+//CHECKSTYLE:OFF
 package net.sf.jetro.stream;
 
 /**
@@ -69,3 +69,4 @@ final class JsonScope {
 	 */
 	static final int CLOSED = 8;
 }
+//CHECKSTYLE:ON

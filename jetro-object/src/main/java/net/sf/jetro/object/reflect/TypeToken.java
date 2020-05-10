@@ -28,6 +28,9 @@ import java.lang.reflect.WildcardType;
 import java.util.Objects;
 
 /**
+ * A type token.
+ * 
+ * @param <T> the type this type token represents
  * @author matthias.rothe
  * @since 26.03.14.
  */

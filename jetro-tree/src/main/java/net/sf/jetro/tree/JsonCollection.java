@@ -19,8 +19,9 @@ public interface JsonCollection extends JsonType {
 	void resetPathsRecursively();
 	
 	/**
-	 * Resets the paths recursively
+	 * Resets the paths recursively.
 	 */
+	@Override
 	default void resetPaths() {
 		resetPathsRecursively();
 	}
@@ -130,7 +131,7 @@ public interface JsonCollection extends JsonType {
 	Optional<JsonType> replaceElementAt(JsonPath path, JsonType newElement);
 		
 	/**
-	 * Removes the {@link JsonType element} at the given {@link JsonPath path}
+	 * Removes the {@link JsonType element} at the given {@link JsonPath path}.
 	 * 
 	 * @param path The path to remove the element at
 	 * @return <code>true</code> if and only if an element has been removed at the

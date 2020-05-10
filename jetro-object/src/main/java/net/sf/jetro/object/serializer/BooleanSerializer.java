@@ -22,7 +22,8 @@ package net.sf.jetro.object.serializer;
 import net.sf.jetro.visitor.JsonVisitor;
 
 /**
- * Created by matthias.rothe on 26.02.14.
+ * @author Matthias Rothe
+ * @since 26.02.14
  */
 public class BooleanSerializer implements TypeSerializer<Boolean> {
 	@Override

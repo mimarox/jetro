@@ -29,7 +29,8 @@ import java.util.List;
 
 /**
  * This class multiplexes all calls to all subsequent visitors.
- *
+ * 
+ * @param <R> the return type of {@link #getVisitingResult()}
  * @author matthias.rothe
  * @since 13.03.14.
  */

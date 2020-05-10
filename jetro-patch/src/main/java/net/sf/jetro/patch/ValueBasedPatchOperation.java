@@ -27,7 +27,7 @@ import net.sf.jetro.tree.JsonObject;
 import net.sf.jetro.tree.JsonType;
 
 public abstract class ValueBasedPatchOperation extends JsonPatchOperation {
-	protected final JsonType value;
+	private final JsonType value;
 	
 	public ValueBasedPatchOperation(final JsonObject patchDefinition) {
 		super(patchDefinition);
@@ -38,11 +38,15 @@ public abstract class ValueBasedPatchOperation extends JsonPatchOperation {
 		
 		value = patchDefinition.get("value").deepCopy();
 		
-		if (value instanceof JsonCollection) {
-			((JsonCollection) value).recalculateTreePaths();
+		if (getValue() instanceof JsonCollection) {
+			((JsonCollection) getValue()).recalculateTreePaths();
 		} else {
-			value.resetPaths();
-			value.addPath(new JsonPath());
+			getValue().resetPaths();
+			getValue().addPath(new JsonPath());
 		}
+	}
+
+	protected JsonType getValue() {
+		return value;
 	}
 }

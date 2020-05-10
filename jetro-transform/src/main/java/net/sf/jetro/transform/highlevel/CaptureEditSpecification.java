@@ -141,7 +141,7 @@ public class CaptureEditSpecification<S extends JsonType, T extends JsonType> {
 				@SuppressWarnings("unchecked")
 				private void handleAfterVisitValue(JsonPrimitive<?> value) {
 					if (currentPath().matches(path)) {
-						specification.putVariable(variableName, editor.apply((S) value));						
+						specification.putVariable(variableName, editor.apply((S) value));
 					}
 				}
 			};

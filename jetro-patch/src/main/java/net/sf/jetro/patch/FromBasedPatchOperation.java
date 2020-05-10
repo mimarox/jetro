@@ -26,7 +26,7 @@ import net.sf.jetro.tree.JsonObject;
 import net.sf.jetro.tree.JsonString;
 
 public abstract class FromBasedPatchOperation extends JsonPatchOperation {
-	protected final JsonPointer from;
+	private final JsonPointer from;
 
 	public FromBasedPatchOperation(JsonObject patchDefinition) {
 		super(patchDefinition);
@@ -36,5 +36,9 @@ public abstract class FromBasedPatchOperation extends JsonPatchOperation {
 		}
 		
 		this.from = JsonPointer.compile(((JsonString) patchDefinition.get("from")).getValue());
+	}
+
+	protected JsonPointer getFrom() {
+		return from;
 	}
 }

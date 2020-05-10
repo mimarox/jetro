@@ -139,7 +139,7 @@ public class PathAwareSpecification {
 						
 						if (value != null) {
 							visitor.visitProperty(key);
-							readerProvider.apply(value).accept(visitor);							
+							readerProvider.apply(value).accept(visitor);
 						} else if (specification.isRenderNullValues()) {
 							visitor.visitProperty(key);
 							visitor.visitNullValue();
@@ -224,6 +224,7 @@ public class PathAwareSpecification {
 	 * is set to <code>true</code>. Otherwise it is omitted.
 	 * 
 	 * @param properties the map of key value pairs to be added as properties
+	 * @param <T> the common parent type of the values, may be {@link Object}
 	 */
 	public <T> void addAllJsonProperties(final Map<String, T> properties) {
 		addAllJsonProperties(properties, new SerializationContext());
@@ -242,6 +243,7 @@ public class PathAwareSpecification {
 	 * 
 	 * @param properties the map of key value pairs to be added as properties
 	 * @param context the context to be used for serialization of the value
+	 * @param <T> the common parent type of the values, may be {@link Object}
 	 */
 	public <T> void addAllJsonProperties(final Map<String, T> properties,
 			final SerializationContext context) {
@@ -301,7 +303,7 @@ public class PathAwareSpecification {
 							
 							if (value != null) {
 								visitor.visitProperty(key);
-								readerProvider.apply(value).accept(visitor);							
+								readerProvider.apply(value).accept(visitor);
 							} else if (specification.isRenderNullValues()) {
 								visitor.visitProperty(key);
 								visitor.visitNullValue();
@@ -342,6 +344,7 @@ public class PathAwareSpecification {
 	 * is set to <code>true</code>. Otherwise the value is omitted.
 	 * 
 	 * @param value the value to add
+	 * @param context the context to be used for serialization of the value
 	 */
 	public void addJsonValue(final Object value, final SerializationContext context) {
 		Objects.requireNonNull(context, "context must not be null");
@@ -572,7 +575,7 @@ public class PathAwareSpecification {
 				if (visitor != null && currentPath().matches(actualPath)) {
 					valuesSupplier.get().forEach(value -> {
 						if (value != null) {
-							readerProvider.apply(value).accept(visitor);							
+							readerProvider.apply(value).accept(visitor);
 						} else if (specification.isRenderNullValues()) {
 							visitor.visitNullValue();
 						}
@@ -659,7 +662,7 @@ public class PathAwareSpecification {
 				if (visitor != null && currentPath().matches(path)) {
 					valuesSupplier.get().forEach(value -> {
 						if (value != null) {
-							readerProvider.apply(value).accept(visitor);							
+							readerProvider.apply(value).accept(visitor);
 						} else if (replace || specification.isRenderNullValues()) {
 							visitor.visitNullValue();
 						}
@@ -801,7 +804,7 @@ public class PathAwareSpecification {
 	 * {@link TransformationSpecification#isRenderNullValues()} is not considered by
 	 * this method.
 	 * 
-	 * @param value The value to replace with
+	 * @param variableName the name of the variable to replace with
 	 */
 	public void replaceWithFromVariable(final String variableName) {
 		Objects.requireNonNull(variableName, "variableName must not be null");

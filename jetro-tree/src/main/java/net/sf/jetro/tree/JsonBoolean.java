@@ -48,6 +48,6 @@ public final class JsonBoolean extends JsonPrimitive<Boolean> {
 
 	@Override
 	public JsonBoolean deepCopy() {
-		return new JsonBoolean(paths, getValue());
+		return new JsonBoolean(getPaths(), getValue());
 	}
 }

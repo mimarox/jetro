@@ -22,8 +22,9 @@ package net.sf.jetro.object.serializer;
 import net.sf.jetro.visitor.JsonVisitor;
 
 /**
- * @author matthias.rothe
- * @since 26.02.14.
+ * @param <T> the type an implementing serializer can serialize
+ * @author Matthias Rothe
+ * @since 26.02.14
  */
 public interface TypeSerializer<T> {
 

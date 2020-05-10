@@ -112,6 +112,7 @@ public class TransformApplier<R> {
 	 * {@link #andReturnAsJson()} in a {@link ByteArrayInputStream}.
 	 * 
 	 * @return the InputStream containing the resulting JSON.
+	 * @throws RuntimeException if the executing platform doesn't support UTF-8
 	 */
 	public InputStream andReturnAsInputStream() {
 		try {

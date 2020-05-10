@@ -25,7 +25,7 @@ import net.sf.jetro.visitor.JsonVisitor;
 
 public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R> {
 	private class UniformChainedJsonObjectVisitor extends ChainedJsonObjectVisitor<R> {
-		public UniformChainedJsonObjectVisitor(JsonVisitor<R> nextVisitor) {
+		UniformChainedJsonObjectVisitor(JsonVisitor<R> nextVisitor) {
 			super(nextVisitor);
 		}
 
@@ -125,10 +125,8 @@ public abstract class UniformChainedJsonVisitor<R> extends ChainedJsonVisitor<R>
 		}
 	}
 
-
-
 	private class UniformChainedJsonArrayVisitor extends ChainedJsonArrayVisitor<R> {
-		public UniformChainedJsonArrayVisitor(JsonVisitor<R> nextVisitor) {
+		UniformChainedJsonArrayVisitor(JsonVisitor<R> nextVisitor) {
 			super(nextVisitor);
 		}
 

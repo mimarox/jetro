@@ -40,6 +40,8 @@ import net.sf.jetro.tree.visitor.JsonTreeBuildingVisitor;
  * like <code>JsonPatch.patch(source).applying(patchOperations).andReturnAsJson()</code>
  * needs to be made. All three method parts of the call come in different variations and
  * can be combined flexibly.
+ * 
+ * @author Matthias Rothe
  */
 public class JsonPatch {
 	private static final JsonTreeBuilder BUILDER = new JsonTreeBuilder(true);
