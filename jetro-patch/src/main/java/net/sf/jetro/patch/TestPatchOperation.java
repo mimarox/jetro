@@ -37,13 +37,13 @@ public class TestPatchOperation extends ValueBasedPatchOperation {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
 		final JsonType target = prepareFrom(source);
-		final Optional<JsonType> optional = target.getElementAt(path.toJsonPath());
+		final Optional<JsonType> optional = target.getElementAt(getPath().toJsonPath());
 		
-		if (optional.isPresent() && optional.get().equals(value)) {
+		if (optional.isPresent() && optional.get().equals(getValue())) {
 			return handleTarget(target);
 		} else {
-			throw new JsonPatchException("Expected value [" + value + "] could not be "
-					+ "found on source JSON [" + source + "] at path [" + path + "]");
+			throw new JsonPatchException("Expected value [" + getValue() + "] could not be "
+					+ "found on source JSON [" + source + "] at path [" + getPath() + "]");
 		}
 	}
 

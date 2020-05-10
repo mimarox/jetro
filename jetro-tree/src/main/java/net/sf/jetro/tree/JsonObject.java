@@ -142,11 +142,10 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 
 	private final Set<JsonProperty> properties = new HashSet<>();
 	private JsonProperties mapView;
-
-	final Set<JsonPath> paths = new HashSet<>();
+	private final Set<JsonPath> paths = new HashSet<>();
 
 	public JsonObject() {
-		paths.add(new JsonPath());
+		getPaths().add(new JsonPath());
 	}
 
 	public JsonObject(final JsonPath path) {
@@ -161,15 +160,15 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		this(properties, false);
 		
 		if (path != null) {
-			paths.add(path);
+			getPaths().add(path);
 		} else {
-			paths.add(new JsonPath());
+			getPaths().add(new JsonPath());
 		}
 	}
 
 	private JsonObject(final Set<JsonPath> paths, final Set<JsonProperty> properties) {
 		this(properties, true);
-		this.paths.addAll(paths);
+		this.getPaths().addAll(paths);
 	}
 	
 	private JsonObject(final Set<JsonProperty> properties, final boolean deepCopy) {
@@ -184,7 +183,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 
 	@Override
 	public JsonObject deepCopy() {
-		return new JsonObject(paths, this);
+		return new JsonObject(getPaths(), this);
 	}
 	
 	@Override
@@ -206,12 +205,12 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 
 	@Override
 	public void addPath(final JsonPath path) {
-		paths.add(path);
+		getPaths().add(path);
 	}
 
 	@Override
 	public void resetPathsRecursively() {
-		paths.clear();
+		getPaths().clear();
 		forEach(property -> property.getValue().resetPaths());
 	}
 	
@@ -224,7 +223,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 		
 		for (final JsonProperty property : properties) {
 			JsonType element = property.getValue();
-			paths.forEach(path -> element.addPath(
+			getPaths().forEach(path -> element.addPath(
 					path.append(new PropertyNamePathElement(property.getKey()))));
 			
 			if (element instanceof JsonCollection) {
@@ -249,7 +248,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	
 	@Override
 	public Optional<JsonType> getElementAt(final JsonPath path) {
-		if (paths.contains(path)) {
+		if (getPaths().contains(path)) {
 			return Optional.of(this);
 		} else {
 			Optional<JsonPath> parentPath = findParentPath(path);
@@ -264,7 +263,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	}
 
 	private Optional<JsonPath> findParentPath(JsonPath childPath) {
-		return paths.parallelStream().filter(parentPath ->
+		return getPaths().parallelStream().filter(parentPath ->
 				parentPath.getDepth() < childPath.getDepth() &&
 				childPath.isChildPathOf(parentPath) &&
 				childPath.hasPropertyNameAt(parentPath.getDepth())
@@ -289,7 +288,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	}
 
 	@Override
-	public boolean addElementAt(JsonPath path, JsonType element) {
+	public boolean addElementAt(final JsonPath path, final JsonType element) {
 		Objects.requireNonNull(path, "A non-null path to add the element at must be specified");
 		Objects.requireNonNull(element, "A non-null element to be added must be specified");
 		
@@ -297,8 +296,19 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 			throw new IllegalArgumentException("Cannot add JSON tree root");
 		}
 		
-		boolean success = false;
 		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
+		boolean success = doAddElementAt(path, element, parentElement);
+		
+		if (success) {
+			recalculateTreePaths(isTreeRoot());
+		}
+		
+		return success;
+	}
+
+	private boolean doAddElementAt(final JsonPath path, final JsonType element,
+			final Optional<JsonType> parentElement) {
+		boolean success = false;
 		
 		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
 			if (parentElement.get() instanceof JsonObject &&
@@ -320,7 +330,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 					if (path.hasEndOfArrayAt(path.getDepth() - 1)) {
 						parent.add(element);
 					} else {
-						parent.add(path.getArrayIndexAt(path.getDepth() - 1), element);						
+						parent.add(path.getArrayIndexAt(path.getDepth() - 1), element);
 					}
 					success = true;
 				} catch (IndexOutOfBoundsException e) {
@@ -328,11 +338,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 				}
 			}			
 		}
-		
-		if (success) {
-			recalculateTreePaths(isTreeRoot());
-		}
-		
+
 		return success;
 	}
 
@@ -428,7 +434,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	}
 
 	private boolean isTreeRoot() {
-		return paths.size() == 1 && paths.contains(new JsonPath());
+		return getPaths().size() == 1 && getPaths().contains(new JsonPath());
 	}
 
 	private JsonObject prepareJsonObjectForChildManipulation(Optional<JsonType> parentElement,
@@ -449,7 +455,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	}
 
 	private boolean hasMultiplePaths(JsonObject jsonObject) {
-		return jsonObject.paths.size() > 1;
+		return jsonObject.getPaths().size() > 1;
 	}
 	
 	private JsonArray prepareJsonArrayForChildManipulation(Optional<JsonType> parentElement,
@@ -470,7 +476,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	}
 	
 	private boolean hasMultiplePaths(JsonArray jsonArray) {
-		return jsonArray.paths.size() > 1;
+		return jsonArray.getPaths().size() > 1;
 	}
 	
 	@Override
@@ -493,7 +499,7 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("JsonObject [properties=").append(properties)
-			.append(", paths=").append(paths).append("]");
+			.append(", paths=").append(getPaths()).append("]");
 		return builder.toString();
 	}
 
@@ -525,5 +531,9 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 	
 	public boolean containsAllKeys(Collection<String> keys) {
 		return asMap().keySet().containsAll(keys);
+	}
+
+	Set<JsonPath> getPaths() {
+		return paths;
 	}
 }

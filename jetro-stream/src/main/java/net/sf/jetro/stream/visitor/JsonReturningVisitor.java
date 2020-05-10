@@ -21,11 +21,8 @@ package net.sf.jetro.stream.visitor;
 
 import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.stream.JsonGenerator;
-import net.sf.jetro.util.FastAppendable;
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
-
-import java.nio.CharBuffer;
 
 public final class JsonReturningVisitor extends AbstractJsonWritingVisitor<String> {
 	private class JsonReturningObjectVisitor extends AbstractJsonWritingObjectVisitor<String> {

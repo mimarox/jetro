@@ -22,12 +22,9 @@ package net.sf.jetro.object.serializer;
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonVisitor;
 
-import java.util.Arrays;
-import java.util.Iterator;
-
 /**
- * @author matthias.rothe
- * @since 26.02.14.
+ * @author Matthias Rothe
+ * @since 26.02.14
  */
 public class IterableSerializer implements TypeSerializer<Iterable<?>> {
 	private SerializationContext context;

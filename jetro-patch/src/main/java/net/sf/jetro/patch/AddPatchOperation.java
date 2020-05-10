@@ -36,8 +36,8 @@ public class AddPatchOperation extends ValueBasedPatchOperation {
 
 	@Override
 	public JsonType applyPatch(final JsonType source) throws JsonPatchException {
-		if (path.isRootPath()) {
-			return handleTarget(value);
+		if (getPath().isRootPath()) {
+			return handleTarget(getValue());
 		}
 		
 		processPreconditions(source);
@@ -60,7 +60,7 @@ public class AddPatchOperation extends ValueBasedPatchOperation {
 	}
 	
 	private void addOrReplace(final JsonCollection target) throws JsonPatchException {
-		final JsonPath targetPath = path.toJsonPath();
+		final JsonPath targetPath = getPath().toJsonPath();
 		final JsonPath parentPath = targetPath.removeLastElement();
 		
 		final Optional<JsonType> optional = target.getElementAt(parentPath);
@@ -71,13 +71,13 @@ public class AddPatchOperation extends ValueBasedPatchOperation {
 			} else if (optional.get() instanceof JsonArray) {
 				addToJsonCollection(target, targetPath);
 			} else {
-				throw new JsonPatchException("Couldn't add " + value + " to " + target +
+				throw new JsonPatchException("Couldn't add " + getValue() + " to " + target +
 						" at path \"" + JsonPointer.fromJsonPath(targetPath) + "\". The parent " +
 						"value at \"" + JsonPointer.fromJsonPath(parentPath) + "\" is neither a "
 								+ "JsonObject nor a JsonArray");
 			}
 		} else {
-			throw new JsonPatchException("Couldn't add " + value + " to " + target +
+			throw new JsonPatchException("Couldn't add " + getValue() + " to " + target +
 					" at path \"" + JsonPointer.fromJsonPath(targetPath) + "\". The parent " +
 					"value at \"" + JsonPointer.fromJsonPath(parentPath) + "\" does not exist.");
 		}
@@ -86,7 +86,7 @@ public class AddPatchOperation extends ValueBasedPatchOperation {
 	private void addOrReplaceOnJsonObject(final JsonCollection target, JsonPath targetPath)
 			throws JsonPatchException {
 		if (target.hasElementAt(targetPath)) {
-			target.replaceElementAt(targetPath, value);
+			target.replaceElementAt(targetPath, getValue());
 		} else {
 			addToJsonCollection(target, targetPath);
 		}
@@ -94,8 +94,8 @@ public class AddPatchOperation extends ValueBasedPatchOperation {
 
 	private void addToJsonCollection(JsonCollection target, JsonPath targetPath)
 			throws JsonPatchException {
-		if (!target.addElementAt(targetPath, value)) {
-			throw new JsonPatchException("Couldn't add " + value + " to " + target +
+		if (!target.addElementAt(targetPath, getValue())) {
+			throw new JsonPatchException("Couldn't add " + getValue() + " to " + target +
 					" at path \"" + JsonPointer.fromJsonPath(targetPath) + "\"");
 		}
 	}

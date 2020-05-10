@@ -35,7 +35,7 @@ public class JsonTreeBuilder {
 	private boolean lenient;
 	
 	/**
-	 * Creates a JsonTreeBuilder with lenient set to false
+	 * Creates a JsonTreeBuilder with lenient set to false.
 	 */
 	public JsonTreeBuilder() {
 		this(false);
@@ -102,6 +102,5 @@ public class JsonTreeBuilder {
 		first.attachVisitor(jsonTreeBuildingVisitor);
 		
 		return first;
-		
 	}
 }

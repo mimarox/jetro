@@ -28,7 +28,11 @@ import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
 
 public abstract class PathAwareJsonVisitor<R> extends UniformChainedJsonVisitor<R> {
 	private abstract class ParseState {
-		protected boolean justEntered;
+		private boolean justEntered;
+		
+		protected void setJustEntered(final boolean justEntered) {
+			this.justEntered = justEntered;
+		}
 	}
 
 	private class ObjectState extends ParseState {
@@ -56,7 +60,7 @@ public abstract class PathAwareJsonVisitor<R> extends UniformChainedJsonVisitor<
 	protected final boolean beforeVisitObject() {
 		handleVisitValue();
 		ObjectState state = new ObjectState();
-		state.justEntered = true;
+		state.setJustEntered(true);
 		stateStack.push(state);
 		return doBeforeVisitObject();
 	}
@@ -69,7 +73,7 @@ public abstract class PathAwareJsonVisitor<R> extends UniformChainedJsonVisitor<
 	protected final boolean beforeVisitArray() {
 		handleVisitValue();
 		ArrayState state = new ArrayState();
-		state.justEntered = true;
+		state.setJustEntered(true);
 		stateStack.push(state);
 		return doBeforeVisitArray();
 	}

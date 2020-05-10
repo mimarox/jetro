@@ -22,7 +22,8 @@ package net.sf.jetro.visitor;
 public interface JsonArrayVisitor<R> extends JsonVisitor<R> {
 
 	/**
-	 * Always throws {@link UnsupportedOperationException} as arrays don't support properties
+	 * Always throws {@link UnsupportedOperationException} as arrays don't support
+	 * properties.
 	 */
 	@Override
 	default void visitProperty(String name) {

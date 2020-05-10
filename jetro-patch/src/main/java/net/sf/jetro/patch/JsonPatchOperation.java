@@ -28,7 +28,7 @@ import net.sf.jetro.tree.JsonString;
 import net.sf.jetro.tree.JsonType;
 
 public abstract class JsonPatchOperation {
-	protected final JsonPointer path;
+	private final JsonPointer path;
 	
 	private JsonPatchOperation nextOperation;
 	
@@ -62,5 +62,9 @@ public abstract class JsonPatchOperation {
 		} else {
 			return target;
 		}
+	}
+
+	protected JsonPointer getPath() {
+		return path;
 	}
 }

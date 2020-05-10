@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+//CHECKSTYLE:OFF
 package net.sf.jetro.stream;
 
 import static net.sf.jetro.stream.JsonScope.DANGLING_NAME;
@@ -631,3 +631,4 @@ public class JsonGenerator implements Closeable, Flushable {
 		}
 	}
 }
+//CHECKSTYLE:ON

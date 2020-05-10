@@ -33,11 +33,11 @@ import net.sf.jetro.visitor.JsonVisitor;
 public abstract class JsonPrimitive<T> implements JsonType {
 	private static final long serialVersionUID = -200661848423590056L;
 
-	protected final Set<JsonPath> paths = new HashSet<>();
+	private final Set<JsonPath> paths = new HashSet<>();
 	private T value;
 
 	public JsonPrimitive() {
-		paths.add(new JsonPath());
+		getPaths().add(new JsonPath());
 	}
 
 	public JsonPrimitive(final JsonPath path) {
@@ -50,16 +50,16 @@ public abstract class JsonPrimitive<T> implements JsonType {
 
 	public JsonPrimitive(final JsonPath path, final T value) {
 		if (path != null) {
-			paths.add(path);
+			getPaths().add(path);
 		} else {
-			paths.add(new JsonPath());
+			getPaths().add(new JsonPath());
 		}
 		
 		this.value = value;
 	}
 	
 	protected JsonPrimitive(final Set<JsonPath> paths, final T value) {
-		this.paths.addAll(paths);
+		this.getPaths().addAll(paths);
 		this.value = value;
 	}
 	
@@ -73,17 +73,17 @@ public abstract class JsonPrimitive<T> implements JsonType {
 	
 	@Override
 	public void addPath(JsonPath path) {
-		paths.add(path);
+		getPaths().add(path);
 	}
 	
 	@Override
 	public void resetPaths() {
-		paths.clear();
+		getPaths().clear();
 	}
 	
 	@Override
 	public Optional<JsonType> getElementAt(JsonPath path) {
-		if (this.paths.contains(path)) {
+		if (this.getPaths().contains(path)) {
 			return Optional.of(this);
 		} else {
 			return Optional.empty();
@@ -110,7 +110,7 @@ public abstract class JsonPrimitive<T> implements JsonType {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(getClass().getSimpleName() + " [value=").append(value)
-			.append(", paths=").append(paths).append("]");
+			.append(", paths=").append(getPaths()).append("]");
 		return builder.toString();
 	}
 	
@@ -124,19 +124,33 @@ public abstract class JsonPrimitive<T> implements JsonType {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
+		
 		@SuppressWarnings("rawtypes")
 		JsonPrimitive other = (JsonPrimitive) obj;
+		
 		if (value == null) {
-			if (other.value != null)
+			if (other.value != null) {
 				return false;
-		} else if (!value.equals(other.value))
+			}
+		} else if (!value.equals(other.value)) {
 			return false;
+		}
+		
 		return true;
+	}
+
+	Set<JsonPath> getPaths() {
+		return paths;
 	}
 }

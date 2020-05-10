@@ -129,12 +129,14 @@ public class JsonTreeBuildingVisitor extends PathAwareJsonVisitor<JsonElement> {
 				((JsonObject) top).add(property);
 			} else {
 				throw new MalformedJsonException(
-					"JSON property occurred outside of scope. Expected either VirtualJsonRoot or JsonObject, but was "
+					"JSON property occurred outside of scope. Expected either "
+					+ "VirtualJsonRoot or JsonObject, but was "
 							+ top.getClass().getSimpleName());
 			}
 		} else {
 			throw new MalformedJsonException(
-				"JSON primitive occurred outside of scope. Expected either VirtualJsonRoot, JsonArray or JsonProperty, but was "
+				"JSON primitive occurred outside of scope. Expected either"
+				+ "VirtualJsonRoot, JsonArray or JsonProperty, but was "
 						+ top.getClass().getSimpleName());
 		}
 	}
@@ -144,7 +146,8 @@ public class JsonTreeBuildingVisitor extends PathAwareJsonVisitor<JsonElement> {
 		JsonElement top = elements.peek();
 
 		if (!(top instanceof VirtualJsonRoot)) {
-			throw new MalformedJsonException("End out of scope. Expected VirtualJsonRoot, but was "
+			throw new MalformedJsonException("End out of scope. Expected "
+					+ "VirtualJsonRoot, but was "
 					+ top.getClass().getSimpleName());
 		}
 

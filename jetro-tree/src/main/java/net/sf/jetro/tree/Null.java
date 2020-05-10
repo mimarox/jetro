@@ -22,13 +22,13 @@ package net.sf.jetro.tree;
 /**
  * This class serves as <code>null</code> value.
  * 
- * @author matthias.rothe
+ * @author Matthias Rothe
  */
 public final class Null {
 	/**
-	 * The only instance of this class that will ever get generated
+	 * The only instance of this class that will ever get generated.
 	 */
-	public static final Null instance = new Null();
+	public static final Null INSTANCE = new Null();
 
 	private Null() {
 	}

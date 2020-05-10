@@ -19,6 +19,10 @@
  */
 package net.sf.jetro.path;
 
+/**
+ * This exception is thrown whenever a string cannot be compiled to a JsonPath object.
+ * @author Matthias Rothe
+ */
 class JsonPathCompilerException extends RuntimeException {
 	private static final long serialVersionUID = -3400652169089242399L;
 

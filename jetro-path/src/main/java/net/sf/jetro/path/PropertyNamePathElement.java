@@ -19,10 +19,23 @@
  */
 package net.sf.jetro.path;
 
+/**
+ * A path element specifying a property name. A property name may actually have a
+ * name, or a wildcard. Furthermore it might be optional. 
+ * 
+ * @author Matthias Rothe
+ */
 public class PropertyNamePathElement extends JsonPathElement {
 	private static final long serialVersionUID = 588262327967230142L;
 	private final String name;
 
+	/**
+	 * Create a new property name path element with the given name with optional
+	 * set to <code>false</code>.
+	 * 
+	 * @param name the name to use
+	 * @throws IllegalArgumentException if the name is null or empty
+	 */
 	public PropertyNamePathElement(final String name) {
 		this(name, false);
 	}
@@ -42,10 +55,18 @@ public class PropertyNamePathElement extends JsonPathElement {
 		this.name = null;
 	}
 
+	/**
+	 * Returns the name.
+	 * @return the name
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see net.sf.jetro.path.JsonPathElement#toString()
+	 */
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(".");
@@ -63,6 +84,10 @@ public class PropertyNamePathElement extends JsonPathElement {
 		return builder.toString();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see net.sf.jetro.path.JsonPathElement#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -71,25 +96,43 @@ public class PropertyNamePathElement extends JsonPathElement {
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see net.sf.jetro.path.JsonPathElement#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!super.equals(obj))
+		if (!super.equals(obj)) {
 			return false;
+		}
+		
 		return equalsIgnoreOptional((JsonPathElement) obj);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see net.sf.jetro.path.JsonPathElement#equalsIgnoreOptional(net.sf.jetro.path.JsonPathElement)
+	 */
 	@Override
 	public boolean equalsIgnoreOptional(JsonPathElement other) {
-		if (this == other)
+		if (this == other) {
 			return true;
-		if (getClass() != other.getClass())
+		}
+		
+		if (getClass() != other.getClass()) {
 			return false;
+		}
+		
 		PropertyNamePathElement that = (PropertyNamePathElement) other;
+		
 		if (name == null) {
-			if (that.name != null)
-				return false;
-		} else if (!name.equals(that.name))
+			if (that.name != null) {
+				return false;				
+			}
+		} else if (!name.equals(that.name)) {
 			return false;
+		}
+		
 		return super.equalsIgnoreOptional(other);
 	}
 }

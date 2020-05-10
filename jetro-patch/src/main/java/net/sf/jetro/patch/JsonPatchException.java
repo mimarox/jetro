@@ -23,6 +23,8 @@ package net.sf.jetro.patch;
  * If thrown this exception indicates that an error occurred while a JSON patch
  * was applied and requires that the original source JSON structure be returned
  * unchanged.
+ * 
+ * @author Matthias Rothe
  */
 public class JsonPatchException extends Exception {
 	private static final long serialVersionUID = -912686328514490899L;

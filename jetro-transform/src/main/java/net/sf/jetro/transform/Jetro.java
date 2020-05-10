@@ -143,6 +143,7 @@ public class Jetro {
 	 * can serialize.
 	 * 
 	 * @param source the Object to serialize and transform
+	 * @param context the context to use to serialize the source
 	 * @return an instance of {@link TransformSourceCollector}
 	 */
 	public static TransformSourceCollector transform(final Object source,

@@ -22,6 +22,9 @@ package net.sf.jetro.object.deserializer;
 import net.sf.jetro.object.reflect.TypeToken;
 
 /**
+ * Instances of this class create instances of the given type.
+ * 
+ * @param <T> the type of object to create
  * @author matthias.rothe
  * @since 26.03.14.
  */

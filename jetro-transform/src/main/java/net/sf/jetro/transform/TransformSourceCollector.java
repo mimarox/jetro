@@ -33,6 +33,7 @@ public class TransformSourceCollector {
 	 * any of its methods results in a no-op transformation.
 	 * 
 	 * @param transformer the ChainedJsonVisitor to perform the transformation
+	 * @param <R> the return type of {@link ChainedJsonVisitor#getVisitingResult()}
 	 * @return an instance of {@link TransformApplier}
 	 * @see #applyingNone()
 	 */

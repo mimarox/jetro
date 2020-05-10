@@ -2,7 +2,7 @@
  * #%L
  * Jetro Stream
  * %%
- * Copyright (C) 2013 - 2016 The original author or authors.
+ * Copyright (C) 2013 - 2020 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+//CHECKSTYLE:OFF
 package net.sf.jetro.stream;
 
 import java.io.IOException;
@@ -57,3 +58,4 @@ public class JsonWriter extends JsonGenerator {
 		super.close();
 	}
 }
+//CHECKSTYLE:ON

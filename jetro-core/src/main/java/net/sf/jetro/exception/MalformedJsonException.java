@@ -19,6 +19,8 @@ package net.sf.jetro.exception;
 /**
  * Thrown when a reader encounters malformed JSON. Some syntax errors can be
  * ignored by calling JsonReader.setLenient(boolean).
+ * 
+ * @author unknown
  */
 public final class MalformedJsonException extends RuntimeException {
 	private static final long serialVersionUID = 1L;

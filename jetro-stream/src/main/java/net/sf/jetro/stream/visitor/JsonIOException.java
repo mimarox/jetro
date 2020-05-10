@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+//CHECKSTYLE:OFF
 package net.sf.jetro.stream.visitor;
 
 public class JsonIOException extends RuntimeException {
@@ -30,3 +31,4 @@ public class JsonIOException extends RuntimeException {
 		super(message, cause);
 	}
 }
+//CHECKSTYLE:ON

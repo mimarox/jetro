@@ -21,6 +21,12 @@ package net.sf.jetro.path;
 
 import java.util.Arrays;
 
+/**
+ * This class compiles JsonPath strings to JsonPath objects.
+ * 
+ * @author Matthias Rothe
+ * @see JsonPath#compile(String)
+ */
 public class JsonPathCompiler {
 	private enum JsonPathToken {
 		START_PATH("$"), START_NAME("."), NAME(null), START_INDEX("["), INDEX(null),
@@ -30,7 +36,7 @@ public class JsonPathCompiler {
 
 		private String sequence;
 
-		private JsonPathToken(final String sequence) {
+		JsonPathToken(final String sequence) {
 			this.sequence = sequence;
 		}
 
@@ -71,6 +77,15 @@ public class JsonPathCompiler {
 			JsonPathToken.START_NAME, JsonPathToken.START_INDEX,
 			JsonPathToken.MATCHES_ALL_FURTHER };
 
+	/**
+	 * Compiles the given JsonPath string to a JsonPath object.
+	 * 
+	 * @param jsonPath the JsonPath string to compile
+	 * @return the compiled JsonPath object
+	 * @throws JsonPathCompilerException if the given jsonPath cannot be compiled
+	 * @throws IllegalArgumentException if the given jsonPath is null or empty
+	 * @see JsonPath#compile(String)
+	 */
 	public JsonPath compile(final String jsonPath) {
 		if (jsonPath == null || "".equals(jsonPath)) {
 			throw new IllegalArgumentException("jsonPath must not be null or empty");
@@ -146,12 +161,7 @@ public class JsonPathCompiler {
 		boolean found = false;
 
 		for (JsonPathToken expectedToken : expectedTokens) {
-			if (((expectedToken == JsonPathToken.NAME || 
-					expectedToken == JsonPathToken.INDEX) &&
-					(currentToken == JsonPathToken.CHARACTER ||
-					currentToken == JsonPathToken.WILDCARD ||
-					currentToken == JsonPathToken.END_OF_ARRAY))
-					|| currentToken == expectedToken) {
+			if (isExpectedTokenOrValidSubstitute(currentToken, expectedToken)) {
 				context.currentToken = currentToken;
 				currentToken = expectedToken;
 				found = true;
@@ -175,6 +185,15 @@ public class JsonPathCompiler {
 
 		// just to satisfy compiler
 		return null;
+	}
+
+	private boolean isExpectedTokenOrValidSubstitute(JsonPathToken currentToken, JsonPathToken expectedToken) {
+		return ((expectedToken == JsonPathToken.NAME || 
+				expectedToken == JsonPathToken.INDEX) &&
+				(currentToken == JsonPathToken.CHARACTER ||
+				currentToken == JsonPathToken.WILDCARD ||
+				currentToken == JsonPathToken.END_OF_ARRAY))
+				|| currentToken == expectedToken;
 	}
 
 	private void consume(final CompilerContext context, final JsonPathToken token) {
@@ -219,14 +238,17 @@ public class JsonPathCompiler {
 				case MATCHES_ALL_FURTHER:
 					break proceed;
 				default:
-					throwExpectedAnyTokens(context, new JsonPathToken[] { JsonPathToken.CHARACTER,
-							JsonPathToken.START_NAME, JsonPathToken.START_INDEX, JsonPathToken.MATCHES_ALL_FURTHER,
+					throwExpectedAnyTokens(context, new JsonPathToken[] {
+							JsonPathToken.CHARACTER, JsonPathToken.START_NAME,
+							JsonPathToken.START_INDEX, JsonPathToken.MATCHES_ALL_FURTHER,
 							JsonPathToken.OPTIONAL },
 						currentToken, context.currPos + 1);
 				}
 			}
 
+			//CHECKSTYLE:OFF
 			name = new String(context.jsonPath, context.offset, context.currPos - context.offset);
+			//CHECKSTYLE:ON
 		}
 
 		// OPTIONAL
@@ -282,8 +304,10 @@ public class JsonPathCompiler {
 				throwExpectedToken(context, JsonPathToken.END_INDEX, JsonPathToken.END_PATH, context.currPos + 1);
 			}
 
+			//CHECKSTYLE:OFF
 			String chars = new String(context.jsonPath, context.offset, context.currPos - context.offset);
-
+			//CHECKSTYLE:ON
+			
 			try {
 				index = Integer.parseInt(chars);
 
@@ -291,14 +315,21 @@ public class JsonPathCompiler {
 					throw new NumberFormatException();
 				}
 			} catch (NumberFormatException e) {
+				//CHECKSTYLE:OFF
 				throw new JsonPathCompilerException("Expected a non-negative integer but found " + chars + " in "
 						+ new String(context.jsonPath) + " at position " + (context.offset + 1));
+				//CHECKSTYLE:ON
 			}
 		}
 
 		// END INDEX
 		consume(context, expect(context, JsonPathToken.END_INDEX));
 
+		createArrayIndexElement(context, wildcard, optional, nextToLast, index);
+	}
+
+	private void createArrayIndexElement(final CompilerContext context, boolean wildcard, boolean optional,
+			boolean nextToLast, Integer index) {
 		if (nextToLast) {
 			context.builder.append(new ArrayIndexPathElement());
 
@@ -337,14 +368,18 @@ public class JsonPathCompiler {
 
 	private void throwExpectedToken(final CompilerContext context, final JsonPathToken expectedToken,
 			final JsonPathToken actualToken, final int position) {
+		//CHECKSTYLE:OFF
 		throw new JsonPathCompilerException("Expected " + expectedToken + " but found " + actualToken + " in "
 				+ new String(context.jsonPath) + " at position " + position);
+		//CHECKSTYLE:ON
 	}
 
 	private void throwExpectedAnyTokens(final CompilerContext context, final JsonPathToken[] expectedTokens,
 			final JsonPathToken actualToken, final int position) {
+		//CHECKSTYLE:OFF
 		throw new JsonPathCompilerException("Expected any of " + Arrays.toString(expectedTokens) + " but found "
 				+ actualToken + " in " + new String(context.jsonPath) + " at position " + position);
+		//CHECKSTYLE:ON
 	}
 
 	private void reset(final CompilerContext context) {

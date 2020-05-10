@@ -55,6 +55,7 @@
 		<bundle.description>${project.description}</bundle.description>
 		<bundle.build-by>Maven</bundle.build-by>
 		<bundle.namespace>net.sf.jetro</bundle.namespace>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -88,7 +89,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>2.8</version>
+				<version>3.1.1</version>
 				<configuration>
 					<configLocation>config/checkstyle-rules.xml</configLocation>
 					<consoleOutput>true</consoleOutput>
@@ -169,7 +170,7 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>2.8</version>
+					<version>3.1.1</version>
 					<executions>
 						<execution>
 							<id>check</id>
@@ -180,7 +181,7 @@
 						</execution>
 					</executions>
 					<configuration>
-						<failOnViolation>false</failOnViolation>
+						<failOnViolation>true</failOnViolation>
 						<violationSeverity>warning</violationSeverity>
 						<configLocation>config/checkstyle-rules.xml</configLocation>
 						<consoleOutput>true</consoleOutput>

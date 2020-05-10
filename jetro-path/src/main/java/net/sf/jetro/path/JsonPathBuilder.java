@@ -45,12 +45,14 @@ class JsonPathBuilder {
 			}
 		}
 
-		JsonPath path = new JsonPath(pathElements.toArray(new JsonPathElement[pathElements.size()]), containsOptionals);
+		JsonPath path = new JsonPath(pathElements.toArray(
+				new JsonPathElement[pathElements.size()]), containsOptionals);
 
 		if (notOnlyOptional) {
 			return path;
 		} else {
-			throw new JsonPathCompilerException("A JsonPath cannot only contain optional path elements, but [" + path + "] does.");
+			throw new JsonPathCompilerException("A JsonPath cannot only contain "
+					+ "optional path elements, but [" + path + "] does.");
 		}
 	}
 

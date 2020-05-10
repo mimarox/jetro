@@ -32,7 +32,7 @@ public class MovePatchOperation extends FromBasedPatchOperation {
 	public MovePatchOperation(final JsonObject patchDefinition) {
 		super(patchDefinition);
 		
-		if (from.isParentPointerOf(path)) {
+		if (getFrom().isParentPointerOf(getPath())) {
 			throw new IllegalArgumentException("The from JSON Pointer must not be a parent "
 					+ "of the path JSON Pointer");
 		}
@@ -43,12 +43,12 @@ public class MovePatchOperation extends FromBasedPatchOperation {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
 		JsonType target = prepareFrom(source);
-		Optional<JsonType> optional = target.getElementAt(from.toJsonPath());
+		Optional<JsonType> optional = target.getElementAt(getFrom().toJsonPath());
 		
 		if (optional.isPresent()) {
 			return handleTarget(createMoveOperations(optional.get()).applyPatch(target));
 		} else {
-			throw new JsonPatchException("Couldn't move non-existing value from " + from +
+			throw new JsonPatchException("Couldn't move non-existing value from " + getFrom() +
 					" in " + target);
 		}
 	}
@@ -77,14 +77,14 @@ public class MovePatchOperation extends FromBasedPatchOperation {
 
 	private RemovePatchOperation createRemoveOperation() {
 		final JsonObject patchDefinition = new JsonObject();
-		patchDefinition.add(new JsonProperty("path", from.toString()));
+		patchDefinition.add(new JsonProperty("path", getFrom().toString()));
 		
 		return new RemovePatchOperation(patchDefinition);
 	}
 
 	private AddPatchOperation createAddOperation(final JsonType value) {
 		final JsonObject patchDefinition = new JsonObject();
-		patchDefinition.add(new JsonProperty("path", path.toString()));
+		patchDefinition.add(new JsonProperty("path", getPath().toString()));
 		patchDefinition.add(new JsonProperty("value", value));
 		
 		return new AddPatchOperation(patchDefinition);

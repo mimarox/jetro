@@ -38,13 +38,13 @@ public class CopyPatchOperation extends FromBasedPatchOperation {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
 		JsonType target = prepareFrom(source);
-		Optional<JsonType> optional = target.getElementAt(from.toJsonPath());
+		Optional<JsonType> optional = target.getElementAt(getFrom().toJsonPath());
 		
 		if (optional.isPresent()) {
 			return handleTarget(createAddOperation(optional.get()).applyPatch(target));
 		} else {
-			throw new JsonPatchException("Couldn't copy non-existing value from " + from +
-					" in " + target);
+			throw new JsonPatchException("Couldn't copy non-existing value from " +
+					getFrom() + " in " + target);
 		}
 	}
 
@@ -63,7 +63,7 @@ public class CopyPatchOperation extends FromBasedPatchOperation {
 
 	private AddPatchOperation createAddOperation(final JsonType value) {
 		final JsonObject patchDefinition = new JsonObject();
-		patchDefinition.add(new JsonProperty("path", path.toString()));
+		patchDefinition.add(new JsonProperty("path", getPath().toString()));
 		patchDefinition.add(new JsonProperty("value", value));
 		
 		return new AddPatchOperation(patchDefinition);

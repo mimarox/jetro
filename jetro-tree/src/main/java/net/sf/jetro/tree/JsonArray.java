@@ -38,10 +38,10 @@ import net.sf.jetro.visitor.JsonVisitor;
 public final class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	private static final long serialVersionUID = -853759861392315220L;
 
-	final Set<JsonPath> paths = new HashSet<>();
+	private final Set<JsonPath> paths = new HashSet<>();
 
 	public JsonArray() {
-		paths.add(new JsonPath());
+		getPaths().add(new JsonPath());
 	}
 
 	public JsonArray(final JsonPath path) {
@@ -56,15 +56,15 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		this(values, false);
 		
 		if (path != null) {
-			paths.add(path);
+			getPaths().add(path);
 		} else {
-			paths.add(new JsonPath());
+			getPaths().add(new JsonPath());
 		}
 	}
 
 	private JsonArray(final Set<JsonPath> paths, final List<? extends JsonType> values) {
 		this(values, true);
-		this.paths.addAll(paths);
+		this.getPaths().addAll(paths);
 	}
 
 	private JsonArray(final List<? extends JsonType> values, final boolean deepCopy) {
@@ -81,17 +81,17 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	
 	@Override
 	public JsonArray deepCopy() {
-		return new JsonArray(paths, this);
+		return new JsonArray(getPaths(), this);
 	}
 
 	@Override
 	public void addPath(final JsonPath path) {
-		paths.add(path);
+		getPaths().add(path);
 	}
 
 	@Override
 	public void resetPathsRecursively() {
-		paths.clear();
+		getPaths().clear();
 		forEach(element -> element.resetPaths());
 	}
 	
@@ -105,7 +105,7 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		for (int i = 0; i < size(); i++) {
 			JsonType element = get(i);
 			
-			for (JsonPath path : paths) {
+			for (JsonPath path : getPaths()) {
 				element.addPath(path.append(new ArrayIndexPathElement(i)));
 			}
 			
@@ -135,13 +135,13 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("JsonArray [values=").append(super.toString())
-			.append(", paths=").append(paths).append("]");
+			.append(", paths=").append(getPaths()).append("]");
 		return builder.toString();
 	}
 
 	@Override
 	public Optional<JsonType> getElementAt(final JsonPath path) {
-		if (paths.contains(path)) {
+		if (getPaths().contains(path)) {
 			return Optional.of(this);
 		} else {
 			Optional<JsonPath> parentPath = findParentPath(path);
@@ -159,7 +159,7 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	}
 	
 	private Optional<JsonPath> findParentPath(final JsonPath childPath) {
-		return paths.parallelStream().filter(parentPath -> 
+		return getPaths().parallelStream().filter(parentPath -> 
 			parentPath.getDepth() < childPath.getDepth() &&
 			childPath.isChildPathOf(parentPath) &&
 			childPath.hasArrayIndexAt(parentPath.getDepth())
@@ -175,8 +175,19 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 			throw new IllegalArgumentException("Cannot add JSON tree root");
 		}
 		
-		boolean success = false;
 		Optional<JsonType> parentElement = getElementAt(path.removeLastElement());
+		boolean success = doAddElementAt(path, element, parentElement);
+		
+		if (success) {
+			recalculateTreePaths(isTreeRoot());
+		}
+		
+		return success;
+	}
+
+	private boolean doAddElementAt(final JsonPath path, final JsonType element,
+			final Optional<JsonType> parentElement) {
+		boolean success = false;
 		
 		if (parentElement.isPresent() && parentElement.get() instanceof JsonCollection) {
 			if (parentElement.get() instanceof JsonArray &&
@@ -188,7 +199,7 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 					if (path.hasEndOfArrayAt(path.getDepth() - 1)) {
 						parent.add(element);
 					} else {
-						parent.add(path.getArrayIndexAt(path.getDepth() - 1), element);						
+						parent.add(path.getArrayIndexAt(path.getDepth() - 1), element);
 					}
 					success = true;
 				} catch (IndexOutOfBoundsException e) {
@@ -205,10 +216,6 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 					success = true;
 				}
 			}
-		}
-		
-		if (success) {
-			recalculateTreePaths(isTreeRoot());
 		}
 		
 		return success;
@@ -305,7 +312,7 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	}
 
 	private boolean isTreeRoot() {
-		return paths.size() == 1 && paths.contains(new JsonPath());
+		return getPaths().size() == 1 && getPaths().contains(new JsonPath());
 	}
 
 	private JsonArray prepareJsonArrayForChildManipulation(Optional<JsonType> parentElement,
@@ -326,7 +333,7 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	}
 	
 	private boolean hasMultiplePaths(JsonArray jsonArray) {
-		return jsonArray.paths.size() > 1;
+		return jsonArray.getPaths().size() > 1;
 	}
 	
 	private JsonObject prepareJsonObjectForChildManipulation(Optional<JsonType> parentElement,
@@ -347,6 +354,10 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 	}
 
 	private boolean hasMultiplePaths(JsonObject jsonObject) {
-		return jsonObject.paths.size() > 1;
+		return jsonObject.getPaths().size() > 1;
+	}
+
+	Set<JsonPath> getPaths() {
+		return paths;
 	}
 }

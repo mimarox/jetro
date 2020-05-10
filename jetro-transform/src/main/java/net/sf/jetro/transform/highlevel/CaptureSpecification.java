@@ -25,6 +25,130 @@ import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
  * @author Matthias Rothe
  */
 public class CaptureSpecification {
+	private final class EditAndReplaceTransformer
+	<S extends JsonType, T extends JsonType> extends PathAwareJsonVisitor<Void> {
+		private final Function<S, T> editor;
+		private JsonTreeBuildingVisitor treeBuilder = new JsonTreeBuildingVisitor();
+
+		private EditAndReplaceTransformer(Function<S, T> editor) {
+			this.editor = editor;
+		}
+
+		@Override
+		protected boolean doBeforeVisitObject() {
+			return passOn();
+		}
+
+		@Override
+		protected boolean doBeforeVisitArray() {
+			return passOn();
+		}
+
+		@Override
+		protected Boolean doBeforeVisitValue(final boolean value) {
+			return passOn() ? value : null;
+		}
+
+		@Override
+		protected Number doBeforeVisitValue(final Number value) {
+			return passOn() ? value : null;
+		}
+
+		@Override
+		protected String doBeforeVisitValue(final String value) {
+			return passOn() ? value : null;
+		}
+
+		@Override
+		protected boolean doBeforeVisitNullValue() {
+			return passOn();
+		}
+
+		private boolean passOn() {
+			if (currentPath().matches(path)) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+		@Override
+		protected JsonObjectVisitor<Void> afterVisitObject(
+				final JsonObjectVisitor<Void> visitor) {
+			JsonObjectVisitor<Void> actualVisitor = visitor;
+			
+			if (currentPath().matches(path)) {
+				MultiplexingJsonVisitor<Void> multiVisitor =
+						new MultiplexingJsonVisitor<Void>(visitor, treeBuilder);
+				
+				actualVisitor = multiVisitor.visitObject();
+			}
+			
+			return super.afterVisitObject(actualVisitor);
+		}
+
+		@Override
+		protected void afterVisitObjectEnd() {
+			handleAfterVisitEnd();
+		}
+
+		@Override
+		protected JsonArrayVisitor<Void> afterVisitArray(
+				final JsonArrayVisitor<Void> visitor) {
+			JsonArrayVisitor<Void> actualVisitor = visitor;
+			
+			if (currentPath().matches(path)) {						
+				MultiplexingJsonVisitor<Void> multiVisitor =
+						new MultiplexingJsonVisitor<Void>(visitor, treeBuilder);
+				
+				actualVisitor = multiVisitor.visitArray();
+			}
+			
+			return super.afterVisitArray(actualVisitor);
+		}
+
+		@Override
+		protected void afterVisitArrayEnd() {
+			handleAfterVisitEnd();
+		}
+
+		private void handleAfterVisitEnd() {
+			if (currentPath().matches(path)) {
+				handleAfterVisitValue((JsonType) treeBuilder.getVisitingResult());
+			}
+		}
+
+		@Override
+		protected void afterVisitValue(final Boolean value) {
+			handleAfterVisitValue(new JsonBoolean(value));
+		}
+
+		@Override
+		protected void afterVisitValue(final Number value) {
+			handleAfterVisitValue(new JsonNumber(value));
+		}
+
+		@Override
+		protected void afterVisitValue(final String value) {
+			handleAfterVisitValue(new JsonString(value));
+		}
+
+		@SuppressWarnings("unchecked")
+		private void handleAfterVisitValue(final JsonType jsonType) {
+			JsonVisitor<Void> visitor = getNextVisitor();
+			
+			if (visitor != null && currentPath().matches(path)) {
+				JsonType editedValue = editor.apply((S) jsonType);
+				
+				if (editedValue != null) {
+					editedValue.mergeInto(visitor);
+				} else {
+					visitor.visitNullValue();
+				}
+			}
+		}
+	}
+
 	private static final String EDITOR_NOT_NULL = "editor must not be null";
 	
 	private final JsonPath path;
@@ -47,6 +171,8 @@ public class CaptureSpecification {
 	 * 
 	 * @param editor The editor to use
 	 * @return an instance of {@link CaptureEditSpecification}
+	 * @param <S> The source type
+	 * @param <T> The target type
 	 */
 	public <S extends JsonType, T extends JsonType> CaptureEditSpecification<S, T>
 	edit(final Function<S, T> editor) {
@@ -64,6 +190,8 @@ public class CaptureSpecification {
 	 * 
 	 * @param editor The editor to use for each element
 	 * @return an instance of {@link CaptureEditSpecification}
+	 * @param <S> The source type
+	 * @param <T> The target type
 	 */
 	public <S extends JsonType, T extends JsonType>
 	CaptureEditSpecification<JsonArray, JsonArray>
@@ -101,129 +229,15 @@ public class CaptureSpecification {
 	 * as input and converting that to any JsonType as output.
 	 * 
 	 * @param editor The editor to use
+	 * @param <S> The source type
+	 * @param <T> The target type
 	 */
 	public <S extends JsonType, T extends JsonType> void
 	editAndReplace(final Function<S, T> editor) {
 		Objects.requireNonNull(editor, EDITOR_NOT_NULL);
 		
 		specification.addChainedJsonVisitorSupplier(() -> {
-			return new PathAwareJsonVisitor<Void>() {
-				private JsonTreeBuildingVisitor treeBuilder = new JsonTreeBuildingVisitor();
-				
-				@Override
-				protected boolean doBeforeVisitObject() {
-					return passOn();
-				}
-				
-				@Override
-				protected boolean doBeforeVisitArray() {
-					return passOn();
-				}
-				
-				@Override
-				protected Boolean doBeforeVisitValue(final boolean value) {
-					return passOn() ? value : null;
-				}
-				
-				@Override
-				protected Number doBeforeVisitValue(final Number value) {
-					return passOn() ? value : null;
-				}
-				
-				@Override
-				protected String doBeforeVisitValue(final String value) {
-					return passOn() ? value : null;
-				}
-				
-				@Override
-				protected boolean doBeforeVisitNullValue() {
-					return passOn();
-				}
-				
-				private boolean passOn() {
-					if (currentPath().matches(path)) {
-						return false;
-					} else {
-						return true;
-					}
-				}
-				
-				@Override
-				protected JsonObjectVisitor<Void> afterVisitObject(
-						final JsonObjectVisitor<Void> visitor) {
-					JsonObjectVisitor<Void> actualVisitor = visitor;
-					
-					if (currentPath().matches(path)) {
-						MultiplexingJsonVisitor<Void> multiVisitor =
-								new MultiplexingJsonVisitor<Void>(visitor, treeBuilder);
-						
-						actualVisitor = multiVisitor.visitObject();
-					}
-					
-					return super.afterVisitObject(actualVisitor);
-				}
-				
-				@Override
-				protected void afterVisitObjectEnd() {
-					handleAfterVisitEnd();
-				}
-				
-				@Override
-				protected JsonArrayVisitor<Void> afterVisitArray(
-						final JsonArrayVisitor<Void> visitor) {
-					JsonArrayVisitor<Void> actualVisitor = visitor;
-					
-					if (currentPath().matches(path)) {						
-						MultiplexingJsonVisitor<Void> multiVisitor =
-								new MultiplexingJsonVisitor<Void>(visitor, treeBuilder);
-						
-						actualVisitor = multiVisitor.visitArray();
-					}
-					
-					return super.afterVisitArray(actualVisitor);
-				}
-				
-				@Override
-				protected void afterVisitArrayEnd() {
-					handleAfterVisitEnd();
-				}
-				
-				private void handleAfterVisitEnd() {
-					if (currentPath().matches(path)) {
-						handleAfterVisitValue((JsonType) treeBuilder.getVisitingResult());
-					}
-				}
-				
-				@Override
-				protected void afterVisitValue(final Boolean value) {
-					handleAfterVisitValue(new JsonBoolean(value));
-				}
-				
-				@Override
-				protected void afterVisitValue(final Number value) {
-					handleAfterVisitValue(new JsonNumber(value));
-				}
-				
-				@Override
-				protected void afterVisitValue(final String value) {
-					handleAfterVisitValue(new JsonString(value));
-				}
-
-				@SuppressWarnings("unchecked")
-				private void handleAfterVisitValue(final JsonType jsonType) {
-					JsonVisitor<Void> visitor = getNextVisitor();
-					
-					if (visitor != null && currentPath().matches(path)) {
-						JsonType editedValue = editor.apply((S) jsonType);
-						
-						if (editedValue != null) {
-							editedValue.mergeInto(visitor);
-						} else {
-							visitor.visitNullValue();
-						}
-					}
-				}
-			};
+			return new EditAndReplaceTransformer<>(editor);
 		});
 	}
 }

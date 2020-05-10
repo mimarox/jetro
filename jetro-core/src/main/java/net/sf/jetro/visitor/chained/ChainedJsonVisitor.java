@@ -23,6 +23,12 @@ import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
 import net.sf.jetro.visitor.JsonVisitor;
 
+/**
+ * A {@link JsonVisitor} supporting chaining of visitors.
+ * 
+ * @param <R> the return type of {@link #getVisitingResult()}
+ * @author Matthias Rothe
+ */
 public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 	private JsonVisitor<R> nextVisitor;
 
@@ -45,7 +51,8 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 	@SuppressWarnings("unchecked")
 	public final JsonObjectVisitor<R> visitObject() {
 		boolean passOn = beforeVisitObject();
-		return afterVisitObject(getNextVisitor() != null && passOn ? getNextVisitor().visitObject() : ChainedJsonObjectVisitor.NO_OP_VISITOR);
+		return afterVisitObject(getNextVisitor() != null && passOn ?
+				getNextVisitor().visitObject() : ChainedJsonObjectVisitor.NO_OP_VISITOR);
 	}
 
 	protected boolean beforeVisitObject() {
@@ -60,7 +67,8 @@ public abstract class ChainedJsonVisitor<R> implements JsonVisitor<R> {
 	@SuppressWarnings("unchecked")
 	public final JsonArrayVisitor<R> visitArray() {
 		boolean passOn = beforeVisitArray();
-		return afterVisitArray(getNextVisitor() != null && passOn ? getNextVisitor().visitArray() : ChainedJsonArrayVisitor.NO_OP_VISITOR);
+		return afterVisitArray(getNextVisitor() != null && passOn ?
+				getNextVisitor().visitArray() : ChainedJsonArrayVisitor.NO_OP_VISITOR);
 	}
 
 	protected boolean beforeVisitArray() {
