@@ -12,12 +12,15 @@ Add needed dependencies:
 ```
 <dependency>
     <groupId>net.sf.jetro</groupId>
-    <artifactId>jetro-stream</artifactId>
-    <version>2.0.0</version>
+    <artifactId>jetro-patch</artifactId>
+    <version>2.1.1</version>
 </dependency>
+```
+or
+```
 <dependency>
     <groupId>net.sf.jetro</groupId>
-    <artifactId>jetro-object</artifactId>
+    <artifactId>jetro-transform</artifactId>
     <version>2.1.1</version>
 </dependency>
 ```
