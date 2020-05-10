@@ -13,7 +13,7 @@ Add needed dependencies:
 <dependency>
     <groupId>net.sf.jetro</groupId>
     <artifactId>jetro-patch</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 or
@@ -21,7 +21,7 @@ or
 <dependency>
     <groupId>net.sf.jetro</groupId>
     <artifactId>jetro-transform</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 
