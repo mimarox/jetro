@@ -18,7 +18,7 @@ Add needed dependencies:
 <dependency>
     <groupId>net.sf.jetro</groupId>
     <artifactId>jetro-object</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 
