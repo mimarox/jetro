@@ -20,8 +20,13 @@
 package net.sf.jetro.tree.builder;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.util.Objects;
 
 import net.sf.jetro.stream.JsonReader;
 import net.sf.jetro.stream.visitor.StreamVisitingReader;
@@ -63,26 +68,88 @@ public class JsonTreeBuilder {
 		return root;
 	}
 	
+	public JsonElement build(final URL url) throws IOException {
+		Objects.requireNonNull(url, "url must not be null");
+		return build(url.openStream());
+	}
+	
+	public JsonElement build(final URL url, final String charsetName)
+			throws UnsupportedEncodingException, IOException {
+		Objects.requireNonNull(url, "url must not be null");
+		Objects.requireNonNull(charsetName, "charsetName must not be null");
+
+		return build(url.openStream(), charsetName);
+	}
+	
+	public JsonElement build(final URL url, final ChainedJsonVisitor<?>... transformers)
+			throws IOException {
+		Objects.requireNonNull(url, "url must not be null");
+		return build(url.openStream(), transformers);
+	}
+	
+	public JsonElement build(final URL url, final String charsetName,
+			final ChainedJsonVisitor<?>... transformers)
+					throws UnsupportedEncodingException, IOException {
+		Objects.requireNonNull(url, "url must not be null");
+		Objects.requireNonNull(charsetName, "charsetName must not be null");
+
+		return build(url.openStream(), charsetName, transformers);		
+	}
+	
+	public JsonElement build(final InputStream in) {
+		Objects.requireNonNull(in, "in must not be null");
+
+		try {
+			return build(new InputStreamReader(in, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public JsonElement build(final InputStream in, final String charsetName)
+			throws UnsupportedEncodingException {
+		Objects.requireNonNull(in, "in must not be null");
+		Objects.requireNonNull(charsetName, "charsetName must not be null");
+		
+		return build(new InputStreamReader(in, charsetName));
+	}
+	
+	public JsonElement build(final InputStream in, final ChainedJsonVisitor<?>... transformers) {
+		Objects.requireNonNull(in, "in must not be null");
+
+		try {
+			return build(new InputStreamReader(in, "UTF-8"), transformers);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public JsonElement build(final InputStream in, final String charsetName,
+			final ChainedJsonVisitor<?>... transformers)
+					throws UnsupportedEncodingException {
+		Objects.requireNonNull(in, "in must not be null");
+		Objects.requireNonNull(charsetName, "charsetName must not be null");
+		
+		return build(new InputStreamReader(in, charsetName), transformers);		
+	}
+	
 	public JsonElement build(final Reader in) {
 		return build(in, (ChainedJsonVisitor<?>[]) null);
 	}
 	
-	public JsonElement build(final Reader in, ChainedJsonVisitor<?>... transformers) {
+	public JsonElement build(final Reader in, final ChainedJsonVisitor<?>... transformers) {
 		JsonReader reader = new JsonReader(in);
 		reader.setLenient(lenient);
 
-		StreamVisitingReader visitingReader = new StreamVisitingReader(reader);
-		JsonTreeBuildingVisitor treeBuildingVisitor = new JsonTreeBuildingVisitor();
-		JsonVisitor<?> visitor = buildTransformerChain(transformers, treeBuildingVisitor);
+		try (StreamVisitingReader visitingReader = new StreamVisitingReader(reader)) {
+			JsonTreeBuildingVisitor treeBuildingVisitor = new JsonTreeBuildingVisitor();
+			JsonVisitor<?> visitor = buildTransformerChain(transformers, treeBuildingVisitor);
 
-		visitingReader.accept(visitor);
-		try {
-			visitingReader.close();
+			visitingReader.accept(visitor);
+			return treeBuildingVisitor.getVisitingResult();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		
-		return treeBuildingVisitor.getVisitingResult();
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
