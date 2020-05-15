@@ -53,7 +53,7 @@ public class JsonPatchTest {
 	}
 	
 	@Test
-	public void shouldPatchReader() {
+	public void shouldPatchReader() throws IOException {
 		JsonPatchOperationsCollector collector = patch(new StringReader("[]"));
 		assertNotNull(collector);
 		assertEquals(collector.getSource(), new JsonArray());

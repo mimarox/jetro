@@ -52,26 +52,23 @@ public class JsonPatch {
 	public static JsonPatchOperationsCollector patch(final String source) {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 
-		JsonElement jsonElement = BUILDER.build(source);
+		JsonElement jsonElement = BUILDER.buildFrom(source);
 		return handleJsonElement(jsonElement);
 	}
 	
-	public static JsonPatchOperationsCollector patch(final InputStream source) {
+	public static JsonPatchOperationsCollector patch(final InputStream source) throws IOException {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
 		try (InputStreamReader reader = new InputStreamReader(source, "UTF-8")) {
-			JsonElement jsonElement = BUILDER.build(reader);
+			JsonElement jsonElement = BUILDER.buildFrom(reader);
 			return handleJsonElement(jsonElement);
-		} catch (IOException e) {
-			//should never happen
-			throw new RuntimeException(e);
 		}
 	}
 
-	public static JsonPatchOperationsCollector patch(final Reader source) {
+	public static JsonPatchOperationsCollector patch(final Reader source) throws IOException {
 		Objects.requireNonNull(source, "Argument 'source' must not be null");
 		
-		JsonElement jsonElement = BUILDER.build(source);
+		JsonElement jsonElement = BUILDER.buildFrom(source);
 		return handleJsonElement(jsonElement);
 	}
 

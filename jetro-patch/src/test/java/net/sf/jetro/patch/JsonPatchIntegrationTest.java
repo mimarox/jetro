@@ -27,6 +27,6 @@ public class JsonPatchIntegrationTest {
 	}
 
 	private String normalize(String target) {
-		return BUILDER.build(target).toJson();
+		return BUILDER.buildFrom(target).toJson();
 	}
 }

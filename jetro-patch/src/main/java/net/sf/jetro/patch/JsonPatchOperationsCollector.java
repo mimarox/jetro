@@ -19,6 +19,7 @@
  */
 package net.sf.jetro.patch;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -56,16 +57,15 @@ public class JsonPatchOperationsCollector {
 	public JsonPatchApplier applying(final String patchOperations) {
 		Objects.requireNonNull(patchOperations, "Argument 'patchOperations' must not be null");
 		
-		JsonElement jsonElement = BUILDER.build(patchOperations);
+		JsonElement jsonElement = BUILDER.buildFrom(patchOperations);
 		return handleJsonElement(jsonElement);
 	}
 
-	public JsonPatchApplier applying(final InputStream patchOperations) {
+	public JsonPatchApplier applying(final InputStream patchOperations) throws IOException {
 		Objects.requireNonNull(patchOperations, "Argument 'patchOperations' must not be null");
 		
-		try {
-			JsonElement jsonElement = BUILDER.build(
-					new InputStreamReader(patchOperations, "UTF-8"));
+		try (InputStreamReader reader = new InputStreamReader(patchOperations, "UTF-8")) {
+			JsonElement jsonElement = BUILDER.buildFrom(reader);
 			return handleJsonElement(jsonElement);
 		} catch (UnsupportedEncodingException e) {
 			//should never happen
@@ -73,10 +73,10 @@ public class JsonPatchOperationsCollector {
 		}
 	}
 
-	public JsonPatchApplier applying(final Reader patchOperations) {
+	public JsonPatchApplier applying(final Reader patchOperations) throws IOException {
 		Objects.requireNonNull(patchOperations, "Argument 'patchOperations' must not be null");
 		
-		JsonElement jsonElement = BUILDER.build(patchOperations);
+		JsonElement jsonElement = BUILDER.buildFrom(patchOperations);
 		return handleJsonElement(jsonElement);
 	}
 

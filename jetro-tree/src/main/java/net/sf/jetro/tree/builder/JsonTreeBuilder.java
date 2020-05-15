@@ -50,11 +50,32 @@ public class JsonTreeBuilder {
 		this.lenient = lenient;
 	}
 
+	/**
+	 * @deprecated Use {@link #buildFrom(String)} instead
+	 * @param json the JSON to build
+	 * @return a JsonElement
+	 */
+	@Deprecated
 	public JsonElement build(final String json) {
-		return build(json, (ChainedJsonVisitor<?>[]) null);
+		return buildFrom(json);
 	}
 
+	public JsonElement buildFrom(final String json) {
+		return buildFrom(json, (ChainedJsonVisitor<?>[]) null);
+	}
+
+	/**
+	 * @deprecated Use {@link #buildFrom(String,ChainedJsonVisitor<?>...)} instead
+	 * @param json the JSON to build
+	 * @param transformers the transformers to use
+	 * @return a JsonElement
+	 */
+	@Deprecated
 	public JsonElement build(final String json, ChainedJsonVisitor<?>... transformers) {
+		return buildFrom(json, transformers);
+	}
+
+	public JsonElement buildFrom(final String json, ChainedJsonVisitor<?>... transformers) {
 		JsonElement root;
 
 		if (json == null) {
@@ -62,82 +83,177 @@ public class JsonTreeBuilder {
 		} else if (json.equals("")) {
 			root = new VirtualJsonRoot();
 		} else {
-			root = build(new StringReader(json), transformers);
+			try {
+				root = buildFrom(new StringReader(json), transformers);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		return root;
 	}
 	
-	public JsonElement build(final URL url) throws IOException {
+	/**
+	 * Builds a {@link JsonElement} from a URL pointing to a JSON document
+	 * using UTF-8 to read from the stream.
+	 *  
+	 * @param url the URL pointing to a JSON document
+	 * @return the built JsonElement
+	 * @throws IOException if the stream cannot be opened or closed
+	 */
+	public JsonElement buildFrom(final URL url) throws IOException {
 		Objects.requireNonNull(url, "url must not be null");
-		return build(url.openStream());
+		return buildFrom(url.openStream());
 	}
 	
-	public JsonElement build(final URL url, final String charsetName)
-			throws UnsupportedEncodingException, IOException {
-		Objects.requireNonNull(url, "url must not be null");
-		Objects.requireNonNull(charsetName, "charsetName must not be null");
-
-		return build(url.openStream(), charsetName);
-	}
-	
-	public JsonElement build(final URL url, final ChainedJsonVisitor<?>... transformers)
+	/**
+	 * Builds a {@link JsonElement} from a URL pointing to a JSON document using
+	 * the named charset to read the stream.
+	 *  
+	 * @param url the URL pointing to a JSON document
+	 * @param charsetName the name of the charset to use
+	 * @return the built JsonElement
+	 * @throws IOException if the stream cannot be opened or closed, or the given
+	 * named charset is not supported
+	 */
+	public JsonElement buildFrom(final URL url, final String charsetName)
 			throws IOException {
 		Objects.requireNonNull(url, "url must not be null");
-		return build(url.openStream(), transformers);
+		Objects.requireNonNull(charsetName, "charsetName must not be null");
+
+		return buildFrom(url.openStream(), charsetName);
 	}
 	
-	public JsonElement build(final URL url, final String charsetName,
+	/**
+	 * Builds a {@link JsonElement} from a URL pointing to a JSON document
+	 *  using UTF-8 to read from the stream and applying the given transformers.
+	 *  
+	 * @param url the URL pointing to a JSON document
+	 * @param transformers the transformers to apply
+	 * @return the built JsonElement
+	 * @throws IOException if the stream cannot be opened or closed
+	 */
+	public JsonElement buildFrom(final URL url,
+			final ChainedJsonVisitor<?>... transformers) throws IOException {
+		Objects.requireNonNull(url, "url must not be null");
+		return buildFrom(url.openStream(), transformers);
+	}
+	
+	/**
+	 * Builds a {@link JsonElement} from a URL pointing to a JSON document using
+	 * the named charset to read the stream and applying the given transformers.
+	 *  
+	 * @param url the URL pointing to a JSON document
+	 * @param charsetName the name of the charset to use
+	 * @param transformers the transformers to apply
+	 * @return the built JsonElement
+	 * @throws IOException if the stream cannot be opened or closed, or the given
+	 * named charset cannot be used
+	 */
+	public JsonElement buildFrom(final URL url, final String charsetName,
 			final ChainedJsonVisitor<?>... transformers)
-					throws UnsupportedEncodingException, IOException {
+					throws IOException {
 		Objects.requireNonNull(url, "url must not be null");
 		Objects.requireNonNull(charsetName, "charsetName must not be null");
 
-		return build(url.openStream(), charsetName, transformers);		
+		return buildFrom(url.openStream(), charsetName, transformers);		
 	}
 	
-	public JsonElement build(final InputStream in) {
+	/**
+	 * Builds a {@link JsonElement} from an {@link InputStream} containing a
+	 * JSON document using UTF-8 to read from the stream.
+	 *  
+	 * @param in the InputStream containing a JSON document
+	 * @return the built JsonElement
+	 * @throws IOException if the stream cannot be closed
+	 * @throws RuntimeException if the executing system doesn't support UTF-8
+	 */
+	public JsonElement buildFrom(final InputStream in) throws IOException {
 		Objects.requireNonNull(in, "in must not be null");
 
 		try {
-			return build(new InputStreamReader(in, "UTF-8"));
+			return buildFrom(new InputStreamReader(in, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
-	public JsonElement build(final InputStream in, final String charsetName)
-			throws UnsupportedEncodingException {
+	/**
+	 * Builds a {@link JsonElement} from an {@link InputStream} containing a
+	 * JSON document using the named charset to read the stream.
+	 *  
+	 * @param in the InputStream containing a JSON document
+	 * @param charsetName the name of the charset to use
+	 * @return the built JsonElement
+	 * @throws IOException if the stream cannot be closed, or the given
+	 * named charset is not supported
+	 */
+	public JsonElement buildFrom(final InputStream in, final String charsetName)
+			throws IOException {
 		Objects.requireNonNull(in, "in must not be null");
 		Objects.requireNonNull(charsetName, "charsetName must not be null");
 		
-		return build(new InputStreamReader(in, charsetName));
+		return buildFrom(new InputStreamReader(in, charsetName));
 	}
 	
-	public JsonElement build(final InputStream in, final ChainedJsonVisitor<?>... transformers) {
+	public JsonElement buildFrom(final InputStream in,
+			final ChainedJsonVisitor<?>... transformers) throws IOException {
 		Objects.requireNonNull(in, "in must not be null");
 
 		try {
-			return build(new InputStreamReader(in, "UTF-8"), transformers);
+			return buildFrom(new InputStreamReader(in, "UTF-8"), transformers);
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
-	public JsonElement build(final InputStream in, final String charsetName,
+	public JsonElement buildFrom(final InputStream in, final String charsetName,
 			final ChainedJsonVisitor<?>... transformers)
-					throws UnsupportedEncodingException {
+					throws IOException {
 		Objects.requireNonNull(in, "in must not be null");
 		Objects.requireNonNull(charsetName, "charsetName must not be null");
 		
-		return build(new InputStreamReader(in, charsetName), transformers);		
+		return buildFrom(new InputStreamReader(in, charsetName), transformers);		
 	}
 	
+	/**
+	 * @deprecated Use {@link #buildFrom(Reader)} instead
+	 * @param in the reader to read the JSON from
+	 * @return a JsonElement
+	 * @throws RuntimeException if the reader can't be closed
+	 */
+	@Deprecated
 	public JsonElement build(final Reader in) {
-		return build(in, (ChainedJsonVisitor<?>[]) null);
+		try {
+			return buildFrom(in);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public JsonElement buildFrom(final Reader in) throws IOException {
+		return buildFrom(in, (ChainedJsonVisitor<?>[]) null);
 	}
 	
-	public JsonElement build(final Reader in, final ChainedJsonVisitor<?>... transformers) {
+	/**
+	 * @deprecated Use {@link #buildFrom(Reader,ChainedJsonVisitor<?>...)} instead
+	 * @param in the reader to read the JSON from
+	 * @param transformers the transformers to use
+	 * @return a JsonElement
+	 * @throws RuntimeException if the reader can't be closed
+	 */
+	@Deprecated
+	public JsonElement build(final Reader in,
+			final ChainedJsonVisitor<?>... transformers) {
+		try {
+			return buildFrom(in, transformers);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public JsonElement buildFrom(final Reader in,
+			final ChainedJsonVisitor<?>... transformers) throws IOException {
 		JsonReader reader = new JsonReader(in);
 		reader.setLenient(lenient);
 
@@ -147,8 +263,6 @@ public class JsonTreeBuilder {
 
 			visitingReader.accept(visitor);
 			return treeBuildingVisitor.getVisitingResult();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 

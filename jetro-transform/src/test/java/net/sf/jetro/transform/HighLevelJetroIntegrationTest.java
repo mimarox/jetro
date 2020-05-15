@@ -765,7 +765,7 @@ public class HighLevelJetroIntegrationTest {
 					}
 				}).andReturnAsJsonElement();
 		
-		assertEquals(actual, BUILDER.build(target));
+		assertEquals(actual, BUILDER.buildFrom(target));
 	}
 	
 	@Test(groups = "negativeTests")
@@ -789,7 +789,7 @@ public class HighLevelJetroIntegrationTest {
 					}
 				}).andReturnAsJsonElement();
 		
-		assertEquals(actual, BUILDER.build(target));
+		assertEquals(actual, BUILDER.buildFrom(target));
 	}
 	
 	@Test
@@ -1072,7 +1072,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	private static String normalize(final String json) {
-		return BUILDER.build(json).toJson();
+		return BUILDER.buildFrom(json).toJson();
 	}
 	
 	private static JsonObject getPersonsAAndB() {

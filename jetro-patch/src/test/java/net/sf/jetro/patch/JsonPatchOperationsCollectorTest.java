@@ -73,7 +73,7 @@ public class JsonPatchOperationsCollectorTest {
 	}
 	
 	@Test
-	public void testApplyingReader() {
+	public void testApplyingReader() throws IOException {
 		JsonPatchApplier applier = getJsonSourceCollector().applying(new StringReader("[]"));
 
 		assertNotNull(applier);

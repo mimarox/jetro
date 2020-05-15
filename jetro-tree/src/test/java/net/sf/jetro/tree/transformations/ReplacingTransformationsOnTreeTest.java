@@ -74,7 +74,7 @@ public class ReplacingTransformationsOnTreeTest {
 
 	private String performTransformations(String json) {
 		JsonTreeBuilder treeBuilder = new JsonTreeBuilder();
-		JsonObject root = (JsonObject) treeBuilder.build(json);
+		JsonObject root = (JsonObject) treeBuilder.buildFrom(json);
 		JsonArray oldFavorites = (JsonArray) root.asMap().remove("favorites");
 		JsonArray newFavorites = new JsonArray();
 

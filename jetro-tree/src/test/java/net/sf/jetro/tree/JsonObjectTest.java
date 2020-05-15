@@ -1189,7 +1189,7 @@ public class JsonObjectTest {
 		JsonObject expected = outerObject.deepCopy();
 
 		JsonTreeBuilder builder = new JsonTreeBuilder();
-		JsonObject actual = (JsonObject) builder.build(
+		JsonObject actual = (JsonObject) builder.buildFrom(
 				new InputStreamReader(new ByteArrayInputStream(outerObject.toJson().getBytes("UTF-8")), "UTF-8"));
 
 		assertEquals(actual, expected);

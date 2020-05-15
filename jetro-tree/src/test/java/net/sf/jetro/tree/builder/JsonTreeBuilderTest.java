@@ -19,8 +19,17 @@
  */
 package net.sf.jetro.tree.builder;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.Arrays;
 
 import org.testng.annotations.Test;
@@ -42,7 +51,7 @@ public class JsonTreeBuilderTest {
 		String json = "{\"foo\":null,\"bar\":[true,\"hello\",2]}";
 
 		JsonTreeBuilder builder = new JsonTreeBuilder();
-		JsonElement actual = builder.build(json);
+		JsonElement actual = builder.buildFrom(json);
 
 		JsonObject expected = new JsonObject();
 		expected.add(new JsonProperty("foo", new JsonNull()));
@@ -58,13 +67,161 @@ public class JsonTreeBuilderTest {
 		String json = "[\"0\"]";
 		
 		JsonTreeBuilder builder = new JsonTreeBuilder();
-		JsonElement root = builder.build(json,
+		JsonElement root = builder.buildFrom(json,
 				new StringValueTransformingVisitor("1"),
 				new StringValueTransformingVisitor("2"),
 				new StringValueTransformingVisitor("3"));
 		
 		String actual = root.toJson();
 		String expected = "[\"0123\"]";
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeFromUrl() throws Exception {
+		URL url = mockURL(new ByteArrayInputStream("[0]".getBytes("UTF-8")));
+		
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonArray actual = (JsonArray) builder.buildFrom(url);
+		
+		JsonArray expected = new JsonArray(Arrays.asList(
+				new JsonNumber(new LazilyParsedNumber("0"))));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeFromUrlWithCharsetName() throws Exception {
+		URL url = mockURL(new ByteArrayInputStream("[0]".getBytes("UTF-8")));
+		
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonArray actual = (JsonArray) builder.buildFrom(url, "UTF-8");
+		
+		JsonArray expected = new JsonArray(Arrays.asList(
+				new JsonNumber(new LazilyParsedNumber("0"))));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeFromUrlWithTransformers() throws Exception {
+		URL url = mockURL(new ByteArrayInputStream("{\"foo\":true}".getBytes("UTF-8")));
+		
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonObject actual = (JsonObject) builder.buildFrom(url,
+				new RenamingPropertyVisitor());
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("renamed", true));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeFromUrlWithCharsetNameAndTransformers()
+			throws Exception {
+		URL url = mockURL(new ByteArrayInputStream("{\"foo\":true}".getBytes("UTF-8")));
+		
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonObject actual = (JsonObject) builder.buildFrom(url, "UTF-8",
+				new RenamingPropertyVisitor());
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("renamed", true));
+		
+		assertEquals(actual, expected);
+	}
+	
+	private URL mockURL(final InputStream stream) throws Exception {
+		final URLConnection mockUrlCon = mock(URLConnection.class);
+		when(mockUrlCon.getInputStream()).thenReturn(stream);
+
+		//make getLastModified() return first 10, then 11
+		when(mockUrlCon.getLastModified()).thenReturn((Long)10L, (Long)11L);
+
+		URLStreamHandler stubUrlHandler = new URLStreamHandler() {
+		    @Override
+		     protected URLConnection openConnection(URL u) throws IOException {
+		        return mockUrlCon;
+		     }            
+		};
+		
+		return new URL("foo", "bar", 99, "/foobar", stubUrlHandler);
+	}
+
+	@Test
+	public void shouldBuildJsonTreeFromInputStream() throws Exception {
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonArray actual = (JsonArray) builder.buildFrom(
+				new ByteArrayInputStream("[0]".getBytes("UTF-8")));
+		
+		JsonArray expected = new JsonArray(Arrays.asList(
+				new JsonNumber(new LazilyParsedNumber("0"))));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeFromInputStreamWithCharsetName() throws Exception {
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonArray actual = (JsonArray) builder.buildFrom(
+				new ByteArrayInputStream("[0]".getBytes("UTF-8")), "UTF-8");
+		
+		JsonArray expected = new JsonArray(Arrays.asList(
+				new JsonNumber(new LazilyParsedNumber("0"))));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeFromInputStreamWithTransformers() throws Exception {
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonObject actual = (JsonObject) builder.buildFrom(
+				new ByteArrayInputStream("{\"foo\":true}".getBytes("UTF-8")),
+				new RenamingPropertyVisitor());
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("renamed", true));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeFromInpuStreamWithCharsetNameAndTransformers()
+			throws Exception {
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonObject actual = (JsonObject) builder.buildFrom(
+				new ByteArrayInputStream("{\"foo\":true}".getBytes("UTF-8")), "UTF-8",
+				new RenamingPropertyVisitor());
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("renamed", true));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeFromReader() throws Exception {
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonArray actual = (JsonArray) builder.buildFrom(
+				new StringReader("[0]"));
+		
+		JsonArray expected = new JsonArray(Arrays.asList(
+				new JsonNumber(new LazilyParsedNumber("0"))));
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldBuildJsonTreeFromReaderWithTransformers() throws Exception {
+		JsonTreeBuilder builder = new JsonTreeBuilder();
+		JsonObject actual = (JsonObject) builder.buildFrom(
+				new StringReader("{\"foo\":true}"),
+				new RenamingPropertyVisitor());
+		
+		JsonObject expected = new JsonObject();
+		expected.add(new JsonProperty("renamed", true));
 		
 		assertEquals(actual, expected);
 	}
