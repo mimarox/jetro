@@ -37,7 +37,7 @@ public class TransformApplierTest {
 			expectedExceptionsMessageRegExp = "transformer must not be null",
 			groups = "negativeTests")
 	public void shouldThrowExceptionSourceNullTransformerOnConstructor() {
-		new TransformApplier<>(SOURCE, null);
+		new TransformApplier<>(SOURCE, (ChainedJsonVisitor<Void>) null);
 	}
 	
 	@Test(expectedExceptions = NullPointerException.class,

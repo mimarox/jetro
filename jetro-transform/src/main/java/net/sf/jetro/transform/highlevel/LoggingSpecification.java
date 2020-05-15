@@ -17,9 +17,7 @@ import net.sf.jetro.tree.JsonPrimitive;
 import net.sf.jetro.tree.JsonString;
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
-import net.sf.jetro.visitor.JsonVisitor;
 import net.sf.jetro.visitor.chained.MultiplexingJsonVisitor;
-import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
 /**
@@ -64,6 +62,8 @@ public class LoggingSpecification {
 
 	public void using(final Logger logger) {
 		Objects.requireNonNull(logger, "logger must not be null");
+		
+		int logIndex = specification.registerLogRequest(logger, logLevel);
 		
 		specification.addChainedJsonVisitorSupplier(() -> {
 			return new PathAwareJsonVisitor<Void>() {
@@ -133,8 +133,10 @@ public class LoggingSpecification {
 				
 				private void handleAfterVisitEnd() {
 					if (currentPath().matches(path)) {
-						prefaces.forEach(preface -> logLevel.logAt(logger, preface));
-						logLevel.logAt(logger, jsonReturner.getVisitingResult());
+						prefaces.forEach(preface ->
+						specification.addLogMessage(logIndex, preface));
+						specification.addLogMessage(logIndex,
+								jsonReturner.getVisitingResult());
 					}
 				}
 				
@@ -155,14 +157,15 @@ public class LoggingSpecification {
 				
 				private void handleAfterVisitValue(JsonPrimitive<?> primitive) {
 					if (currentPath().matches(path)) {
-						prefaces.forEach(preface -> logLevel.logAt(logger, preface));
+						prefaces.forEach(preface ->
+						specification.addLogMessage(logIndex, preface));
 						
 						Object value = primitive.getValue();
 						
 						if (value != null) {
-							logLevel.logAt(logger, value.toString());
+							specification.addLogMessage(logIndex, value.toString());
 						} else {
-							logLevel.logAt(logger, "null");
+							specification.addLogMessage(logIndex, "null");
 						}
 					}
 				}
@@ -170,8 +173,9 @@ public class LoggingSpecification {
 				@Override
 				protected void afterVisitNullValue() {
 					if (currentPath().matches(path)) {
-						prefaces.forEach(preface -> logLevel.logAt(logger, preface));
-						logLevel.logAt(logger, "null");						
+						prefaces.forEach(preface ->
+						specification.addLogMessage(logIndex, preface));
+						specification.addLogMessage(logIndex, "null");
 					}
 				}
 			};

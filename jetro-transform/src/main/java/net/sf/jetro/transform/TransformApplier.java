@@ -18,6 +18,7 @@ import net.sf.jetro.object.visitor.ObjectBuildingVisitor;
 import net.sf.jetro.stream.JsonWriter;
 import net.sf.jetro.stream.visitor.JsonReturningVisitor;
 import net.sf.jetro.stream.visitor.JsonWritingVisitor;
+import net.sf.jetro.transform.highlevel.TransformationSpecification;
 import net.sf.jetro.tree.JsonElement;
 import net.sf.jetro.tree.visitor.JsonTreeBuildingVisitor;
 import net.sf.jetro.visitor.JsonVisitor;
@@ -41,6 +42,7 @@ import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
 public class TransformApplier<R> {
 	private final VisitingReader source;
 	private final ChainedJsonVisitor<R> transformer;
+	private final TransformationSpecification specification;
 	
 	TransformApplier(final VisitingReader source, final ChainedJsonVisitor<R> transformer) {
 		Objects.requireNonNull(source, "source must not be null");	
@@ -48,6 +50,17 @@ public class TransformApplier<R> {
 		
 		this.source = source;
 		this.transformer = transformer;
+		this.specification = null;
+	}
+	
+	TransformApplier(final VisitingReader source,
+			final TransformationSpecification specification) {
+		Objects.requireNonNull(source, "source must not be null");	
+		Objects.requireNonNull(specification, "specification must not be null");
+		
+		this.source = source;
+		this.specification = specification;
+		this.transformer = null;
 	}
 
 	/**
@@ -310,14 +323,19 @@ public class TransformApplier<R> {
 		return applyTransformation(new ObjectBuildingVisitor<T>(typeToken, context));
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <R2> R2 applyTransformation(JsonVisitor<R2> visitor) {
-		if (!(visitor instanceof UniformChainedJsonVisitor)) {
-			visitor = new UniformChainedJsonVisitor<R2>(visitor) {};
+		if (transformer != null) {
+			transformer.attachVisitor((JsonVisitor<R>) visitor);
+			source.accept(transformer);
+			return visitor.getVisitingResult();			
+		} else {
+			ChainedJsonVisitor<R> transformer =
+					(ChainedJsonVisitor) specification.toChainedJsonVisitor();
+			transformer.attachVisitor((JsonVisitor<R>) visitor);
+			source.accept(transformer);
+			specification.logNow();
+			return visitor.getVisitingResult();
 		}
-		
-		transformer.attachVisitor((JsonVisitor<R>) visitor);
-		source.accept(transformer);
-		return visitor.getVisitingResult();		
 	}
 }

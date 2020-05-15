@@ -1,12 +1,16 @@
 package net.sf.jetro.transform.highlevel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import org.slf4j.Logger;
 
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.transform.TransformApplier;
@@ -35,6 +39,28 @@ import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
  * @author Matthias Rothe
  */
 public abstract class TransformationSpecification implements ChainedJsonVisitorSupplier {
+	private static class LogRequest {
+		private final Logger logger;
+		private final LogLevel logLevel;
+		private final List<String> messages = new ArrayList<>();
+		
+		LogRequest(final Logger logger, final LogLevel logLevel) {
+			Objects.requireNonNull(logger, "logger must not be null");
+			Objects.requireNonNull(logLevel, "logLevel must not be null");
+			
+			this.logger = logger;
+			this.logLevel = logLevel;
+		}
+		
+		void addMessage(final String message) {
+			messages.add(message);
+		}
+		
+		void logMessages() {
+			messages.forEach(message -> logLevel.logAt(logger, message));
+		}
+	}
+	
 	static final JsonPath ROOT_PATH = JsonPath.compile("$");
 	
 	private static final ChainedJsonVisitor<Void> NOOP_VISITOR =
@@ -43,6 +69,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	private TransformationSpecification outerSpecification;
 	private Set<ChainedJsonVisitorSupplier> suppliers = new LinkedHashSet<>();
 	private Map<String, JsonType> variables = new HashMap<>();
+	private List<LogRequest> logRequests = new ArrayList<>();
 	private boolean specified = false;
 	private boolean renderNullValues = false;
 	
@@ -69,6 +96,15 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 		}
 		
 		return visitor != null ? visitor : NOOP_VISITOR;
+	}
+
+	/**
+	 * Actually logs all the captured log messages.
+	 * <p>
+	 * Please don't call this method from client code.
+	 */
+	public void logNow() {
+		logRequests.forEach(LogRequest::logMessages);
 	}
 
 	/**
@@ -339,7 +375,7 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 	 */
 	protected LoggingSpecification logWithLevel(final LogLevel logLevel) {
 		Objects.requireNonNull(logLevel, "logLevel must not be null");
-		return new PathAwareSpecification(JsonPath.compile("$"), this).logWithLevel(logLevel);
+		return new PathAwareSpecification(ROOT_PATH, this).logWithLevel(logLevel);
 	}
 	
 	/**
@@ -389,5 +425,17 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 
 	boolean isRenderNullValues() {
 		return renderNullValues;
+	}
+	
+	int registerLogRequest(final Logger logger, final LogLevel logLevel) {
+		Objects.requireNonNull(logger, "logger must not be null");
+		Objects.requireNonNull(logLevel, "logLevel must not be null");
+		
+		logRequests.add(new LogRequest(logger, logLevel));
+		return logRequests.size() - 1;
+	}
+	
+	void addLogMessage(final int index, final String message) {
+		logRequests.get(index).addMessage(message);
 	}
 }
