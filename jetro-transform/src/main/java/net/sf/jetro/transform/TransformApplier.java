@@ -23,6 +23,7 @@ import net.sf.jetro.tree.visitor.JsonTreeBuildingVisitor;
 import net.sf.jetro.visitor.JsonVisitor;
 import net.sf.jetro.visitor.VisitingReader;
 import net.sf.jetro.visitor.chained.ChainedJsonVisitor;
+import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
 
 /**
  * Part of the transformation API.
@@ -310,7 +311,11 @@ public class TransformApplier<R> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <R2> R2 applyTransformation(final JsonVisitor<R2> visitor) {
+	private <R2> R2 applyTransformation(JsonVisitor<R2> visitor) {
+		if (!(visitor instanceof UniformChainedJsonVisitor)) {
+			visitor = new UniformChainedJsonVisitor<R2>(visitor) {};
+		}
+		
 		transformer.attachVisitor((JsonVisitor<R>) visitor);
 		source.accept(transformer);
 		return visitor.getVisitingResult();		

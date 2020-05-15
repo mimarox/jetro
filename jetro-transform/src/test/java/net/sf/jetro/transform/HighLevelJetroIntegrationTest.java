@@ -1,5 +1,8 @@
 package net.sf.jetro.transform;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
 
 import java.time.LocalDateTime;
@@ -9,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mockito.ArgumentCaptor;
+import org.slf4j.Logger;
 import org.testng.annotations.Test;
 
 import net.sf.jetro.context.RenderContext;
@@ -21,6 +26,7 @@ import net.sf.jetro.transform.beans.SourceObject;
 import net.sf.jetro.transform.beans.WrappingAndAddingSource;
 import net.sf.jetro.transform.beans.WrappingAndAddingTarget;
 import net.sf.jetro.transform.highlevel.TransformationSpecification;
+import net.sf.jetro.transform.logging.LogLevel;
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonBoolean;
 import net.sf.jetro.tree.JsonElement;
@@ -1071,6 +1077,68 @@ public class HighLevelJetroIntegrationTest {
 		assertEquals(actual, expected);
 	}
 	
+	@Test
+	@DataBinding(propertiesPrefix = "captureAndEdit")
+	public void shouldLogBeforeDuringAndAfterTransformation(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "target") final String target) {
+		String incomingPreface = "Incoming JSON";
+		String middlePreface = "Partially processed JSON";
+		String outgoingPreface = "Outgoing JSON";
+		
+		Logger logger = mock(Logger.class);
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		
+		Jetro.transform(source).applying(new TransformationSpecification() {
+
+			@Override
+			protected void specify() {
+				setRenderNullValues(true);
+
+				logWithLevel(LogLevel.DEBUG).andPreface(incomingPreface).using(logger);
+				
+				capture("$.primary_user").edit(primaryUser -> {
+					if (primaryUser instanceof JsonObject) {
+						((JsonObject) primaryUser).add(new JsonProperty("role", "primary"));
+					}
+					return primaryUser;
+				}).andSaveAs("primaryUser");
+
+				remove("$.primary_user");
+
+				capture("$.secondary_users").editEach(secondaryUser -> {
+					if (secondaryUser instanceof JsonObject) {
+						((JsonObject) secondaryUser).add(new JsonProperty("role", "secondary"));
+					}
+					return secondaryUser;
+				}).andSaveAs("secondaryUsers");
+
+				remove("$.secondary_users");
+
+				at("$").addJsonProperty("users", new JsonArray());
+				
+				at("$.users[-]").addFromVariable("primaryUser");
+				at("$.users[-]").addAllFromVariable("secondaryUsers");
+				at("$.users").logWithLevel(LogLevel.DEBUG).andPreface(middlePreface).using(logger);
+
+				capture("$.users[0].role").andSaveAs("role");
+				at("$.users[0]").addJsonPropertyFromVariable("secondRole", "role");
+				
+				logWithLevel(LogLevel.DEBUG).andPreface(outgoingPreface).using(logger);
+			}
+		}).andReturnAsJson();
+
+		verify(logger, times(6)).debug(captor.capture());
+		
+		List<String> capturedMessages = captor.getAllValues();
+		assertEquals(capturedMessages.get(0), incomingPreface);
+		assertEquals(capturedMessages.get(1), source);
+		assertEquals(capturedMessages.get(2), middlePreface);
+		assertEquals(capturedMessages.get(3), "[]");
+		assertEquals(capturedMessages.get(4), outgoingPreface);
+		assertEquals(capturedMessages.get(5), target);		
+	}
+
 	private static String normalize(final String json) {
 		return BUILDER.build(json).toJson();
 	}

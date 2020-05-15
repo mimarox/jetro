@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 import net.sf.jetro.object.serializer.SerializationContext;
 import net.sf.jetro.object.visitor.ObjectVisitingReader;
 import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.transform.logging.LogLevel;
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonBoolean;
 import net.sf.jetro.tree.JsonNumber;
@@ -831,5 +832,17 @@ public class PathAwareSpecification {
 	public ReplaceIfSpecification replaceIf(final Predicate<JsonType> predicate) {
 		Objects.requireNonNull(predicate, "predicate must not be null");
 		return new ReplaceIfSpecification(path, predicate, specification);
+	}
+
+	/**
+	 * Use this method to log the part of the JSON document specified with the given path
+	 * in the current processing state using the given {@link LogLevel}.
+	 * 
+	 * @param logLevel the log level to log the JSON at
+	 * @return an instance of {@link LoggingSpecification}
+	 */
+	public LoggingSpecification logWithLevel(final LogLevel logLevel) {
+		Objects.requireNonNull(logLevel, "logLevel must not be null");
+		return new LoggingSpecification(path, logLevel, specification);
 	}
 }

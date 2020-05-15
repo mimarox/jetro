@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.transform.TransformApplier;
 import net.sf.jetro.transform.TransformSourceCollector;
+import net.sf.jetro.transform.logging.LogLevel;
 import net.sf.jetro.tree.JsonType;
 import net.sf.jetro.visitor.chained.ChainedJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
@@ -327,6 +328,18 @@ public abstract class TransformationSpecification implements ChainedJsonVisitorS
 		Objects.requireNonNull(specification, "specification must not be null");
 		specification.outerSpecification = this;
 		addChainedJsonVisitorSupplier(specification);
+	}
+	
+	/**
+	 * Use this method to log the full JSON document in the current processing state using
+	 * the given {@link LogLevel}.
+	 * 
+	 * @param logLevel the log level to log the JSON at
+	 * @return an instance of {@link LoggingSpecification}
+	 */
+	protected LoggingSpecification logWithLevel(final LogLevel logLevel) {
+		Objects.requireNonNull(logLevel, "logLevel must not be null");
+		return new PathAwareSpecification(JsonPath.compile("$"), this).logWithLevel(logLevel);
 	}
 	
 	/**
