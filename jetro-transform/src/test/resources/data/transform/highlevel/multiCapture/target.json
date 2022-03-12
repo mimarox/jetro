@@ -1,0 +1,12 @@
+{
+	"users": [{
+		"name": "Agathe Bauer",
+		"age": 23
+	},{
+		"name": "Anneliese Braun",
+		"age": 24
+	},{
+		"name": "Dagobert Duck",
+		"age": 106
+	}]
+}
