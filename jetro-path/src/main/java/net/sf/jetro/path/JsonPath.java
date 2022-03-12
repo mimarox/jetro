@@ -443,6 +443,24 @@ public final class JsonPath implements Cloneable, Serializable {
 		return containsOptionals;
 	}
 	
+	/**
+	 * Adds the matches all further specifier to this JsonPath if necessary and
+	 * returns it. The returned JsonPath will always end with the matches all
+	 * further specifier.
+	 * 
+	 * @return this JsonPath with an added matches all further specifier if it didn't
+	 * have one before, otherwise this JsonPath
+	 */
+	public JsonPath asMatchesAllFurther() {
+		if (isRootPath()) {
+			return JsonPath.compile("$:");
+		} else if (pathElements[size - 1] instanceof MatchesAllFurtherPathElement) {
+			return this;
+		} else {
+			return this.append(new MatchesAllFurtherPathElement());
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

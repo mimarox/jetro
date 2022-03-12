@@ -17,6 +17,7 @@ import net.sf.jetro.tree.JsonPrimitive;
 import net.sf.jetro.tree.JsonString;
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
+import net.sf.jetro.visitor.JsonVisitor;
 import net.sf.jetro.visitor.chained.MultiplexingJsonVisitor;
 import net.sf.jetro.visitor.pathaware.PathAwareJsonVisitor;
 
@@ -67,8 +68,18 @@ public class LoggingSpecification {
 		
 		specification.addChainedJsonVisitorSupplier(() -> {
 			return new PathAwareJsonVisitor<Void>() {
-				JsonReturningVisitor jsonReturner = new JsonReturningVisitor(
+				private JsonVisitor<String> jsonReturner = new JsonReturningVisitor(
 						new RenderContext().setIndent("\t"));
+				private JsonVisitor<Void> multiplexer;
+				
+				@Override
+				protected JsonVisitor<Void> getNextVisitor() {
+					if (currentPath().matches(path.asMatchesAllFurther())) {
+						return multiplexer;
+					} else {
+						return super.getNextVisitor();
+					}
+				}
 				
 				@Override
 				protected boolean doBeforeVisitObject() {
@@ -96,6 +107,7 @@ public class LoggingSpecification {
 					if (currentPath().matches(path)) {
 						actualVisitor = getMultiplexingJsonVisitor(
 								multiVisitor -> multiVisitor.visitObject());
+						multiplexer = super.afterVisitObject(actualVisitor);
 					}
 					
 					return super.afterVisitObject(actualVisitor);
@@ -109,16 +121,18 @@ public class LoggingSpecification {
 					if (currentPath().matches(path)) {
 						actualVisitor = getMultiplexingJsonVisitor(
 								multiVisitor -> multiVisitor.visitArray());
+						multiplexer = super.afterVisitArray(actualVisitor);
 					}
 					
 					return super.afterVisitArray(actualVisitor);
 				}
 				
 				private <T2> T2 getMultiplexingJsonVisitor(final Function<
-						MultiplexingJsonVisitor<Void>, T2> actualVisitorProvider) {
-					MultiplexingJsonVisitor<Void> multiVisitor =
-							new MultiplexingJsonVisitor<Void>(getNextVisitor(), jsonReturner);
-					return actualVisitorProvider.apply(multiVisitor);
+						JsonVisitor<Void>, T2> actualVisitorProvider) {
+					multiplexer =
+							new MultiplexingJsonVisitor<Void>(super.getNextVisitor(),
+							jsonReturner);
+					return actualVisitorProvider.apply(multiplexer);
 				}
 				
 				@Override
@@ -135,6 +149,8 @@ public class LoggingSpecification {
 					if (currentPath().matches(path)) {
 						prefaces.forEach(preface ->
 						specification.addLogMessage(logIndex, preface));
+						
+						jsonReturner.visitEnd();
 						specification.addLogMessage(logIndex,
 								jsonReturner.getVisitingResult());
 					}
