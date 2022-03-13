@@ -22,6 +22,7 @@ package net.sf.jetro.visitor.pathaware;
 import static org.testng.Assert.assertEquals;
 
 import net.sf.jetro.path.JsonPath;
+import net.sf.jetro.visitor.DummyVisitingReader;
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
 import net.sf.jetro.visitor.VisitingReader;

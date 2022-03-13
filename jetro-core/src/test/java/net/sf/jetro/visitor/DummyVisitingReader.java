@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package net.sf.jetro.visitor.pathaware;
+package net.sf.jetro.visitor;
 
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
