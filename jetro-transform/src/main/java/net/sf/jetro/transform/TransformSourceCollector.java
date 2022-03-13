@@ -55,7 +55,7 @@ public class TransformSourceCollector {
 	 */
 	public TransformApplier<?> applying(final TransformationSpecification specification) {
 		Objects.requireNonNull(specification, "specification must not be null");
-		return applying(specification.toChainedJsonVisitor());
+		return new TransformApplier<Void>(source, specification);
 	}
 	
 	/**

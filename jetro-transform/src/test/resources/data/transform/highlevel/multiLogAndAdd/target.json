@@ -1,0 +1,15 @@
+{
+	"firstUser": {
+		"name": "Agathe Bauer",
+		"age": 23
+	},
+	"secondUser": {
+		"name": "Anneliese Braun",
+		"age": 24
+	},
+	"thirdUser": {
+		"name": "Dagobert Duck",
+		"age": 106
+	},
+	"values": [1, true]
+}

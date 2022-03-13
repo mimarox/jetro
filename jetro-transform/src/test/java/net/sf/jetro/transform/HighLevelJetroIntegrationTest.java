@@ -1,5 +1,8 @@
 package net.sf.jetro.transform;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
 
 import java.time.LocalDateTime;
@@ -9,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mockito.ArgumentCaptor;
+import org.slf4j.Logger;
 import org.testng.annotations.Test;
 
 import net.sf.jetro.context.RenderContext;
@@ -21,6 +26,7 @@ import net.sf.jetro.transform.beans.SourceObject;
 import net.sf.jetro.transform.beans.WrappingAndAddingSource;
 import net.sf.jetro.transform.beans.WrappingAndAddingTarget;
 import net.sf.jetro.transform.highlevel.TransformationSpecification;
+import net.sf.jetro.transform.logging.LogLevel;
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonBoolean;
 import net.sf.jetro.tree.JsonElement;
@@ -1069,6 +1075,242 @@ public class HighLevelJetroIntegrationTest {
 		String expected = "[1,\"a\",2,\"a\",3,\"a\"]";
 		
 		assertEquals(actual, expected);
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "captureAndEdit")
+	public void shouldLogBeforeDuringAndAfterTransformation(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "target") final String target) {
+		String incomingPreface = "Incoming JSON";
+		String middlePreface = "Partially processed JSON";
+		String outgoingPreface = "Outgoing JSON";
+		
+		Logger logger = mock(Logger.class);
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		
+		Jetro.transform(source).applying(new TransformationSpecification() {
+
+			@Override
+			protected void specify() {
+				setRenderNullValues(true);
+
+				logWithLevel(LogLevel.DEBUG).andPreface(incomingPreface).using(logger);
+				
+				capture("$.primary_user").edit(primaryUser -> {
+					if (primaryUser instanceof JsonObject) {
+						((JsonObject) primaryUser).add(new JsonProperty("role", "primary"));
+					}
+					return primaryUser;
+				}).andSaveAs("primaryUser");
+
+				remove("$.primary_user");
+
+				capture("$.secondary_users").editEach(secondaryUser -> {
+					if (secondaryUser instanceof JsonObject) {
+						((JsonObject) secondaryUser).add(new JsonProperty("role", "secondary"));
+					}
+					return secondaryUser;
+				}).andSaveAs("secondaryUsers");
+
+				remove("$.secondary_users");
+
+				at("$").addJsonProperty("users", new JsonArray());
+				
+				at("$.users[-]").addFromVariable("primaryUser");
+				at("$.users[-]").addAllFromVariable("secondaryUsers");
+				at("$.users").logWithLevel(LogLevel.DEBUG).andPreface(middlePreface).using(logger);
+
+				capture("$.users[0].role").andSaveAs("role");
+				at("$.users[0]").addJsonPropertyFromVariable("secondRole", "role");
+				
+				logWithLevel(LogLevel.DEBUG).andPreface(outgoingPreface).using(logger);
+			}
+		}).andReturnAsJson();
+
+		verify(logger, times(6)).debug(captor.capture());
+		
+		List<String> capturedMessages = captor.getAllValues();
+		assertEquals(capturedMessages.get(0), incomingPreface);
+		assertEquals(capturedMessages.get(1), source);
+		assertEquals(capturedMessages.get(2), middlePreface);
+		assertEquals(capturedMessages.get(3), "[]");
+		assertEquals(capturedMessages.get(4), outgoingPreface);
+		assertEquals(capturedMessages.get(5), target);		
+	}
+
+	@Test
+	@DataBinding(propertiesPrefix = "multiCapture")
+	public void shouldTransformMultiCapture(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "target") final String target) {
+		String actual = Jetro.transform(source).applying(
+				new TransformationSpecification() {
+			
+			@Override
+			protected void specify() {
+				at("$").addJsonProperty("users", new JsonArray());
+				
+				capture("$.firstUser").andSaveAs("firstUser");
+				at("$.users[-]").addFromVariable("firstUser");
+				remove("$.firstUser");
+				
+				capture("$.secondUser").andSaveAs("secondUser");
+				at("$.users[-]").addFromVariable("secondUser");
+				remove("$.secondUser");
+				
+				capture("$.thirdUser").andSaveAs("thirdUser");
+				at("$.users[-]").addFromVariable("thirdUser");
+				remove("$.thirdUser");
+			}
+		}).andReturnAsJson();
+		
+		assertEquals(actual, normalize(target));
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "multiCapture")
+	public void shouldLogMultipleTimes(
+			@TestInput(name = "source") final String source) {
+		String incomingPreface = "Incoming JSON";
+		String middlePreface = "Partially processed JSON";
+		String outgoingPreface = "Outgoing JSON";
+		
+		Logger logger = mock(Logger.class);
+		
+		Jetro.transform(source).applying(new TransformationSpecification() {
+
+			@Override
+			protected void specify() {
+				logWithLevel(LogLevel.DEBUG).andPreface(incomingPreface).using(logger);
+				logWithLevel(LogLevel.DEBUG).andPreface(middlePreface).using(logger);				
+				logWithLevel(LogLevel.DEBUG).andPreface(outgoingPreface).using(logger);
+			}
+		}).andReturnAsJson();
+
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		verify(logger, times(6)).debug(captor.capture());
+		
+		List<String> capturedMessages = captor.getAllValues();
+		assertEquals(capturedMessages.get(0), incomingPreface);
+		assertEquals(capturedMessages.get(1), source);
+		assertEquals(capturedMessages.get(2), middlePreface);
+		assertEquals(capturedMessages.get(3), source);
+		assertEquals(capturedMessages.get(4), outgoingPreface);
+		assertEquals(capturedMessages.get(5), source);		
+	}
+	
+	@Test
+	@DataBinding(propertiesPrefix = "multiLogAndRemove")
+	public void shouldLogMultipleTimesRemovingContent(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "middle") final String middle,
+			@TestOutput(name = "target") final String target) {
+		String incomingPreface = "Incoming JSON";
+		String middlePreface = "Partially processed JSON";
+		String outgoingPreface = "Outgoing JSON";
+		
+		Logger logger = mock(Logger.class);
+		
+		Jetro.transform(source).applying(new TransformationSpecification() {
+
+			@Override
+			protected void specify() {
+				logWithLevel(LogLevel.DEBUG).andPreface(incomingPreface).using(logger);
+				
+				remove("$.secondUser");
+				logWithLevel(LogLevel.DEBUG).andPreface(middlePreface).using(logger);				
+				
+				remove("$.thirdUser");
+				logWithLevel(LogLevel.DEBUG).andPreface(outgoingPreface).using(logger);
+			}
+		}).andReturnAsJson();
+
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		verify(logger, times(6)).debug(captor.capture());
+		
+		List<String> capturedMessages = captor.getAllValues();
+		assertEquals(capturedMessages.get(0), incomingPreface);
+		assertEquals(capturedMessages.get(1), source);
+		assertEquals(capturedMessages.get(2), middlePreface);
+		assertEquals(capturedMessages.get(3), middle);
+		assertEquals(capturedMessages.get(4), outgoingPreface);
+		assertEquals(capturedMessages.get(5), target);		
+	}
+
+	@Test
+	@DataBinding(propertiesPrefix = "multiLogAndAdd")
+	public void shouldLogMultipleTimesAddingContent(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "middle") final String middle,
+			@TestOutput(name = "target") final String target) {
+		String incomingPreface = "Incoming JSON";
+		String middlePreface = "Partially processed JSON";
+		String outgoingPreface = "Outgoing JSON";
+		
+		Logger logger = mock(Logger.class);
+		
+		Jetro.transform(source).applying(new TransformationSpecification() {
+
+			@Override
+			protected void specify() {
+				logWithLevel(LogLevel.DEBUG).andPreface(incomingPreface).using(logger);
+				
+				at("$").addJsonProperty("values", new JsonArray(
+						Arrays.asList(new JsonNumber(1))));
+				at("$.values[-]").addJsonValue(2);
+				at("$.values[-]").addJsonValue(new JsonObject());
+				
+				at("$.values").logWithLevel(LogLevel.DEBUG).andPreface(middlePreface)
+				.using(logger);				
+				
+				at("$.values[-]").addJsonValue(true);
+				
+				logWithLevel(LogLevel.DEBUG).andPreface(outgoingPreface).using(logger);
+			}
+		}).andReturnAsJson();
+
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		verify(logger, times(6)).debug(captor.capture());
+		
+		List<String> capturedMessages = captor.getAllValues();
+		assertEquals(capturedMessages.get(0), incomingPreface);
+		assertEquals(capturedMessages.get(1), source);
+		assertEquals(capturedMessages.get(2), middlePreface);
+		assertEquals(capturedMessages.get(3), middle);
+		assertEquals(capturedMessages.get(4), outgoingPreface);
+		assertEquals(capturedMessages.get(5), target);		
+	}
+
+	@Test
+	@DataBinding(propertiesPrefix = "multiLogAndReplace")
+	public void shouldTransformLoggingMultipleTimesReplacingContent(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "target") final String target) {
+		String incomingPreface = "Incoming JSON";
+		String outgoingPreface = "Outgoing JSON";
+		
+		Logger logger = mock(Logger.class);
+		
+		Jetro.transform(source).applying(new TransformationSpecification() {
+
+			@Override
+			protected void specify() {
+				logWithLevel(LogLevel.DEBUG).andPreface(incomingPreface).using(logger);
+//				
+//				at("$.*.age").replaceWith(99);
+//				logWithLevel(LogLevel.DEBUG).andPreface(outgoingPreface).using(logger);
+			}
+		}).andReturnAsJson();
+
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		verify(logger, times(4)).debug(captor.capture());
+		
+		List<String> capturedMessages = captor.getAllValues();
+		assertEquals(capturedMessages.get(0), incomingPreface);
+		assertEquals(capturedMessages.get(1), source);
+		assertEquals(capturedMessages.get(2), outgoingPreface);
+		assertEquals(capturedMessages.get(3), target);		
 	}
 	
 	private static String normalize(final String json) {

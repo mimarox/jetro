@@ -37,7 +37,8 @@ import java.util.List;
 public final class MultiplexingJsonVisitor<R> extends UniformChainedJsonVisitor<R> {
 	private List<Stack<JsonVisitor<?>>> visitorStacks;
 
-	public MultiplexingJsonVisitor(JsonVisitor<R> masterVisitor, JsonVisitor<?>... slaveVisitors) {
+	public MultiplexingJsonVisitor(JsonVisitor<R> masterVisitor,
+			JsonVisitor<?>... slaveVisitors) {
 		super(masterVisitor);
 
 		if (slaveVisitors != null && slaveVisitors.length > 0) {
