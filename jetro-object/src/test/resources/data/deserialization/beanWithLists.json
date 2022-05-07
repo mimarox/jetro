@@ -1,5 +1,0 @@
-{
-	"doubles": [1.0, null, 0.1],
-	"booleans": [null, false, true, null, true, false],
-	"leafs": [{"number": 1}, null, {"number": 2}]
-}
