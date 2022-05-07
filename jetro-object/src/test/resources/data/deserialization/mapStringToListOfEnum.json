@@ -1,4 +1,0 @@
-{
-	"first":  ["ARRAY", "OBJECT", "PRIMITIVE"],
-	"second": ["PRIMITIVE", "ARRAY", "OBJECT"]
-}
