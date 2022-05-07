@@ -1,9 +1,0 @@
-{
-	"roles": "basic",
-	"description": "A basic object",
-	"object": {
-		"roles": "object role",
-		"description": "A nested object"
-	},
-	"names": []
-}
