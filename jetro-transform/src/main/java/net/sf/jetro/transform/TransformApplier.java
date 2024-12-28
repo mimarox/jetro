@@ -19,12 +19,13 @@ import net.sf.jetro.stream.JsonWriter;
 import net.sf.jetro.stream.visitor.JsonReturningVisitor;
 import net.sf.jetro.stream.visitor.JsonWritingVisitor;
 import net.sf.jetro.transform.highlevel.TransformationSpecification;
+import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonElement;
+import net.sf.jetro.tree.JsonObject;
 import net.sf.jetro.tree.visitor.JsonTreeBuildingVisitor;
 import net.sf.jetro.visitor.JsonVisitor;
 import net.sf.jetro.visitor.VisitingReader;
 import net.sf.jetro.visitor.chained.ChainedJsonVisitor;
-import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
 
 /**
  * Part of the transformation API.

@@ -14,7 +14,6 @@ public enum LogLevel {
 		try {
 			Method loggingMethod = logger.getClass().getMethod(name().toLowerCase(), String.class);
 			loggingMethod.invoke(logger, message);
-			System.out.println(message);
 		} catch (Exception e) {
 			logger.error("Something went wrong when invoking the logger reflectively.", e);
 		}

@@ -26,6 +26,7 @@ import net.sf.jetro.transform.beans.SourceObject;
 import net.sf.jetro.transform.beans.WrappingAndAddingSource;
 import net.sf.jetro.transform.beans.WrappingAndAddingTarget;
 import net.sf.jetro.transform.highlevel.TransformationSpecification;
+import net.sf.jetro.transform.highlevel.editors.Editors;
 import net.sf.jetro.transform.logging.LogLevel;
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonBoolean;
@@ -43,6 +44,8 @@ import net.sf.testng.databinding.DataBinding;
 import net.sf.testng.databinding.TestInput;
 import net.sf.testng.databinding.TestOutput;
 
+@DataBinding(configClass = HighLevelJetroIntegrationTestDataBindingConfig.class,
+dataSource = "text")
 public class HighLevelJetroIntegrationTest {
 	private static final JsonTreeBuilder BUILDER = new JsonTreeBuilder(true);
 
@@ -71,7 +74,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "captureAndEdit")
+	@DataBinding(configMethod = "captureAndEditConfig")
 	public void shouldTransformWithCaptureAndEdit(@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
 		String actual = Jetro.transform(source).applying(new TransformationSpecification() {
@@ -111,7 +114,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "renaming")
+	@DataBinding(configMethod = "renamingConfig")
 	public void shouldTransformRenamingProperties(@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
 		String actual = Jetro.transform(source).applying(new TransformationSpecification() {
@@ -129,7 +132,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "replacing")
+	@DataBinding(configMethod = "replacingConfig")
 	public void shouldTransformReplacingValues(@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
 		String actual = Jetro.transform(source).applying(new TransformationSpecification() {
@@ -156,7 +159,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "wrappingAndAdding")
+	@DataBinding(dataSource = "xml", configMethod = "wrappingAndAddingConfig")
 	public void shouldTransformObjectsWrappingAndAdding(@TestInput WrappingAndAddingSource source,
 			@TestInput List<Persons> persons, @TestOutput WrappingAndAddingTarget target) {
 		WrappingAndAddingTarget actual = Jetro.transform(source).applying(new TransformationSpecification() {
@@ -751,7 +754,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test(groups = "negativeTests")
-	@DataBinding(propertiesPrefix = "replacingWithNullValues")
+	@DataBinding(configMethod = "replacingWithNullValuesConfig")
 	public void shouldTransformReplacingWithNullValuesRenderingTrue(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
@@ -775,7 +778,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test(groups = "negativeTests")
-	@DataBinding(propertiesPrefix = "replacingWithNullValues")
+	@DataBinding(configMethod = "replacingWithNullValuesConfig")
 	public void shouldTransformReplacingWithNullValuesRenderingFalse(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
@@ -818,7 +821,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "keepingJsonProperty")
+	@DataBinding(configMethod = "keepingJsonPropertyConfig")
 	public void shouldTransformKeepingJsonProperty(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
@@ -875,7 +878,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "captureAndEdit")
+	@DataBinding(configMethod = "captureAndEditConfig")
 	public void shouldTransformApplyingSpecifications(
 			@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
@@ -929,7 +932,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "replacingIfWithObject")
+	@DataBinding(configMethod = "replacingIfWithObjectConfig")
 	public void shouldTransformReplacingIfWithObject(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
@@ -958,7 +961,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "replacingIfWithObject")
+	@DataBinding(configMethod = "replacingIfWithObjectConfig")
 	public void shouldTransformReplacingIfWithJsonObject(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
@@ -1078,7 +1081,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "captureAndEdit")
+	@DataBinding(configMethod = "captureAndEditConfig")
 	public void shouldLogBeforeDuringAndAfterTransformation(
 			@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
@@ -1140,7 +1143,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "multiCapture")
+	@DataBinding(configMethod = "multiCaptureConfig")
 	public void shouldTransformMultiCapture(
 			@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
@@ -1169,7 +1172,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "multiCapture")
+	@DataBinding(configMethod = "multiCaptureConfig")
 	public void shouldLogMultipleTimes(
 			@TestInput(name = "source") final String source) {
 		String incomingPreface = "Incoming JSON";
@@ -1201,7 +1204,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "multiLogAndRemove")
+	@DataBinding(configMethod = "multiLogAndRemoveConfig")
 	public void shouldLogMultipleTimesRemovingContent(
 			@TestInput(name = "source") final String source,
 			@TestOutput(name = "middle") final String middle,
@@ -1239,7 +1242,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "multiLogAndAdd")
+	@DataBinding(configMethod = "multiLogAndAddConfig")
 	public void shouldLogMultipleTimesAddingContent(
 			@TestInput(name = "source") final String source,
 			@TestOutput(name = "middle") final String middle,
@@ -1283,7 +1286,7 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "multiLogAndReplace")
+	@DataBinding(configMethod = "multiLogAndReplaceConfig")
 	public void shouldTransformLoggingMultipleTimesReplacingContent(
 			@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
@@ -1296,10 +1299,9 @@ public class HighLevelJetroIntegrationTest {
 
 			@Override
 			protected void specify() {
-				logWithLevel(LogLevel.DEBUG).andPreface(incomingPreface).using(logger);
-//				
-//				at("$.*.age").replaceWith(99);
-//				logWithLevel(LogLevel.DEBUG).andPreface(outgoingPreface).using(logger);
+				logWithLevel(LogLevel.DEBUG).andPreface(incomingPreface).using(logger);				
+				at("$.*.age").replaceWith(99);
+				logWithLevel(LogLevel.DEBUG).andPreface(outgoingPreface).using(logger);
 			}
 		}).andReturnAsJson();
 
@@ -1311,6 +1313,49 @@ public class HighLevelJetroIntegrationTest {
 		assertEquals(capturedMessages.get(1), source);
 		assertEquals(capturedMessages.get(2), outgoingPreface);
 		assertEquals(capturedMessages.get(3), target);		
+	}
+	
+	public void shouldLogKeyValue() {
+		String json = "{\"key\": \"value\"}";
+		String incomingPreface = "Incoming";
+		
+		Logger logger = mock(Logger.class);
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		
+		String actual = Jetro.transform(json).applying(new TransformationSpecification() {
+			
+			@Override
+			protected void specify() {
+				logWithLevel(LogLevel.DEBUG).andPreface(incomingPreface).using(logger);
+			}
+		})
+				.andReturnAsJson();
+		
+		verify(logger, times(2)).debug(captor.capture());
+		
+		List<String> capturedMessages = captor.getAllValues();
+		assertEquals(capturedMessages.get(0), incomingPreface);
+		assertEquals(capturedMessages.get(1), json);
+		
+		String expected = json;
+		assertEquals(actual, expected);
+	}
+
+	@Test
+	public void shouldHierarchify(
+			@TestInput(name = "source") final String source,
+			@TestOutput(name = "target") final String target) throws Exception {
+		String actual = Jetro.transform(source)
+				.applying(new TransformationSpecification() {
+			
+			@Override
+			protected void specify() {
+				capture("$.members").editAndReplace(
+						Editors.hierarchifyMapping("parent-id").to("id"));
+			}
+		}).andReturnAsJson();
+		
+		assertEquals(actual, normalize(target));
 	}
 	
 	private static String normalize(final String json) {

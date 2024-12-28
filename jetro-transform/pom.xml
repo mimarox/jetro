@@ -48,18 +48,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
+			<artifactId>mockito-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.testngdatabind</groupId>
 			<artifactId>testng-databinding-text</artifactId>
-			<version>2.0</version>
+			<version>3.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.testngdatabind</groupId>
 			<artifactId>testng-databinding-xml</artifactId>
-			<version>2.0</version>
+			<version>3.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

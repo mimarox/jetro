@@ -61,6 +61,7 @@ public class LoggingSpecification {
 		return this;
 	}
 
+	//CHECKSTYLE:OFF
 	public void using(final Logger logger) {
 		Objects.requireNonNull(logger, "logger must not be null");
 		
@@ -197,4 +198,5 @@ public class LoggingSpecification {
 			};
 		});
 	}
+	//CHECKSTYLE:ON
 }
