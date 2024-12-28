@@ -1,0 +1,18 @@
+{
+	"members": [{
+		"id": 0,
+		"parent-id": 2,
+		"name": "A. Müller"
+	},{
+		"id": 1,
+		"parent-id": 2,
+		"name": "B. Lehmann"
+	},{
+		"id": 2,
+		"name": "C. Schulze"
+	},{
+		"id": 3,
+		"parent-id": 0,
+		"name": "D. Mayer"
+	}]
+}

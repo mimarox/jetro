@@ -1,0 +1,17 @@
+{
+	"members": [{
+		"id": 2,
+		"name": "C. Schulze",
+		"children": [{
+			"id": 0,
+			"name": "A. Müller",
+			"children": [{
+				"id": 3,
+				"name": "D. Mayer"
+			}]
+		},{
+			"id": 1,
+			"name": "B. Lehmann"
+		}]
+	}]
+}
