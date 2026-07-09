@@ -35,7 +35,7 @@ public final class JsonProperty implements JsonElement, Entry<String, JsonType> 
 	private JsonType value;
 
 	public JsonProperty(String key) {
-		this(key, (JsonType) null);
+		this(key, new JsonNull());
 	}
 
 	public JsonProperty(String key, JsonType value) {
@@ -43,6 +43,10 @@ public final class JsonProperty implements JsonElement, Entry<String, JsonType> 
 			throw new IllegalArgumentException("key must not be null");
 		}
 
+		if (value == null) {
+			throw new IllegalArgumentException("value must not be null");			
+		}
+		
 		this.key = key;
 		this.value = value;
 	}

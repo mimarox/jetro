@@ -20,6 +20,7 @@ import net.sf.jetro.transform.beans.Persons;
 import net.sf.jetro.transform.beans.SourceObject;
 import net.sf.jetro.transform.beans.WrappingAndAddingSource;
 import net.sf.jetro.transform.beans.WrappingAndAddingTarget;
+import net.sf.jetro.transform.dataconfig.DataConfigurations;
 import net.sf.jetro.transform.highlevel.TransformationSpecification;
 import net.sf.jetro.tree.JsonArray;
 import net.sf.jetro.tree.JsonBoolean;
@@ -65,7 +66,8 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "captureAndEdit")
+	@DataBinding(configClass = DataConfigurations.class, configMethod = "captureAndEditConfig",
+					dataSource = "text")
 	public void shouldTransformWithCaptureAndEdit(@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
 		String actual = Jetro.transform(source).applying(new TransformationSpecification() {
@@ -105,7 +107,8 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "renaming")
+	@DataBinding(configClass = DataConfigurations.class, configMethod = "renamingConfig",
+					dataSource = "text")
 	public void shouldTransformRenamingProperties(@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
 		String actual = Jetro.transform(source).applying(new TransformationSpecification() {
@@ -123,7 +126,8 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "replacing")
+	@DataBinding(configClass = DataConfigurations.class, configMethod = "replacingConfig",
+					dataSource = "text")
 	public void shouldTransformReplacingValues(@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
 		String actual = Jetro.transform(source).applying(new TransformationSpecification() {
@@ -150,7 +154,8 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "wrappingAndAdding")
+	@DataBinding(configClass = DataConfigurations.class, configMethod = "wrappingAndAddingConfig",
+					dataSource = "xml")
 	public void shouldTransformObjectsWrappingAndAdding(@TestInput WrappingAndAddingSource source,
 			@TestInput List<Persons> persons, @TestOutput WrappingAndAddingTarget target) {
 		WrappingAndAddingTarget actual = Jetro.transform(source).applying(new TransformationSpecification() {
@@ -745,7 +750,9 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test(groups = "negativeTests")
-	@DataBinding(propertiesPrefix = "replacingWithNullValues")
+	@DataBinding(configClass = DataConfigurations.class,
+					configMethod = "replacingWithNullValuesConfig",
+					dataSource = "text")
 	public void shouldTransformReplacingWithNullValuesRenderingTrue(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
@@ -769,7 +776,9 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test(groups = "negativeTests")
-	@DataBinding(propertiesPrefix = "replacingWithNullValues")
+	@DataBinding(configClass = DataConfigurations.class,
+					configMethod = "replacingWithNullValuesConfig",
+					dataSource = "text")
 	public void shouldTransformReplacingWithNullValuesRenderingFalse(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
@@ -812,7 +821,8 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "keepingJsonProperty")
+	@DataBinding(configClass = DataConfigurations.class, configMethod = "keepingJsonPropertyConfig",
+					dataSource = "text")
 	public void shouldTransformKeepingJsonProperty(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
@@ -869,7 +879,8 @@ public class HighLevelJetroIntegrationTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "captureAndEdit")
+	@DataBinding(configClass = DataConfigurations.class, configMethod = "captureAndEditConfig",
+					dataSource = "text")
 	public void shouldTransformApplyingSpecifications(
 			@TestInput(name = "source") final String source,
 			@TestOutput(name = "target") final String target) {
@@ -923,7 +934,8 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "replacingIfWithObject")
+	@DataBinding(configClass = DataConfigurations.class, configMethod = "replacingIfWithObjectConfig",
+					dataSource = "text")
 	public void shouldTransformReplacingIfWithObject(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
@@ -952,7 +964,8 @@ public class HighLevelJetroIntegrationTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "replacingIfWithObject")
+	@DataBinding(configClass = DataConfigurations.class, configMethod = "replacingIfWithObjectConfig",
+					dataSource = "text")
 	public void shouldTransformReplacingIfWithJsonObject(
 			@TestInput(name = "source") String source,
 			@TestOutput(name = "target") String target) {
