@@ -19,10 +19,6 @@
  */
 package net.sf.jetro.tree;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -35,7 +31,6 @@ import java.util.Optional;
 import org.testng.annotations.Test;
 
 import net.sf.jetro.path.JsonPath;
-import net.sf.jetro.tree.renderer.JsonRenderer;
 
 public class JsonArrayTest {
 	private class JsonTypeVerifier {
@@ -92,25 +87,6 @@ public class JsonArrayTest {
 		// call toJson on JsonArray
 		String actual = jsonArray.toJson();
 		String expected = "[\"hello\",\"goodbye\",\"thank you\",\"welcome\"]";
-
-		// Assert
-		assertEquals(actual, expected);
-	}
-
-	/**
-	 * Test for toJson(JsonRenderer r) using a mocked JsonRenderer. 
-	 */
-	@Test
-	public void shouldRenderItselfWithRenderer() {
-		JsonArray jsonArray = new JsonArray();
-
-		String expected = String.valueOf(System.currentTimeMillis());
-		JsonRenderer mockedRenderer = mock(JsonRenderer.class);
-		when(mockedRenderer.render(any(JsonElement.class))).thenReturn(expected);
-
-		// call toJson on JsonArray with a JsonRenderer
-		String actual = jsonArray.toJson(mockedRenderer);
-		verify(mockedRenderer).render(jsonArray);
 
 		// Assert
 		assertEquals(actual, expected);

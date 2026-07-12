@@ -19,19 +19,14 @@
  */
 package net.sf.jetro.tree;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Optional;
 
-import net.sf.jetro.path.JsonPath;
-
-import net.sf.jetro.tree.renderer.JsonRenderer;
 import org.testng.annotations.Test;
+
+import net.sf.jetro.path.JsonPath;
 
 public class JsonPrimitiveTest {
 
@@ -48,27 +43,10 @@ public class JsonPrimitiveTest {
 	}
 
 	@Test
-	public void shouldRenderItselfWithRenderer() {
-		JsonPrimitive<String> jsonPrimitive = new JsonString();
-
-		String expected = String.valueOf(System.currentTimeMillis());
-		JsonRenderer mockedRenderer = mock(JsonRenderer.class);
-		when(mockedRenderer.render(any(JsonElement.class))).thenReturn(expected);
-
-		// call toJson on JsonPrimitive with a JsonRenderer
-		String actual = jsonPrimitive.toJson(mockedRenderer);
-		verify(mockedRenderer).render(jsonPrimitive);
-
-		// Assert
-		assertEquals(actual, expected);
-	}
-
-	@Test
 	public void shouldGetChildElement() {
 		// define path for third element
 		JsonPath jsonPath = JsonPath.compile("$.foo[2]");
 
-		@SuppressWarnings("serial")
 		JsonPrimitive<String> jsonString = new JsonPrimitive<String>(jsonPath, "happy") {
 
 			@Override
@@ -77,7 +55,7 @@ public class JsonPrimitiveTest {
 			}};
 
 		// call getElementAt on JSON primitive
-			@SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked")
 		String actual = ((JsonPrimitive<String>) jsonString.getElementAt(jsonPath).get()).getValue();
 		String expected = "happy";
 

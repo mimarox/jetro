@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import net.sf.jetro.exception.MalformedJsonException;
+import net.sf.jetro.object.annotations.JsonAlias;
 import net.sf.jetro.object.deserializer.DeserializationContext;
 import net.sf.jetro.object.exception.DeserializationException;
 import net.sf.jetro.object.reflect.TypeToken;
@@ -240,21 +241,23 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		final DeserializationElement top = elements.peek();
 
 		if (top.isProcessedProperty()) {
+			String fieldName = antiAlias(top.getTypeToken().getRawType(), name);
+			
 			if (!isCollection(top.getInstance())) {
 				if (isMap(top.getInstance())) {
 					TypeToken<?> typeToken = getMapValueTypeToken(top.getTypeToken());
-					elements.push(new DeserializationElement(typeToken, name));
+					elements.push(new DeserializationElement(typeToken, fieldName));
 				} else {
 					try {
-						Field field = ClassUtils.findField(top.getTypeToken().getRawType(), name);
+						Field field = ClassUtils.findField(top.getTypeToken().getRawType(), fieldName);
 						TypeToken<?> typeToken = TypeToken.of(field.getGenericType());
-						DeserializationElement child = new DeserializationElement(typeToken, name);
+						DeserializationElement child = new DeserializationElement(typeToken, fieldName);
 						elements.push(child);
 					} catch (NoSuchFieldException e) {
 						elements.push(DeserializationElement.skippedProperty(currentPath()));
 					} catch (SecurityException e) {
 						throw new DeserializationException(
-								"Could not access field \"" + name + "\" of type " +
+								"Could not access field \"" + fieldName + "\" of type " +
 										top.getTypeToken().getRawType(), e);
 					}
 				}
@@ -264,6 +267,51 @@ public class ObjectBuildingVisitor<R> extends PathAwareJsonVisitor<R> {
 		} else {
 			elements.push(DeserializationElement.skippedProperty(currentPath()));
 		}
+	}
+
+	private String antiAlias(Class<?> rawType, String name) {
+		String fieldName = name;
+		
+		try {
+			Field field = findProperOrAliasedField(rawType, name);
+			fieldName = field.getName();
+		} catch (NoSuchFieldException e) {
+			fieldName = name;
+		}
+		
+		return fieldName;
+	}
+
+	private Field findProperOrAliasedField(Class<?> clazz, String name) throws NoSuchFieldException {
+		if (clazz == null) {
+			throw new NoSuchFieldException(name);
+		}
+		
+		Field field = null;
+		
+		try {
+			Field[] candidateFields = clazz.getDeclaredFields();
+			
+			for (Field candidateField : candidateFields) {
+				if (candidateField.getName().equals(name)) {
+					field = candidateField;
+				} else {
+					JsonAlias jsonAlias = candidateField.getAnnotation(JsonAlias.class);
+					
+					if (jsonAlias != null && jsonAlias.newKey().equals(name)) {
+						field = candidateField;
+					}
+				}
+			}
+			
+			if (field == null) {
+				throw new NoSuchFieldException(name);
+			}
+		} catch (NoSuchFieldException e) {
+			return findProperOrAliasedField(clazz.getSuperclass(), name);
+		}
+		
+		return field;
 	}
 
 	@Override

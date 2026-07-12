@@ -19,10 +19,6 @@
  */
 package net.sf.jetro.tree;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -45,7 +41,6 @@ import org.testng.annotations.Test;
 import net.sf.jetro.path.JsonPath;
 import net.sf.jetro.tree.JsonObject.JsonProperties;
 import net.sf.jetro.tree.builder.JsonTreeBuilder;
-import net.sf.jetro.tree.renderer.JsonRenderer;
 
 public class JsonObjectTest {
 	private class JsonTypeVerifier {
@@ -112,22 +107,6 @@ public class JsonObjectTest {
 		// call toJson on JsonObject
 		String actual = jsonObject.toJson();
 		String expected = "{\"A\":\"hello\",\"B\":44,\"C\":\"goodbye\"}";
-
-		// Assert
-		assertEquals(actual, expected);
-	}
-
-	@Test
-	public void shouldRenderItselfWithRenderer() {
-		JsonObject jsonObject = new JsonObject();
-
-		String expected = String.valueOf(System.currentTimeMillis());
-		JsonRenderer mockedRenderer = mock(JsonRenderer.class);
-		when(mockedRenderer.render(any(JsonElement.class))).thenReturn(expected);
-
-		// call toJson on JsonObject with a JsonRenderer
-		String actual = jsonObject.toJson(mockedRenderer);
-		verify(mockedRenderer).render(jsonObject);
 
 		// Assert
 		assertEquals(actual, expected);

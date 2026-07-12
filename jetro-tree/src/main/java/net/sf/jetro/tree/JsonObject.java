@@ -114,12 +114,14 @@ public final class JsonObject extends AbstractSet<JsonProperty> implements JsonC
 				}
 			}
 
+			JsonType oldValue = null;
+			
 			if (property == null) {
-				property = new JsonProperty(key);
+				property = new JsonProperty(key, value);
+			} else {
+				oldValue = property.getValue();
+				property.setValue(value);				
 			}
-
-			JsonType oldValue = property.getValue();
-			property.setValue(value);
 			
 			properties.add(property);
 			

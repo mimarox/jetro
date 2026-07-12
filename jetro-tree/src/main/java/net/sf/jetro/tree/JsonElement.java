@@ -2,7 +2,7 @@
  * #%L
  * Jetro Tree
  * %%
- * Copyright (C) 2013 - 2016 The original author or authors.
+ * Copyright (C) 2013 - 2026 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,18 @@ import java.io.Serializable;
 import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.visitor.JsonVisitor;
 
+/**
+ * Top level interface for all interfaces and classes representing JSON elements.
+ * 
+ * @author Matthias Rothe
+ */
 public interface JsonElement extends Serializable {
 	
+	/**
+	 * Returns a deep copy of this JSON element.
+	 * 
+	 * @return the deep copy
+	 */
 	JsonElement deepCopy();
 	
 	String toJson();

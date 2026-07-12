@@ -2,7 +2,7 @@
  * #%L
  * Jetro Tree
  * %%
- * Copyright (C) 2013 - 2016 The original author or authors.
+ * Copyright (C) 2013 - 2026 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,19 @@ import java.util.Set;
 
 import net.sf.jetro.path.JsonPath;
 
+/**
+ * This class represents a JSON boolean.
+ * The constructors are self-explaining, therefore no individual JavaDoc is given.
+ * 
+ * @author Matthias Rothe
+ */
 public final class JsonBoolean extends JsonPrimitive<Boolean> {
 	private static final long serialVersionUID = -8707418235663464907L;
 
 	public JsonBoolean() {
 		super();
 	}
-
+	
 	public JsonBoolean(Boolean value) {
 		super(value);
 	}
@@ -46,6 +52,9 @@ public final class JsonBoolean extends JsonPrimitive<Boolean> {
 		super(paths, value);
 	}
 
+	/*
+	 * {@inheritDoc}	
+	 */
 	@Override
 	public JsonBoolean deepCopy() {
 		return new JsonBoolean(getPaths(), getValue());

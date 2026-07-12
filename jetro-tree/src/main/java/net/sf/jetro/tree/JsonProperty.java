@@ -34,6 +34,12 @@ public final class JsonProperty implements JsonElement, Entry<String, JsonType> 
 	private String key;
 	private JsonType value;
 
+	/**
+	 * Convenience constructor setting the {@link #value} to
+	 * {@link JsonNull}.
+	 * 
+	 * @param key This property's key
+	 */
 	public JsonProperty(String key) {
 		this(key, new JsonNull());
 	}

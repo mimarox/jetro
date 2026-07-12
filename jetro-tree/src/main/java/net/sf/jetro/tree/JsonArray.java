@@ -2,7 +2,7 @@
  * #%L
  * Jetro Tree
  * %%
- * Copyright (C) 2013 - 2016 The original author or authors.
+ * Copyright (C) 2013 - 2026 The original author or authors.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,23 +35,48 @@ import net.sf.jetro.tree.renderer.JsonRenderer;
 import net.sf.jetro.tree.visitor.JsonElementVisitingReader;
 import net.sf.jetro.visitor.JsonVisitor;
 
+/**
+ * This class represents a JSON array.
+ * 
+ * @author Matthias Rothe
+ */
 public final class JsonArray extends ArrayList<JsonType> implements JsonCollection {
 	private static final long serialVersionUID = -853759861392315220L;
 
 	private final Set<JsonPath> paths = new HashSet<>();
 
+	/**
+	 * Default constructor, setting the path of the JSON array to the root path.
+	 */
 	public JsonArray() {
 		getPaths().add(new JsonPath());
 	}
 
+	/**
+	 * Constructor, setting the path to the given path.
+	 * 
+	 * @param path the path to set
+	 */
 	public JsonArray(final JsonPath path) {
 		this(path, null);
 	}
 
+	/**
+	 * Constructor, setting the values to the given values and the path to the root path.
+	 * 
+	 * @param values the values to set
+	 */
 	public JsonArray(final List<? extends JsonType> values) {
 		this((JsonPath) null, values);
 	}
 
+	/**
+	 * Constructor, setting the path to the given path and the values to the
+	 * given values.
+	 * 
+	 * @param path the path to set
+	 * @param values the values to set
+	 */
 	public JsonArray(final JsonPath path, final List<? extends JsonType> values) {
 		this(values, false);
 		
@@ -79,22 +104,34 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		}
 	}
 	
+	/*
+	 * {@inheritDoc}
+	 */
 	@Override
 	public JsonArray deepCopy() {
 		return new JsonArray(getPaths(), this);
 	}
 
+	/*
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void addPath(final JsonPath path) {
 		getPaths().add(path);
 	}
 
+	/*
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void resetPathsRecursively() {
 		getPaths().clear();
 		forEach(element -> element.resetPaths());
 	}
 	
+	/*
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void recalculateTreePaths(final boolean treeRoot) {
 		if (treeRoot) {
@@ -115,22 +152,34 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		}
 	}
 	
+	/*
+	 * {@inheritDoc}	
+	 */
 	@Override
 	public String toJson() {
 		return new DefaultJsonRenderer().render(this);
 	}
 
+	/*
+	 * {@inheritDoc}	
+	 */
 	@Override
 	public String toJson(final JsonRenderer renderer) {
 		return renderer.render(this);
 	}
 
+	/*
+	 * {@inheritDoc}	
+	 */
 	@Override
 	public void mergeInto(JsonVisitor<?> visitor) {
 		JsonElementVisitingReader reader = new JsonElementVisitingReader(this);
 		reader.accept(visitor);
 	}
 
+	/*
+	 * {@inheritDoc}	
+	 */
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -139,6 +188,9 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		return builder.toString();
 	}
 
+	/*
+	 * {@inheritDoc}	
+	 */
 	@Override
 	public Optional<JsonType> getElementAt(final JsonPath path) {
 		if (getPaths().contains(path)) {
@@ -166,6 +218,9 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		).findFirst();
 	}
 
+	/*
+	 * {@inheritDoc}	
+	 */
 	@Override
 	public boolean addElementAt(final JsonPath path, final JsonType element) {
 		Objects.requireNonNull(path, "A non-null path to add the element at must be specified");
@@ -221,6 +276,9 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		return success;
 	}
 
+	/*
+	 * {@inheritDoc}	
+	 */
 	@Override
 	public Optional<JsonType> replaceElementAt(final JsonPath path, final JsonType newElement) {
 		Objects.requireNonNull(path,
@@ -267,6 +325,9 @@ public final class JsonArray extends ArrayList<JsonType> implements JsonCollecti
 		return Optional.ofNullable(replacedElement);
 	}
 	
+	/*
+	 * {@inheritDoc}	
+	 */
 	@Override
 	public boolean removeElementAt(JsonPath path) {
 		if (!isTreeRoot()) {

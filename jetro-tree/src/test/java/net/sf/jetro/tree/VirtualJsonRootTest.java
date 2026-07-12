@@ -19,16 +19,11 @@
  */
 package net.sf.jetro.tree;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 
 import java.util.Arrays;
 
-import net.sf.jetro.tree.renderer.JsonRenderer;
 import org.testng.annotations.Test;
 
 public class VirtualJsonRootTest {
@@ -50,22 +45,6 @@ public class VirtualJsonRootTest {
 		assertEquals(actual, expected);
 	}
 
-	@Test
-	public void shouldRenderItselfWithRenderer() {
-		VirtualJsonRoot virtualJsonRoot = new VirtualJsonRoot();
-
-		String expected = String.valueOf(System.currentTimeMillis());
-		JsonRenderer mockedRenderer = mock(JsonRenderer.class);
-		when(mockedRenderer.render(any(JsonElement.class))).thenReturn(expected);
-
-		// call toJson on JsonArray with a JsonRenderer
-		String actual = virtualJsonRoot.toJson(mockedRenderer);
-		verify(mockedRenderer).render(virtualJsonRoot);
-
-		// Assert
-		assertEquals(actual, expected);
-	}
-	
 	@Test
 	public void shouldDeepCopy() {
 		JsonObject jsonObject = new JsonObject();

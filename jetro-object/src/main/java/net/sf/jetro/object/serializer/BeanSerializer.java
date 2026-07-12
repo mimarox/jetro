@@ -19,14 +19,21 @@
  */
 package net.sf.jetro.object.serializer;
 
-import net.sf.jetro.visitor.JsonObjectVisitor;
-import net.sf.jetro.visitor.JsonVisitor;
-
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import net.sf.jetro.object.annotations.JsonAlias;
+import net.sf.jetro.object.annotations.JsonIgnore;
+import net.sf.jetro.object.annotations.JsonIgnoreProperties;
+import net.sf.jetro.visitor.JsonObjectVisitor;
+import net.sf.jetro.visitor.JsonVisitor;
 
 /**
  * @author matthias.rothe
@@ -68,18 +75,20 @@ public class BeanSerializer implements TypeSerializer<Object> {
 
 		try {
 			JsonObjectVisitor<?> objectVisitor = recipient.visitObject();
-
+			
+			Set<String> propertiesToIgnore = getPropertiesToIgnore(toSerialize);
+			
 			BeanInfo info = Introspector.getBeanInfo(toSerialize.getClass());
 			PropertyDescriptor[] properties = info.getPropertyDescriptors();
 
 			for (PropertyDescriptor property : properties) {
 				Method getter = property.getReadMethod();
 
-				if (isRealGetter(getter)) {
+				if (isRealGetter(getter) && !isIgnoredProperty(propertiesToIgnore, property)) {
 					Object value = getter.invoke(toSerialize);
 					TypeSerializer<Object> serializer = context.getTypeSerializer(value);
 
-					objectVisitor.visitProperty(property.getName());
+					objectVisitor.visitProperty(alias(toSerialize, property));
 					serializer.serialize(value, objectVisitor);
 				}
 			}
@@ -90,7 +99,60 @@ public class BeanSerializer implements TypeSerializer<Object> {
 		}
 	}
 
+	private Set<String> getPropertiesToIgnore(Object toSerialize) {
+		Set<String> propertiesToIgnore = new HashSet<>();
+		
+		populatePropertiesToIgnoreFromType(propertiesToIgnore, toSerialize);
+		populatePropertiesToIgnoreFromFields(propertiesToIgnore, toSerialize);
+		
+		return propertiesToIgnore;
+	}
+
+	private void populatePropertiesToIgnoreFromType(Set<String> propertiesToIgnore, Object toSerialize) {
+		JsonIgnoreProperties jsonIgnoreProperties = 
+				toSerialize.getClass().getAnnotation(JsonIgnoreProperties.class);
+		
+		if (jsonIgnoreProperties != null) {
+			propertiesToIgnore.addAll(Arrays.asList(jsonIgnoreProperties.properties()));
+		}
+	}
+	
+	private void populatePropertiesToIgnoreFromFields(Set<String> propertiesToIgnore, Object toSerialize) {
+		Field[] fields = toSerialize.getClass().getDeclaredFields();
+		
+		for (Field field : fields) {
+			JsonIgnore jsonIgnore = field.getAnnotation(JsonIgnore.class);
+			
+			if (jsonIgnore != null) {
+				propertiesToIgnore.add(field.getName());
+			}
+		}
+	}
+
 	private boolean isRealGetter(Method getter) {
 		return getter != null && !getter.getName().equals("getClass");
+	}
+
+	private boolean isIgnoredProperty(Set<String> propertiesToIgnore, PropertyDescriptor property) {
+		return propertiesToIgnore.contains(property.getName());
+	}
+
+	private String alias(Object toSerialize, PropertyDescriptor property) {
+		String propertyName = null;
+		
+		try {
+			Field field = toSerialize.getClass().getDeclaredField(property.getName());
+			JsonAlias jsonAlias = field.getAnnotation(JsonAlias.class);
+			
+			if (jsonAlias != null) {
+				propertyName = jsonAlias.newKey();
+			} else {
+				propertyName = property.getName();
+			}
+		} catch (NoSuchFieldException | SecurityException e) {
+			propertyName = property.getName();
+		}
+		
+		return propertyName;
 	}
 }
