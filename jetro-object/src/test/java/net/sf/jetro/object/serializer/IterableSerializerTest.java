@@ -19,8 +19,13 @@
  */
 package net.sf.jetro.object.serializer;
 
-import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.testng.annotations.Test;
+
+import net.sf.jetro.visitor.chained.UniformChainedJsonVisitor;
 
 /**
  * Created by matthias.rothe on 26.02.14.
@@ -30,9 +35,14 @@ public class IterableSerializerTest {
 	@Test
 	public void testSerialization() {
 		TypeSerializer<Object> serializer = getSerializer();
-		serializer.serialize(new String[]{ "foo", "bar" }, new UniformChainedJsonVisitor<Object>() {});
+		
+		List<String> strings = Arrays.asList(new String[]{ "foo", "bar" });
+		
+		serializer.serialize(new ArrayList<String>(strings),
+				new UniformChainedJsonVisitor<Object>() {});
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private TypeSerializer<Object> getSerializer() {
 		return (TypeSerializer) new IterableSerializer(new SerializationContext());
 	}

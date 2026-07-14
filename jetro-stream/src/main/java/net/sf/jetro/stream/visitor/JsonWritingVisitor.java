@@ -19,6 +19,7 @@
  */
 package net.sf.jetro.stream.visitor;
 
+import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.stream.JsonWriter;
 import net.sf.jetro.visitor.JsonArrayVisitor;
 import net.sf.jetro.visitor.JsonObjectVisitor;
@@ -69,6 +70,7 @@ public final class JsonWritingVisitor extends AbstractJsonWritingVisitor<Void> {
 	}
 
 	private JsonWriter writer;
+
 	private JsonObjectVisitor<Void> objectVisitor = new JsonWritingObjectVisitor();
 	private JsonArrayVisitor<Void> arrayVisitor = new JsonWritingArrayVisitor();
 
@@ -77,9 +79,22 @@ public final class JsonWritingVisitor extends AbstractJsonWritingVisitor<Void> {
 			throw new IllegalArgumentException("jsonWriter must not be null");
 		}
 
-		this.writer = writer;
+		this.writer = writer;		
 	}
 
+	public JsonWritingVisitor(final JsonWriter writer, final RenderContext context) {
+		if (writer == null) {
+			throw new IllegalArgumentException("jsonWriter must not be null");
+		}
+
+		if (context == null) {
+			throw new IllegalArgumentException("context must not be null");
+		}
+
+		this.writer = writer;
+		initJsonWriter(context);
+	}
+	
 	@Override
 	protected JsonObjectVisitor<Void> newJsonObjectVisitor() {
 		return objectVisitor;
@@ -98,5 +113,12 @@ public final class JsonWritingVisitor extends AbstractJsonWritingVisitor<Void> {
 	@Override
 	public Void getVisitingResult() {
 		return null;
+	}
+
+	private void initJsonWriter(RenderContext context) {
+		writer.setHtmlSafe(context.isHtmlSafe());
+		writer.setIndent(context.getIndent());
+		writer.setLenient(context.isLenient());
+		writer.setSerializeNulls(context.isSerializeNulls());
 	}
 }

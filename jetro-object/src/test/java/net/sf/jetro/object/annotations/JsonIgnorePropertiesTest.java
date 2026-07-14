@@ -27,4 +27,40 @@ public class JsonIgnorePropertiesTest {
 		
 		assertEquals(actual, expected);
 	}
+	
+	@Test
+	public void shouldIgnorePropertiesOnSuperclass() {
+		SampleBeanD sampleBean = new SampleBeanD("foo", "bar", 1L, 2L, "bac", "bad", 3L, 4L);
+		
+		ObjectVisitingReader reader = new ObjectVisitingReader(sampleBean,
+				new SerializationContext());
+		
+		JsonReturningVisitor visitor = new JsonReturningVisitor();
+		
+		reader.accept(visitor);
+		
+		String actual = visitor.getVisitingResult();
+		
+		String expected = "{\"longA\":1,\"longC\":3,\"stringA\":\"foo\",\"stringC\":\"bac\"}";
+		
+		assertEquals(actual, expected);
+	}
+	
+	@Test
+	public void shouldIgnorePropertiesWithJsonIgnorePropertiesOnBeanAndJsonIgnoreOnSuperclass() {
+		SampleBeanD sampleBean = new SampleBeanD("foo", "bar", 1L, 2L, "bac", "bad", 3L, 4L);
+		
+		ObjectVisitingReader reader = new ObjectVisitingReader(sampleBean,
+				new SerializationContext());
+		
+		JsonReturningVisitor visitor = new JsonReturningVisitor();
+		
+		reader.accept(visitor);
+		
+		String actual = visitor.getVisitingResult();
+		
+		String expected = "{\"longA\":1,\"longC\":3,\"stringA\":\"foo\",\"stringC\":\"bac\"}";
+		
+		assertEquals(actual, expected);
+	}
 }

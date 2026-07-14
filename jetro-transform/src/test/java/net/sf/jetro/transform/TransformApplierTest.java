@@ -115,7 +115,7 @@ public class TransformApplierTest {
 	public void shouldThrowExceptionOutputStreamNullCharsetName()
 			throws UnsupportedEncodingException {
 		new TransformApplier<>(SOURCE, TRANSFORMER).writingTo(
-				new ByteArrayOutputStream(), null);
+				new ByteArrayOutputStream(), (String) null);
 	}
 	
 	@Test(expectedExceptions = NullPointerException.class,

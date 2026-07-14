@@ -69,6 +69,29 @@ public class TransformApplier<R> {
 	
 	/**
 	 * Perform the transformation(s) if any and write the resulting JSON to the given
+	 * {@link OutputStream} using the given {@link RenderContext}.
+	 * <p>
+	 * The JSON is written with UTF-8 encoding.
+	 * 
+	 * @param target the OutputStream to write to
+	 * @param context the RenderContext to use
+	 */
+	public void writingTo(final OutputStream target, RenderContext context) {
+		Objects.requireNonNull(target, "target must not be null");
+		
+		if (context == null) {
+			context = new RenderContext();
+		}
+		
+		try {
+			writingTo(target, "UTF-8", context);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}		
+	}
+	
+	/**
+	 * Perform the transformation(s) if any and write the resulting JSON to the given
 	 * {@link OutputStream} using the charset with the given name to encode the chars.
 	 * 
 	 * @param target the OutputStream to write to
@@ -85,6 +108,25 @@ public class TransformApplier<R> {
 	
 	/**
 	 * Perform the transformation(s) if any and write the resulting JSON to the given
+	 * {@link OutputStream} using the charset with the given name to encode the chars
+	 * and the given {@link RenderContext}.
+	 * 
+	 * @param target the OutputStream to write to
+	 * @param charsetName the name of the charset to use
+	 * @param context the RenderContext to use
+	 * @throws UnsupportedEncodingException if the named charset is not supported
+	 */
+	public void writingTo(final OutputStream target, final String charsetName,
+			final RenderContext context)
+			throws UnsupportedEncodingException {
+		Objects.requireNonNull(target, "target must not be null");
+		Objects.requireNonNull(charsetName, "charsetName must not be null");
+		
+		writingTo(new OutputStreamWriter(target, charsetName), context);
+	}	
+	
+	/**
+	 * Perform the transformation(s) if any and write the resulting JSON to the given
 	 * {@link Writer}.
 	 * 
 	 * @param target the Writer to write to
@@ -96,6 +138,30 @@ public class TransformApplier<R> {
 		try (JsonWriter writer = new JsonWriter(target)) {
 			JsonWritingVisitor visitor = new JsonWritingVisitor(writer);
 			transformer.attachVisitor((JsonVisitor<R>) visitor);	
+			source.accept(transformer);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Perform the transformation(s) if any and write the resulting JSON to the given
+	 * {@link Writer} using the given {@link RenderContext}.
+	 * 
+	 * @param target the Writer to write to
+	 * @param context the RenderContext to use
+	 */
+	@SuppressWarnings("unchecked")
+	public void writingTo(final Writer target, RenderContext context) {
+		Objects.requireNonNull(target, "target must not be null");
+		
+		if (context == null) {
+			context = new RenderContext();
+		}
+		
+		try (JsonWriter writer = new JsonWriter(target)) {
+			JsonWritingVisitor visitor = new JsonWritingVisitor(writer, context);
+			transformer.attachVisitor((JsonVisitor<R>) visitor);
 			source.accept(transformer);
 		} catch (IOException e) {
 			throw new RuntimeException(e);

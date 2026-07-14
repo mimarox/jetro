@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 
+import net.sf.jetro.context.RenderContext;
 import net.sf.jetro.object.deserializer.DeserializationContext;
 import net.sf.jetro.object.reflect.TypeToken;
 import net.sf.jetro.object.serializer.SerializationContext;
@@ -102,6 +103,22 @@ public class ObjectMapper {
 
 	public String toJson(final Object object, final SerializationContext context) {
 		JsonReturningVisitor receiver = new JsonReturningVisitor();
+		ObjectVisitingReader reader = new ObjectVisitingReader(object, context);
+		reader.accept(receiver);
+		return receiver.getVisitingResult();
+	}
+	
+	public String toJson(final Object object, final RenderContext renderContext) {
+		JsonReturningVisitor receiver = new JsonReturningVisitor(renderContext);
+		ObjectVisitingReader reader = new ObjectVisitingReader(object,
+				getSerializationContext());
+		reader.accept(receiver);
+		return receiver.getVisitingResult();		
+	}
+	
+	public String toJson(final Object object, final RenderContext renderContext,
+			final SerializationContext context) {
+		JsonReturningVisitor receiver = new JsonReturningVisitor(renderContext);
 		ObjectVisitingReader reader = new ObjectVisitingReader(object, context);
 		reader.accept(receiver);
 		return receiver.getVisitingResult();

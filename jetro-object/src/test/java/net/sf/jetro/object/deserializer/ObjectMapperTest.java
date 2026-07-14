@@ -60,7 +60,8 @@ public class ObjectMapperTest {
 	private ObjectMapper mapper = new ObjectMapper();
 	
 	@Test
-	@DataBinding(propertiesPrefix = "simpleBean")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "simpleBeanConfig", dataSource = "text")
 	public void testSimpleBeanDeserialization(@TestInput(name = "json") String json) {
 		SimpleBean actual = mapper.fromJson(json, SimpleBean.class);
 		
@@ -89,7 +90,8 @@ public class ObjectMapperTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "nestedBeans")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "nestedBeansConfig", dataSource = "text")
 	public void testNestedBeansDeserialization(@TestInput(name = "json") String json) {
 		RootBean actual = mapper.fromJson(json, RootBean.class);
 		
@@ -115,7 +117,8 @@ public class ObjectMapperTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "listOfBeans")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "listOfBeansConfig", dataSource = "text")
 	public void testListOfBeansDeserialization(@TestInput(name = "json") String json) {
 		TypeToken<List<LeafBean>> typeToken = new TypeToken<List<LeafBean>>() {};
 		List<LeafBean> actual = mapper.fromJson(json, typeToken);
@@ -132,7 +135,8 @@ public class ObjectMapperTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "listOfLists")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "listOfListsConfig", dataSource = "text")
 	public void testListOfListsDeserialization(@TestInput(name = "json") String json) {
 		TypeToken<List<List<String>>> typeToken = new TypeToken<List<List<String>>>() {};
 		List<List<String>> actual = mapper.fromJson(json, typeToken);
@@ -158,7 +162,8 @@ public class ObjectMapperTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "beanWithLists")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "beanWithListsConfig", dataSource = "text")
 	public void testBeanWithListsDeserialization(@TestInput(name = "json") String json) {
 		BeanWithLists actual = mapper.fromJson(json, BeanWithLists.class);
 		
@@ -192,7 +197,8 @@ public class ObjectMapperTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "complexSkip")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "complexSkippedPropertyConfig", dataSource = "text")
 	public void testComplexSkipDeserialization(@TestInput(name = "json") String json) {
 		BeforeAndAfter actual = mapper.fromJson(json, BeforeAndAfter.class);
 		
@@ -206,7 +212,8 @@ public class ObjectMapperTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "beanWithEnums")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "beanWithEnumsConfig", dataSource = "text")
 	public void testBeanWithEnumsDeserialization(@TestInput(name = "json") String json) {
 		BeanWithEnums actual = mapper.fromJson(json, BeanWithEnums.class);
 		
@@ -221,7 +228,8 @@ public class ObjectMapperTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "dateBean")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "dateBeanConfig", dataSource = "text")
 	public void testDateBeanDeserialization(@TestInput(name = "json") String json) {
 		DeserializationContext deserializationContext = DeserializationContext.getDefault();
 		deserializationContext.addStringDeserializer(TypeToken.of(LocalDateTime.class),
@@ -245,7 +253,8 @@ public class ObjectMapperTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "inheritedProperties")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "inheritedPropertiesConfig", dataSource = "text")
 	public void testInheritedPropertiesDeserialization(@TestInput(name = "json") String json) {
 		SubSubBean actual = mapper.fromJson(json, SubSubBean.class);
 		
@@ -261,7 +270,8 @@ public class ObjectMapperTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "mapStringToBean")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "mapStringToBeanConfig", dataSource = "text")
 	public void testMapStringToBeanDeserialization(@TestInput(name = "json") String json) {
 		TypeToken<Map<String, BaseBean>> typeToken = new TypeToken<Map<String, BaseBean>>() {};
 		
@@ -279,7 +289,8 @@ public class ObjectMapperTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "mapEnumToMapDateToBean")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "mapEnumToMapDateToBeanConfig", dataSource = "text")
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void testMapEnumToMapDateToBeanDeserialization(@TestInput(name = "json") String json) {
 		DeserializationContext context = DeserializationContext.getDefault();
@@ -313,7 +324,8 @@ public class ObjectMapperTest {
 	}
 
 	@Test
-	@DataBinding(propertiesPrefix = "listOfMapsStringToBean")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "listOfMapsStringToBeanConfig", dataSource = "text")
 	public void testListOfMapsStringToBeanDeserialization(@TestInput(name = "json") String json) {
 		TypeToken<List<Map<String, BaseBean>>> typeToken =
 				new TypeToken<List<Map<String, BaseBean>>>() {};
@@ -341,7 +353,8 @@ public class ObjectMapperTest {
 	}
 	
 	@Test
-	@DataBinding(propertiesPrefix = "mapStringToListOfEnum")
+	@DataBinding(configClass = ObjectMapperTestDataConfigurations.class,
+	configMethod = "mapStringToListOfEnumConfig", dataSource = "text")
 	public void testMapStringToListOfEnumDeserialization(@TestInput(name = "json") String json) {
 		TypeToken<Map<String, List<ElementType>>> typeToken =
 				new TypeToken<Map<String, List<ElementType>>>() {};

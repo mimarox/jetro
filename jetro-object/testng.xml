@@ -9,6 +9,8 @@
 			<package name="net.sf.jetro.object.annotations" />
 			<package name="net.sf.jetro.object.deserializer" />
 			<package name="net.sf.jetro.object.reflect" />
+			<package name="net.sf.jetro.object.serializer" />
+			<package name="net.sf.jetro.object.transformations" />
 		</packages>
 	</test>
 </suite>

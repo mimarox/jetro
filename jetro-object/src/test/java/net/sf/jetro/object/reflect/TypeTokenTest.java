@@ -35,6 +35,7 @@ public class TypeTokenTest {
 
 	@Test(expectedExceptions = RuntimeException.class)
 	public void testNoSubClassTypeToken() {
+		@SuppressWarnings("unused")
 		TypeToken<String> token = new TypeToken<String>();
 	}
 
@@ -61,11 +62,13 @@ public class TypeTokenTest {
 
 	@Test
 	public void testWildcardGenericTypeToken() {
+		@SuppressWarnings("unused")
 		TypeToken<List<? super Integer>> token = new TypeToken<List<? super Integer>>(){};
 	}
 
 	@Test
 	public <T> void testTypeVariableTypeToken() {
+		@SuppressWarnings("unused")
 		TypeToken<List<T>> token = new TypeToken<List<T>>(){};
 	}
 }

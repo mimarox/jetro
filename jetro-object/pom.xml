@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>jetro</artifactId>
 		<groupId>net.sf.jetro</groupId>
-		<version>2.1.3-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 	<packaging>bundle</packaging>
 	<artifactId>jetro-object</artifactId>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>net.sf.testngdatabind</groupId>
 			<artifactId>testng-databinding-text</artifactId>
-			<version>2.0</version>
+			<version>3.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

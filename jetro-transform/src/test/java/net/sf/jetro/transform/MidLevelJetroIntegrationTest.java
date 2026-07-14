@@ -189,4 +189,41 @@ public class MidLevelJetroIntegrationTest {
 		
 		assertTrue(IOUtils.contentEquals(actual, expected));
 	}
+	
+	@Test
+	public void shouldTransformApplyingNoneStringToStringWithPrettyPrinting() 
+			throws IOException {
+		String source = "[1,2,3]";
+		
+		RenderContext context = new RenderContext();
+		context.setIndent("\t");
+		
+		String actual =	Jetro.transform(source).applyingNone()
+				.andReturnAsJson(context);
+		
+		System.out.println(actual);
+		
+		String expected = "[\n\t1,\n\t2,\n\t3\n]";
+		
+		assertEquals(actual, expected);		
+	}
+	
+	@Test
+	public void shouldTransformJsonElementApplyingNoneToStringWithPrettyPrinting() {
+		JsonObject source = new JsonObject();
+		source.add(new JsonProperty("stringA", "foo"));
+		source.add(new JsonProperty("stringB", "bar"));
+		
+		RenderContext context = new RenderContext();
+		context.setIndent("\t");
+		
+		String actual =	Jetro.transform(source).applyingNone()
+				.andReturnAsJson(context);
+		
+		System.out.println(actual);
+		
+		String expected = "{\n\t\"stringA\": \"foo\",\n\t\"stringB\": \"bar\"\n}";
+		
+		assertEquals(actual, expected);		
+	}
 }

@@ -115,8 +115,30 @@ public class BeanSerializer implements TypeSerializer<Object> {
 		if (jsonIgnoreProperties != null) {
 			propertiesToIgnore.addAll(Arrays.asList(jsonIgnoreProperties.properties()));
 		}
+		
+		Class<?> superClass = toSerialize.getClass().getSuperclass();
+		
+		if (superClass != null) {
+			populatePropertiesToIgnoreFromSuperclass(propertiesToIgnore, superClass);
+		}
 	}
 	
+	private void populatePropertiesToIgnoreFromSuperclass(Set<String> propertiesToIgnore,
+			Class<?> superClass) {
+		JsonIgnoreProperties jsonIgnoreProperties = 
+				superClass.getAnnotation(JsonIgnoreProperties.class);
+		
+		if (jsonIgnoreProperties != null) {
+			propertiesToIgnore.addAll(Arrays.asList(jsonIgnoreProperties.properties()));
+		}
+		
+		Class<?> superSuperClass = superClass.getSuperclass();
+		
+		if (superSuperClass != null) {
+			populatePropertiesToIgnoreFromSuperclass(propertiesToIgnore, superSuperClass);
+		}
+	}
+
 	private void populatePropertiesToIgnoreFromFields(Set<String> propertiesToIgnore, Object toSerialize) {
 		Field[] fields = toSerialize.getClass().getDeclaredFields();
 		
@@ -127,6 +149,31 @@ public class BeanSerializer implements TypeSerializer<Object> {
 				propertiesToIgnore.add(field.getName());
 			}
 		}
+		
+		Class<?> superClass = toSerialize.getClass().getSuperclass();
+		
+		if (superClass != null) {
+			populatePropertiesToIgnoreFromFieldsOfSuperclass(propertiesToIgnore, superClass);
+		}		
+	}
+
+	private void populatePropertiesToIgnoreFromFieldsOfSuperclass(Set<String> propertiesToIgnore,
+			Class<?> superClass) {
+		Field[] fields = superClass.getDeclaredFields();
+		
+		for (Field field : fields) {
+			JsonIgnore jsonIgnore = field.getAnnotation(JsonIgnore.class);
+			
+			if (jsonIgnore != null) {
+				propertiesToIgnore.add(field.getName());
+			}
+		}
+		
+		Class<?> superSuperClass = superClass.getSuperclass();
+		
+		if (superSuperClass != null) {
+			populatePropertiesToIgnoreFromFieldsOfSuperclass(propertiesToIgnore, superSuperClass);
+		}		
 	}
 
 	private boolean isRealGetter(Method getter) {
