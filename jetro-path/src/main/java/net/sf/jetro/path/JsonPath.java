@@ -500,7 +500,7 @@ public final class JsonPath implements Cloneable, Serializable {
 	 * ($). It may be followed by zero or more path elements. These path elements
 	 * may either be property name, array index or a matching-all-further 
 	 * element.
-	 * <h2>Reserved characters</h2>
+	 * <h4>Reserved characters</h4>
 	 * These reserved characters are used in JsonPath:
 	 * <ul>
 	 * 	<li>$ specifies the document root
@@ -512,10 +512,10 @@ public final class JsonPath implements Cloneable, Serializable {
 	 * 	<li>? specifies an optional
 	 * 	<li>- specifies the end of an array
 	 * </ul>
-	 * <h2>Non-reserved characters</h2>
+	 * <h4>Non-reserved characters</h4>
 	 * Any UTF-8 characters other than the ones given in the section
 	 * &quot;Reserved characters&quot; are non-reserved characters.
-	 * <h2>Property name elements</h2>
+	 * <h4>Property name elements</h4>
 	 * Property name elements start with a dot (.) followed by a name consisting
 	 * of at least one or more non-reserved characters as defined in the section
 	 * &quot;Non-reserved characters&quot;. There is one exception to this rule:
@@ -524,7 +524,7 @@ public final class JsonPath implements Cloneable, Serializable {
 	 * Partial wildcards are not supported. Furthermore property name elements may
 	 * be followed by a question mark (?) which specifies the property name element
 	 * so annotated as optional.
-	 * <h2>Array index elements</h2>
+	 * <h4>Array index elements</h4>
 	 * Array index elements start with an opening square bracket ([) followed by
 	 * either a non-negative base-10 integer without leading zeroes which is used
 	 * as an array index, a single asterisk (*) which is used as a wildcard or the
@@ -532,11 +532,11 @@ public final class JsonPath implements Cloneable, Serializable {
 	 * note that if used the end-of-array element must be the last element of the
 	 * given JsonPath. Furthermore array index elements may be followed by a question
 	 * mark (?) which specifies the array index element so annotated as optional.
-	 * <h2>Matching-all-further elements</h2>
+	 * <h4>Matching-all-further elements</h4>
 	 * Matching-all-further elements are specified by a colon (:) and must be the last
 	 * element of any given JsonPath if they are used. They allow a parent path to
 	 * match any child path.
-	 * <h2>Examples</h2>
+	 * <h4>Examples</h4>
 	 * Given the following JSON document:
 	 * <pre>
 	 * {
