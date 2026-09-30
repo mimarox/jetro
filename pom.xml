@@ -45,6 +45,10 @@
 			<id>central</id>
 			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
 		</snapshotRepository>
+		<repository>
+			<id>central</id>
+			<url>https://central.sonatype.com/repository/maven/</url>
+		</repository>
 	</distributionManagement>
 	<properties>
 		<bundle.name>${project.name}</bundle.name>
